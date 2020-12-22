@@ -26,7 +26,7 @@ namespace Left4DeadHelper.Discord.Modules
 
         [Command(Command)]
         [Summary("Sets role colors!")]
-        public async Task HandleCommandAsync(string[] args)
+        public async Task HandleCommandAsync(params string[] args)
         {
 
         }

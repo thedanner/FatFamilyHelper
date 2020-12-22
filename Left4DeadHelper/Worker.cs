@@ -52,20 +52,6 @@ namespace Left4DeadHelper
             catch (Exception e)
             {
                 _logger.LogError(e, "Error :(");
-
-                // TODO Toasts may not work from the context of a service.
-
-                var template = ToastNotificationManager.GetTemplateContent(ToastTemplateType.ToastText01);
-                var textNodes = template.GetElementsByTagName("text");
-                textNodes[0].InnerText = string.Join(Environment.NewLine,
-                    "Error running Left4DeadHelper",
-                    e.Message,
-                    "See logs for details.");
-
-                var toast = new ToastNotification(template);
-
-                var notifier = ToastNotificationManager.CreateToastNotifier("Left4DeadHelper");
-                notifier.Show(toast);
             }
 
             await base.StartAsync(cancellationToken);
