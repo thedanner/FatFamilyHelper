@@ -1,0 +1,235 @@
+﻿using Discord;
+using FakeItEasy;
+using Left4DeadHelper.Models;
+using Left4DeadHelper.Rcon;
+using Left4DeadHelper.Wrappers.DiscordNet;
+using Left4DeadHelper.Wrappers.Rcon;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using NLog.Extensions.Logging;
+using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Left4DeadHelper.Tests.Unit
+{
+    [TestFixture]
+    public class DiscordHelperTests
+    {
+        private ServiceProvider _serviceProvider;
+        private DiscordChatMover _mover;
+
+        [SetUp]
+        public void SetUp()
+        {
+            var config = new ConfigurationBuilder()
+                     .SetBasePath(Directory.GetCurrentDirectory()) //From NuGet Package Microsoft.Extensions.Configuration.Json
+                     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                     .Build();
+
+            var serviceCollection = new ServiceCollection();
+
+            ConfigureServices(serviceCollection, config);
+
+            _serviceProvider = serviceCollection.BuildServiceProvider();
+
+            _mover = _serviceProvider.GetService<DiscordChatMover>();
+        }
+
+        private static void ConfigureServices(IServiceCollection serviceCollection, IConfiguration config)
+        {
+            var settings = config.Get<Settings>();
+            serviceCollection.AddSingleton(settings);
+
+            serviceCollection.AddLogging(loggerBuilder =>
+            {
+                loggerBuilder.ClearProviders();
+                loggerBuilder.SetMinimumLevel(LogLevel.Debug);
+                loggerBuilder.AddNLog(config);
+            });
+
+            serviceCollection.AddTransient<DiscordChatMover>();
+        }
+
+        [Test]
+        public async Task HandleReadyAsync_MovesNeeded_MovesHappened()
+        {
+            // Arrange
+            var rcon = A.Fake<RCONWrapper>();
+            var client = A.Fake<DiscordSocketClientWrapper>();
+            var tcs = new TaskCompletionSource<bool>();
+            var ctSource = new CancellationTokenSource();
+            var settings = _serviceProvider.GetService<Settings>();
+
+            var guild = A.Fake<ISocketGuildWrapper>();
+
+            A.CallTo(() => client.GetGuild(settings.DiscordSettings.GuildId))
+                .Returns(guild);
+            A.CallTo(() => rcon.SendCommandAsync<SmCvar>("sm_cvar mp_gamemode"))
+                .Returns(new SmCvar
+                {
+                    Name = "mp_gamemode",
+                    Value = "versus"
+                });
+            A.CallTo(() => rcon.SendCommandAsync<PrintInfo>("sm_printinfo"))
+                .Returns(new PrintInfo
+                {
+                    Players = new List<PrintInfoPlayer>
+                    {
+                        // Survivor team
+                        new PrintInfoPlayer
+                        {
+                            Name = settings.UserMappings[0].Name,
+                            ClientIndex = 1,
+                            SteamId = settings.UserMappings[0].SteamId,
+                            TeamIndex = 2,
+                            TeamName = "Survivor",
+                        },
+                        new PrintInfoPlayer
+                        {
+                            Name = settings.UserMappings[1].Name,
+                            ClientIndex = 2,
+                            SteamId = settings.UserMappings[1].SteamId,
+                            TeamIndex = 2,
+                            TeamName = "Survivor",
+                        },
+                        new PrintInfoPlayer
+                        {
+                            Name = settings.UserMappings[2].Name,
+                            ClientIndex = 3,
+                            SteamId = settings.UserMappings[2].SteamId,
+                            TeamIndex = 2,
+                            TeamName = "Survivor",
+                        },
+                        new PrintInfoPlayer
+                        {
+                            Name = settings.UserMappings[3].Name,
+                            ClientIndex = 4,
+                            SteamId = settings.UserMappings[3].SteamId,
+                            TeamIndex = 2,
+                            TeamName = "Survivor",
+                        },
+
+                        // Infected team
+                        new PrintInfoPlayer
+                        {
+                            Name = settings.UserMappings[4].Name,
+                            ClientIndex = 5,
+                            SteamId = settings.UserMappings[4].SteamId,
+                            TeamIndex = 3,
+                            TeamName = "Infected",
+                        },
+                        new PrintInfoPlayer
+                        {
+                            Name = settings.UserMappings[5].Name,
+                            ClientIndex = 6,
+                            SteamId = settings.UserMappings[5].SteamId,
+                            TeamIndex = 3,
+                            TeamName = "Infected",
+                        },
+                        new PrintInfoPlayer
+                        {
+                            Name = settings.UserMappings[6].Name,
+                            ClientIndex = 7,
+                            SteamId = settings.UserMappings[6].SteamId,
+                            TeamIndex = 3,
+                            TeamName = "Infected",
+                        },
+                        new PrintInfoPlayer
+                        {
+                            Name = settings.UserMappings[7].Name,
+                            ClientIndex = 8,
+                            SteamId = settings.UserMappings[7].SteamId,
+                            TeamIndex = 3,
+                            TeamName = "Infected",
+                        },
+                    }
+                });
+
+            // General / Survivor voice channel
+            var primaryChannelId = settings.DiscordSettings.Channels["primary"].Id;
+            var primaryVoiceChannel = A.Fake<ISocketVoiceChannelWrapper>(ob => ob.Named("Primary (General\\Survivor)"));
+            var primaryRawVoiceChannel = A.Fake<IVoiceChannel>();
+            var primaryVoiceChannelUsers = 
+            A.CallTo(() => primaryVoiceChannel.Id).Returns(primaryChannelId);
+            A.CallTo(() => guild.GetVoiceChannel(primaryChannelId))
+                .Returns(primaryVoiceChannel);
+            A.CallTo(() => guild.GetVoiceChannelAsync(primaryChannelId, A<CacheMode>._, A<RequestOptions>._))
+                .Returns(Task.FromResult(primaryRawVoiceChannel));
+
+            // Infected voice channel
+            var secondaryChannelId = settings.DiscordSettings.Channels["secondary"].Id;
+            var secondaryVoiceChannel = A.Fake<ISocketVoiceChannelWrapper>(ob => ob.Named("Secondary (Infected)"));
+            var secondaryRawVoiceChannel = A.Fake<IVoiceChannel>();
+            A.CallTo(() => secondaryVoiceChannel.Id).Returns(secondaryChannelId);
+            A.CallTo(() => guild.GetVoiceChannel(secondaryChannelId))
+                .Returns(secondaryVoiceChannel);
+            A.CallTo(() => guild.GetVoiceChannelAsync(secondaryChannelId, A<CacheMode>._, A<RequestOptions>._))
+                .Returns(Task.FromResult(secondaryRawVoiceChannel));
+
+            // Maps to a user on the Infected team, but in the Survivor (primary) voice channel.
+            var socketGuildUser1 = A.Fake<ISocketGuildUserWrapper>(ob => ob.Named("User 1 (on Infected team)"));
+            A.CallTo(() => socketGuildUser1.Id)
+                .Returns(settings.UserMappings[4].DiscordId);
+            A.CallTo(() => socketGuildUser1.VoiceChannel)
+                .Returns(primaryVoiceChannel);
+
+            // Maps to a user on the Survivor team, but in the Infected voice channel.
+            var socketGuildUser2 = A.Fake<ISocketGuildUserWrapper>(ob => ob.Named("User 2 (on Survivor team)"));
+            A.CallTo(() => socketGuildUser2.Id)
+                .Returns(settings.UserMappings[0].DiscordId);
+            A.CallTo(() => socketGuildUser2.VoiceChannel)
+                .Returns(secondaryVoiceChannel);
+
+            A.CallTo(() => guild.Users)
+                .Returns(new List<ISocketGuildUserWrapper>
+                {
+                    socketGuildUser1,
+                    socketGuildUser2,
+                }.AsReadOnly());
+
+            // Set up the raw call results.
+            var primaryChannelRawUser = A.Fake<IGuildUser>();
+            A.CallTo(() => primaryChannelRawUser.Id)
+                .Returns(socketGuildUser1.Id);
+            A.CallTo(() => primaryRawVoiceChannel.GetUsersAsync(A<CacheMode>._, A<RequestOptions>._))
+                .Returns(AsReadOnlyAsyncEnumerable(primaryChannelRawUser));
+
+            var secondaryChannelRawUser = A.Fake<IGuildUser>();
+            A.CallTo(() => secondaryChannelRawUser.Id)
+                .Returns(socketGuildUser2.Id);
+            A.CallTo(() => secondaryRawVoiceChannel.GetUsersAsync(A<CacheMode>._, A<RequestOptions>._))
+                .Returns(AsReadOnlyAsyncEnumerable(secondaryChannelRawUser));
+
+            _mover._client = client;
+            _mover._guild = guild;
+            _mover._primaryVoiceChannel = primaryVoiceChannel;
+            _mover._secondaryVoiceChannel = secondaryVoiceChannel;
+
+            // Act
+            await _mover.MovePlayersToCorrectChannelsAsync(rcon, CancellationToken.None);
+
+            // Assert
+            A.CallTo(() => socketGuildUser1.ModifyAsync(A<Action<GuildUserProperties>>._, null))
+                .MustHaveHappenedOnceExactly();
+            A.CallTo(() => socketGuildUser2.ModifyAsync(A<Action<GuildUserProperties>>._, null))
+                .MustHaveHappenedOnceExactly();
+        }
+
+        private static IAsyncEnumerable<IReadOnlyCollection<T>> AsReadOnlyAsyncEnumerable<T>(params T[] values)
+        {
+            List<T> a = new List<T>(values);
+            List<IReadOnlyCollection<T>> b = new List<IReadOnlyCollection<T>>(1)
+            {
+                a.AsReadOnly()
+            };
+            IAsyncEnumerable<IReadOnlyCollection<T>> c = b.ToAsyncEnumerable();
+            return c;
+        }
+    }
+}
