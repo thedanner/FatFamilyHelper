@@ -73,9 +73,9 @@ namespace Left4DeadHelper
 
             // TODO listen for voice channel changes from the server, or config file changes.
             _primaryVoiceChannel = _guild.GetVoiceChannel(_settings.DiscordSettings.Channels["primary"].Id);
-            if (_primaryVoiceChannel == null) throw new Exception("Bad ChannelIdPrimary");
+            if (_primaryVoiceChannel == null) throw new Exception("Bad primary channel ID in config.");
             _secondaryVoiceChannel = _guild.GetVoiceChannel(_settings.DiscordSettings.Channels["secondary"].Id);
-            if (_secondaryVoiceChannel == null) throw new Exception("Bad ChannelIdSecondary");
+            if (_secondaryVoiceChannel == null) throw new Exception("Bad secondary channel ID in config.");
         }
 
         private Task ReadyHandlerWithSignalAsync(TaskCompletionSource<bool> readyComplete)
