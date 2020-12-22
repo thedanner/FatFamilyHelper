@@ -4,7 +4,9 @@ using Left4DeadHelper.Models;
 using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Left4DeadHelper.Tests.Integration
@@ -92,7 +94,27 @@ namespace Left4DeadHelper.Tests.Integration
             await tsc.Task;
 
             var guild = client.GetGuild(_guildId);
-            var roles = guild.Roles;
+            var allRolesSorted = new List<SocketRole>(guild.Roles.OrderByDescending(r => r.Position));
+
+            var gradientRoles = new List<SocketRole>();
+
+            var adding = false;
+
+            foreach (var role in allRolesSorted)
+            {
+                if (role.Name == "Parents") adding = true;
+
+                if (adding)
+                {
+                    gradientRoles.Add(role);
+                }
+
+                if (role.Name == "Titanfall Pilots")
+                {
+                    adding = false;
+                    break;
+                }
+            }
         }
     }
 }
