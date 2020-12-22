@@ -245,7 +245,7 @@ namespace Left4DeadHelper
                 {
                     _logger.LogDebug("Moving {0} ({1}) to other voice channel (from {2} to {3}).",
                         discordAccount.Username, discordAccount.Id,
-                        discordAccount.VoiceChannel.Name, intendedChannel.Name);
+                        currentVoiceChannel.Name, intendedChannel.Name);
 
                     await discordAccount.ModifyAsync(p => p.ChannelId = intendedChannel.Id);
 
