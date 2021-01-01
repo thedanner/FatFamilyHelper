@@ -23,8 +23,7 @@ namespace Left4DeadHelper.Discord.Modules
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        [Command]
-        [Alias("rcon")]
+        [Command("rcon")]
         [Summary("Tests rcon connectivity.")]
         [RequireUserPermission(GuildPermission.MoveMembers)] // Same as MoveChannelsModule.
         public async Task HandleCommandAsync(string subcommand)
