@@ -28,6 +28,8 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
         ISocketGuildChannelWrapper? EmbedChannel { get; }
         IReadOnlyCollection<ISocketGuildUserWrapper>? Users { get; }
 
+        new IReadOnlyCollection<SocketRole> Roles { get; }
+
         Task<RestCategoryChannel> CreateCategoryChannelAsync(string name, Action<GuildChannelProperties>? func = null, RequestOptions? options = null);
         IAsyncEnumerable<IReadOnlyCollection<RestAuditLogEntry>> GetAuditLogsAsync(int limit, RequestOptions? options = null, ulong? beforeId = null, ulong? userId = null, ActionType? actionType = null);
         SocketCategoryChannel GetCategoryChannel(ulong id);

@@ -120,7 +120,8 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
 
         public virtual IReadOnlyCollection<string> Features => _socketGuild.Features;
 
-        public virtual IReadOnlyCollection<IRole> Roles => _socketGuild.Roles;
+        public virtual IReadOnlyCollection<SocketRole> Roles => _socketGuild.Roles;
+        IReadOnlyCollection<IRole> IGuild.Roles => ((IGuild) _socketGuild).Roles;
 
         public virtual PremiumTier PremiumTier => _socketGuild.PremiumTier;
 
