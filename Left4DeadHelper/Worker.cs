@@ -73,7 +73,8 @@ namespace Left4DeadHelper
                 }
 
                 await _client.SetStatusAsync(UserStatus.Online);
-
+                await _client.SetGameAsync(".l4d / !l4d2");
+                
                 _logger.LogInformation("Client ready; waiting for commands.");
             }
             catch (Exception e)
