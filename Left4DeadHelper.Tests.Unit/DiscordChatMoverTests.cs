@@ -57,14 +57,46 @@ namespace Left4DeadHelper.Tests.Unit
         }
 
         [Test]
-        public async Task HandleReadyAsync_MovesNeeded_MovesHappened()
+        [TestCase(false)]
+        [TestCase(true)]
+        public async Task MovePlayersToCorrectChannelsAsync_MovesNeeded_MovesHappened(bool useIntermediateChannel)
         {
             // Arrange
             var rcon = A.Fake<RCONWrapper>();
             var client = A.Fake<DiscordSocketClientWrapper>();
             var tcs = new TaskCompletionSource<bool>();
             var ctSource = new CancellationTokenSource();
-            var settings = _serviceProvider.GetService<Settings>();
+            var settings = new Settings
+            {
+                DiscordSettings = new DiscordSettings
+                {
+                    BotToken = "THE_BOT_TOKEN",
+                    GuildId = 42,
+                    Prefixes = new char[] { '!', '.' },
+                    Channels = new DiscordVoiceChannels
+                    {
+                        Primary = new DiscordEntity
+                        {
+                            Id = 10,
+                            Name = "Channel 1",
+                        },
+                        Secondary = new DiscordEntity
+                        {
+                            Id = 20,
+                            Name = "Channel 2",
+                        }
+                    }
+                }
+            };
+
+            if (useIntermediateChannel)
+            {
+                settings.DiscordSettings.Channels.Intermediate = new DiscordEntity
+                {
+                    Id = 30,
+                    Name = "Intermediate",
+                };
+            }
 
             var guild = A.Fake<ISocketGuildWrapper>();
 
@@ -152,7 +184,7 @@ namespace Left4DeadHelper.Tests.Unit
                 });
 
             // General / Survivor voice channel
-            var primaryChannelId = settings.DiscordSettings.Channels["primary"].Id;
+            var primaryChannelId = settings.DiscordSettings.Channels.Primary.Id;
             var primaryVoiceChannel = A.Fake<ISocketVoiceChannelWrapper>(ob => ob.Named("Primary (General\\Survivor)"));
             var primaryRawVoiceChannel = A.Fake<IVoiceChannel>();
             var primaryVoiceChannelUsers = 
@@ -163,7 +195,7 @@ namespace Left4DeadHelper.Tests.Unit
                 .Returns(Task.FromResult(primaryRawVoiceChannel));
 
             // Infected voice channel
-            var secondaryChannelId = settings.DiscordSettings.Channels["secondary"].Id;
+            var secondaryChannelId = settings.DiscordSettings.Channels.Secondary.Id;
             var secondaryVoiceChannel = A.Fake<ISocketVoiceChannelWrapper>(ob => ob.Named("Secondary (Infected)"));
             var secondaryRawVoiceChannel = A.Fake<IVoiceChannel>();
             A.CallTo(() => secondaryVoiceChannel.Id).Returns(secondaryChannelId);
@@ -171,6 +203,23 @@ namespace Left4DeadHelper.Tests.Unit
                 .Returns(secondaryVoiceChannel);
             A.CallTo(() => guild.GetVoiceChannelAsync(secondaryChannelId, A<CacheMode>._, A<RequestOptions>._))
                 .Returns(Task.FromResult(secondaryRawVoiceChannel));
+
+            ulong intermediateChannelId = 0;
+            ISocketVoiceChannelWrapper intermediateVoiceChannel = null;
+            IVoiceChannel intermediateRawVoiceChannel = null;
+
+            var intermediateChannel = settings.DiscordSettings.Channels.Intermediate;
+            if (intermediateChannel != null)
+            {
+                intermediateChannelId = intermediateChannel.Id;
+                intermediateVoiceChannel = A.Fake<ISocketVoiceChannelWrapper>(ob => ob.Named("AFK Channel (intermediate)"));
+                intermediateRawVoiceChannel = A.Fake<IVoiceChannel>();
+                A.CallTo(() => intermediateVoiceChannel.Id).Returns(intermediateChannelId);
+                A.CallTo(() => guild.GetVoiceChannel(intermediateChannelId))
+                    .Returns(intermediateVoiceChannel);
+                A.CallTo(() => guild.GetVoiceChannelAsync(intermediateChannelId, A<CacheMode>._, A<RequestOptions>._))
+                    .Returns(Task.FromResult(intermediateRawVoiceChannel));
+            }
 
             // Maps to a user on the Infected team, but in the Survivor (primary) voice channel.
             var socketGuildUser1 = A.Fake<ISocketGuildUserWrapper>(ob => ob.Named("User 1 (on Infected team)"));
@@ -210,15 +259,18 @@ namespace Left4DeadHelper.Tests.Unit
             _mover._guild = guild;
             _mover._primaryVoiceChannel = primaryVoiceChannel;
             _mover._secondaryVoiceChannel = secondaryVoiceChannel;
+            _mover._intermediateVoiceChannel = intermediateVoiceChannel; // may be null
 
             // Act
             await _mover.MovePlayersToCorrectChannelsAsync(rcon, CancellationToken.None);
 
             // Assert
+            var expectedCount = useIntermediateChannel ? 2 : 1;
+
             A.CallTo(() => socketGuildUser1.ModifyAsync(A<Action<GuildUserProperties>>._, null))
-                .MustHaveHappenedOnceExactly();
+                .MustHaveHappened(expectedCount, Times.Exactly);
             A.CallTo(() => socketGuildUser2.ModifyAsync(A<Action<GuildUserProperties>>._, null))
-                .MustHaveHappenedOnceExactly();
+                .MustHaveHappened(expectedCount, Times.Exactly);
         }
 
         private static IAsyncEnumerable<IReadOnlyCollection<T>> AsReadOnlyAsyncEnumerable<T>(params T[] values)

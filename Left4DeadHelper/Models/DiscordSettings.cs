@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
-namespace Left4DeadHelper.Models
+﻿namespace Left4DeadHelper.Models
 {
     public class DiscordSettings
     {
@@ -9,12 +6,12 @@ namespace Left4DeadHelper.Models
         {
             BotToken = "";
             Prefixes = new char[0];
-            Channels = new Dictionary<string, DiscordEntity>();
+            Channels = new DiscordVoiceChannels();
         }
 
         public string BotToken { get; set; }
         public ulong GuildId { get; set; }
         public char[] Prefixes { get; set; }
-        public Dictionary<string, DiscordEntity> Channels { get; set; }
+        public DiscordVoiceChannels Channels { get; set; }
     }
 }
