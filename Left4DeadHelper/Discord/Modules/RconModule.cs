@@ -27,12 +27,18 @@ namespace Left4DeadHelper.Discord.Modules
         [Alias("rcon")]
         [Summary("Tests rcon connectivity.")]
         [RequireUserPermission(GuildPermission.MoveMembers)] // Same as MoveChannelsModule.
-        public async Task HandleCommandAsync()
+        public async Task HandleCommandAsync(string subcommand)
         {
             try
             {
                 var message = Context.Message;
                 if (message == null) return;
+
+                if (!"test".Equals(subcommand, StringComparison.CurrentCultureIgnoreCase))
+                {
+                    await ReplyAsync("Only the 'test' command is currently supported.");
+                    return;
+                }
 
                 using (var rcon = _serviceProvider.GetRequiredService<IRCONWrapper>())
                 {
