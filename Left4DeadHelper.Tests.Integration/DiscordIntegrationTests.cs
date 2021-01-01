@@ -21,6 +21,7 @@ namespace Left4DeadHelper.Tests.Integration
         private ulong _guildId;
         private ulong _primaryChannelId;
         private ulong _secondaryChannelId;
+        private ulong _intermediateChannelId;
 
         private Task Log(LogMessage msg)
         {
@@ -41,8 +42,9 @@ namespace Left4DeadHelper.Tests.Integration
             _botToken = _settings.DiscordSettings.BotToken;
             _guildId = _settings.DiscordSettings.GuildId;
 
-            _primaryChannelId = _settings.DiscordSettings.Channels["primary"].Id;
-            _secondaryChannelId = _settings.DiscordSettings.Channels["secondary"].Id;
+            _primaryChannelId = _settings.DiscordSettings.Channels.Primary.Id;
+            _secondaryChannelId = _settings.DiscordSettings.Channels.Secondary.Id;
+            _intermediateChannelId = _settings.DiscordSettings.Channels.Intermediate.Id;
         }
 
         [Test]
@@ -70,6 +72,7 @@ namespace Left4DeadHelper.Tests.Integration
 
             var primaryChannel = guild.GetVoiceChannel(_primaryChannelId);
             var secondaryChannel = guild.GetVoiceChannel(_secondaryChannelId);
+            var intermediateChannel = guild.GetVoiceChannel(_intermediateChannelId);
         }
 
         [Test]
