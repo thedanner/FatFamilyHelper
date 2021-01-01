@@ -5,6 +5,7 @@ using Left4DeadHelper.Wrappers.DiscordNet;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,9 +42,35 @@ namespace Left4DeadHelper
             {
                 await _commandHandler.InstallCommandsAsync();
 
-                await _mover.StartAsync(
-                    new DiscordSocketClientWrapper(_client),
-                    cancellationToken);
+                // Try every 15 seconds (4 times a minute) for 15 minutes.
+                const int maxAttempts = 4 * 15;
+                var attempts = 0;
+                var retry = true;
+                while (retry)
+                {
+                    try
+                    {
+                        await _mover.StartAsync(
+                            new DiscordSocketClientWrapper(_client),
+                            cancellationToken);
+
+                        retry = false;
+                    }
+                    catch (SocketException e)
+                    {
+                        if (attempts >= maxAttempts)
+                        {
+                            _logger.LogError("Out of retries; stopping.");
+                            throw;
+                        }
+
+                        _logger.LogWarning(e, "SocketException while trying to connect. Sleeping for a bit.");
+
+                        await Task.Delay(TimeSpan.FromSeconds(15));
+
+                        attempts++;
+                    }
+                }
 
                 await _client.SetStatusAsync(UserStatus.Online);
 
