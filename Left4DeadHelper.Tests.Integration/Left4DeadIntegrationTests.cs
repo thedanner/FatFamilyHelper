@@ -15,11 +15,6 @@ namespace Left4DeadHelper.Tests.Integration
     {
         private Settings _settings;
 
-        private string _botToken;
-        private ulong _guildId;
-        private ulong _primaryChannelId;
-        private ulong _secondaryChannelId;
-
         [SetUp]
         public void SetUp()
         {
@@ -29,12 +24,6 @@ namespace Left4DeadHelper.Tests.Integration
                 .Build();
 
             _settings = config.Get<Settings>();
-
-            _botToken = _settings.DiscordSettings.BotToken;
-            _guildId = _settings.DiscordSettings.GuildId;
-
-            _primaryChannelId = _settings.DiscordSettings.Channels["primary"].Id;
-            _secondaryChannelId = _settings.DiscordSettings.Channels["secondary"].Id;
         }
 
         [Test]
