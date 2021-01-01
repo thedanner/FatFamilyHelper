@@ -2,7 +2,6 @@
 using Discord.WebSocket;
 using Left4DeadHelper.Helpers;
 using Left4DeadHelper.Models;
-using Left4DeadHelper.Wrappers.DiscordNet;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -18,13 +17,11 @@ namespace Left4DeadHelper.Discord.Modules
         private const string Command = "roles";
 
         public ILogger<PickMapModule> Logger { get; }
-        public IDiscordSocketClientWrapper Client { get; }
         public Settings Settings { get; }
 
-        public RoleGradientModule(ILogger<PickMapModule> logger, IDiscordSocketClientWrapper client, Settings settings)
+        public RoleGradientModule(ILogger<PickMapModule> logger, Settings settings)
         {
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            Client = client ?? throw new ArgumentNullException(nameof(client));
             Settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
 
@@ -32,7 +29,7 @@ namespace Left4DeadHelper.Discord.Modules
         [Summary("Sets role colors!")]
         public async Task HandleCommandAsync()
         {
-            var guild = Client.GetGuild(Settings.DiscordSettings.GuildId);
+            var guild = Context.Client.GetGuild(Settings.DiscordSettings.GuildId);
 
             if (guild == null)
             {
