@@ -47,7 +47,7 @@ namespace Left4DeadHelper.Rcon
 
         public static PrintInfoPlayer? Parse(string line)
         {
-            // Output line is "[PI] %L<%i><%s>"
+            // Output line is "[PI] %L<%i><%s>" in SourceMod string formatting.
             // https://wiki.alliedmods.net/Format_Class_Functions_(SourceMod_Scripting)
             // %L expands to 1<2><3><> where 1 is the player's name, 2 is the player's userid,
             // and 3 is the player's Steam ID. If the client index is 0, the string will be: Console<0><Console><Console>
@@ -121,17 +121,14 @@ namespace Left4DeadHelper.Rcon
     {
         public static readonly string Prefix = "[PI] ";
 
-        public string Pattern => throw new System.NotImplementedException();
+        public string Pattern => throw new NotImplementedException();
 
         public bool IsMatch(string input)
         {
             return input.StartsWith(Prefix + "BEGIN") && input.EndsWith(Prefix + "END");
         }
 
-        public PrintInfo Load(GroupCollection groups)
-        {
-            throw new System.NotImplementedException();
-        }
+        public PrintInfo Load(GroupCollection groups) => throw new NotImplementedException();
 
         public PrintInfo Parse(string input)
         {
@@ -155,9 +152,6 @@ namespace Left4DeadHelper.Rcon
             return output;
         }
 
-        public PrintInfo Parse(Group group)
-        {
-            throw new System.NotImplementedException();
-        }
+        public PrintInfo Parse(Group group) => throw new NotImplementedException();
     }
 }
