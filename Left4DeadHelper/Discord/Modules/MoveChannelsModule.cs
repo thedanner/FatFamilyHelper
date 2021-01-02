@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Left4DeadHelper.Helpers;
+using Left4DeadHelper.Wrappers.DiscordNet;
 using Left4DeadHelper.Wrappers.Rcon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -40,20 +41,27 @@ namespace Left4DeadHelper.Discord.Modules
 
                     var mover = _serviceProvider.GetRequiredService<IDiscordChatMover>();
 
-                    var moveCount = await mover.MovePlayersToCorrectChannelsAsync(rcon, CancellationToken.None);
+                    var moveCount = await mover.MovePlayersToCorrectChannelsAsync(
+                        rcon, new DiscordSocketClientWrapper(Context.Client), CancellationToken.None);
+
+                    string replyMessage;
 
                     if (moveCount == -1)
                     {
-                        await ReplyAsync("Nobody was playing.");
+                        replyMessage = "Nobody was playing.";
                     }
                     else if (moveCount == 1)
                     {
-                        await ReplyAsync("1 player moved.");
+                        replyMessage = "1 player moved.";
                     }
                     else
                     {
-                        await ReplyAsync($"{moveCount} players moved.");
+                        replyMessage = $"{moveCount} players moved.";
                     }
+
+                    await ReplyAsync(replyMessage);
+
+                    return;
                 }
             }
             catch (Exception e)

@@ -18,7 +18,6 @@ namespace Left4DeadHelper
         private readonly ILogger<DiscordChatMover> _logger;
         private readonly Settings _settings;
 
-        internal IDiscordSocketClientWrapper? _client;
         internal ISocketGuildWrapper? _guild;
         internal ISocketVoiceChannelWrapper? _primaryVoiceChannel;
         internal ISocketVoiceChannelWrapper? _secondaryVoiceChannel;
@@ -32,19 +31,19 @@ namespace Left4DeadHelper
 
         public async Task StartAsync(IDiscordSocketClientWrapper client, CancellationToken cancellationToken)
         {
-            _client = client ?? throw new ArgumentNullException(nameof(client));
+            if (client == null) throw new ArgumentNullException(nameof(client));
 
             var readyComplete = new TaskCompletionSource<bool>();
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-            _client.Connected += async () => _logger.LogInformation("Discord client event: Connected");
+            client.Connected += async () => _logger.LogInformation("Discord client event: Connected");
 
             async Task initalReadyAsync() => await ReadyHandlerWithSignalAsync(readyComplete);
-            _client.Ready += initalReadyAsync;
+            client.Ready += initalReadyAsync;
 
-            _client.Disconnected += async (ex) => _logger.LogError(ex, "Discord client event: Disconnected");
-            _client.GuildAvailable += async (guild) => _logger.LogInformation("Discord client event: GuildAvailable");
-            _client.GuildMembersDownloaded += async (ex) => _logger.LogInformation("Discord client event: GuildMembersDownloaded");
-            _client.Log += async (logMessage) =>
+            client.Disconnected += async (ex) => _logger.LogError(ex, "Discord client event: Disconnected");
+            client.GuildAvailable += async (guild) => _logger.LogInformation("Discord client event: GuildAvailable");
+            client.GuildMembersDownloaded += async (ex) => _logger.LogInformation("Discord client event: GuildMembersDownloaded");
+            client.Log += async (logMessage) =>
             {
                 var level = logMessage.Severity.ToLogLevel();
 
@@ -54,22 +53,22 @@ namespace Left4DeadHelper
                     "Discord client event: Log: (Source: {0}): {1}",
                     logMessage.Source, logMessage.Message);
             };
-            _client.LoggedIn += async () => _logger.LogInformation("Discord client event: LoggedIn");
-            _client.LoggedOut += async () => _logger.LogInformation("Discord client event: LoggedOut");
+            client.LoggedIn += async () => _logger.LogInformation("Discord client event: LoggedIn");
+            client.LoggedOut += async () => _logger.LogInformation("Discord client event: LoggedOut");
 
-            await _client.LoginAsync(TokenType.Bot, _settings.DiscordSettings.BotToken);
-            await _client.StartAsync();
+            await client.LoginAsync(TokenType.Bot, _settings.DiscordSettings.BotToken);
+            await client.StartAsync();
 
             await readyComplete.Task;
 
-            _client.Ready -= initalReadyAsync;
-            _client.Ready += async () =>
+            client.Ready -= initalReadyAsync;
+            client.Ready += async () =>
             {
                 _logger.LogInformation("Discord client event: Ready");
             };
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 
-            _guild = _client.GetGuild(_settings.DiscordSettings.GuildId);
+            _guild = client.GetGuild(_settings.DiscordSettings.GuildId);
             if (_guild == null) throw new Exception("guild is null");
 
             // TODO listen for voice channel changes from the server, or config file changes.
@@ -96,11 +95,11 @@ namespace Left4DeadHelper
             return Task.FromResult(0);
         }
 
-        public async Task<int> MovePlayersToCorrectChannelsAsync(IRCONWrapper rcon, CancellationToken cancellationToken)
+        public async Task<int> MovePlayersToCorrectChannelsAsync(IRCONWrapper rcon, IDiscordSocketClientWrapper client, CancellationToken cancellationToken)
         {
             if (rcon is null) throw new ArgumentNullException(nameof(rcon));
+            if (client is null) throw new ArgumentNullException(nameof(client));
 
-            if (_client is null) throw new Exception(nameof(_client) + " not set. Run StartAsync() first.");
             if (_guild is null) throw new Exception(nameof(_guild) + " not set. Run StartAsync() first.");
             if (_primaryVoiceChannel is null) throw new Exception(nameof(_primaryVoiceChannel) + " not set. Run StartAsync() first.");
             if (_secondaryVoiceChannel is null) throw new Exception(nameof(_secondaryVoiceChannel) + " not set. Run StartAsync() first.");

@@ -22,7 +22,6 @@ namespace Left4DeadHelper.Tests.Unit
     public class DiscordHelperTests
     {
         private ServiceProvider _serviceProvider;
-        private DiscordChatMover _mover;
 
         [SetUp]
         public void SetUp()
@@ -37,23 +36,16 @@ namespace Left4DeadHelper.Tests.Unit
             ConfigureServices(serviceCollection, config);
 
             _serviceProvider = serviceCollection.BuildServiceProvider();
-
-            _mover = _serviceProvider.GetService<DiscordChatMover>();
         }
 
         private static void ConfigureServices(IServiceCollection serviceCollection, IConfiguration config)
         {
-            var settings = config.Get<Settings>();
-            serviceCollection.AddSingleton(settings);
-
             serviceCollection.AddLogging(loggerBuilder =>
             {
                 loggerBuilder.ClearProviders();
                 loggerBuilder.SetMinimumLevel(LogLevel.Debug);
                 loggerBuilder.AddNLog(config);
             });
-
-            serviceCollection.AddTransient<DiscordChatMover>();
         }
 
         [Test]
@@ -86,7 +78,58 @@ namespace Left4DeadHelper.Tests.Unit
                             Name = "Channel 2",
                         }
                     }
-                }
+                },
+                UserMappings = new UserMapping[]
+                {
+                    new UserMapping
+                    {
+                        Name = "Player 100",
+                        SteamId = "STEAM_0:0_100",
+                        DiscordId = 100,
+                    },
+                    new UserMapping
+                    {
+                        Name = "Player 200",
+                        SteamId = "STEAM_0:0_200",
+                        DiscordId = 200,
+                    },
+                    new UserMapping
+                    {
+                        Name = "Player 300",
+                        SteamId = "STEAM_0:0_300",
+                        DiscordId = 300,
+                    },
+                    new UserMapping
+                    {
+                        Name = "Player 400",
+                        SteamId = "STEAM_0:0_400",
+                        DiscordId = 400,
+                    },
+                    new UserMapping
+                    {
+                        Name = "Player 500",
+                        SteamId = "STEAM_0:0_500",
+                        DiscordId = 500,
+                    },
+                    new UserMapping
+                    {
+                        Name = "Player 600",
+                        SteamId = "STEAM_0:0_600",
+                        DiscordId = 600,
+                    },
+                    new UserMapping
+                    {
+                        Name = "Player 700",
+                        SteamId = "STEAM_0:0_700",
+                        DiscordId = 700,
+                    },
+                    new UserMapping
+                    {
+                        Name = "Player 800",
+                        SteamId = "STEAM_0:0_800",
+                        DiscordId = 800,
+                    }
+                },
             };
 
             if (useIntermediateChannel)
@@ -255,14 +298,18 @@ namespace Left4DeadHelper.Tests.Unit
             A.CallTo(() => secondaryRawVoiceChannel.GetUsersAsync(A<CacheMode>._, A<RequestOptions>._))
                 .Returns(AsReadOnlyAsyncEnumerable(secondaryChannelRawUser));
 
-            _mover._client = client;
-            _mover._guild = guild;
-            _mover._primaryVoiceChannel = primaryVoiceChannel;
-            _mover._secondaryVoiceChannel = secondaryVoiceChannel;
-            _mover._intermediateVoiceChannel = intermediateVoiceChannel; // may be null
+            var _mover = new DiscordChatMover(
+                _serviceProvider.GetRequiredService<ILogger<DiscordChatMover>>(),
+                settings)
+            {
+                _guild = guild,
+                _primaryVoiceChannel = primaryVoiceChannel,
+                _secondaryVoiceChannel = secondaryVoiceChannel,
+                _intermediateVoiceChannel = intermediateVoiceChannel // may be null
+            };
 
             // Act
-            await _mover.MovePlayersToCorrectChannelsAsync(rcon, CancellationToken.None);
+            await _mover.MovePlayersToCorrectChannelsAsync(rcon, client, CancellationToken.None);
 
             // Assert
             var expectedCount = useIntermediateChannel ? 2 : 1;

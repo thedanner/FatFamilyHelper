@@ -134,15 +134,16 @@ namespace Left4DeadHelper
 
                     await commandHandler.InstallCommandsAsync();
 
-                    await mover.StartAsync(
-                        new DiscordSocketClientWrapper(client),
-                        ctSource.Token);
+                    var wrappedClient = new DiscordSocketClientWrapper(client);
+
+                    await mover.StartAsync(wrappedClient, ctSource.Token);
 
                     using var rcon = serviceProvider.GetRequiredService<IRCONWrapper>();
 
                     await rcon.ConnectAsync();
 
-                    var moveCount = await mover.MovePlayersToCorrectChannelsAsync(rcon, ctSource.Token);
+                    var moveCount = await mover.MovePlayersToCorrectChannelsAsync(
+                        rcon, wrappedClient, ctSource.Token);
                 }
 
                 return ExitCode.Success;
