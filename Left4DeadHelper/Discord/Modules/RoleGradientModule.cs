@@ -1,4 +1,5 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
 using Left4DeadHelper.Helpers;
 using Left4DeadHelper.Models;
@@ -27,6 +28,7 @@ namespace Left4DeadHelper.Discord.Modules
 
         [Command(Command)]
         [Summary("Sets role colors!")]
+        [RequireUserPermission(GuildPermission.ManageRoles)]
         public async Task HandleCommandAsync()
         {
             var guild = Context.Client.GetGuild(Settings.DiscordSettings.GuildId);
