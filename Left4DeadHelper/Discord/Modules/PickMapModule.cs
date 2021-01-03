@@ -87,7 +87,7 @@ namespace Left4DeadHelper.Discord.Modules
                 var rollResult = _random.RollDice((byte)allMaps.Count);
                 var map = allMaps[rollResult - 1];
 
-                await ReplyAsync($"Among all the maps, you should play **{map}**!");
+                await ReplyAsync($"You should play **{map}**! (from all maps)");
 
                 return;
             }
@@ -98,7 +98,7 @@ namespace Left4DeadHelper.Discord.Modules
                 var rollResult = _random.RollDice((byte)categoryMaps.Count);
                 var map = categoryMaps[rollResult - 1];
 
-                await ReplyAsync($"Among the maps in \"{firstArg}\", you should play **{map}**!");
+                await ReplyAsync($"You should play **{map}**! (from the\"{firstArg}\" list)");
                 
                 return;
             }
