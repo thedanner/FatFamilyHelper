@@ -21,7 +21,6 @@ namespace Left4DeadHelper
         internal ISocketGuildWrapper? _guild;
         internal ISocketVoiceChannelWrapper? _primaryVoiceChannel;
         internal ISocketVoiceChannelWrapper? _secondaryVoiceChannel;
-        internal ISocketVoiceChannelWrapper? _intermediateVoiceChannel;
 
         public DiscordChatMover(ILogger<DiscordChatMover> logger, Settings settings)
         {
@@ -76,16 +75,6 @@ namespace Left4DeadHelper
             if (_primaryVoiceChannel == null) throw new Exception("Bad primary channel ID in config.");
             _secondaryVoiceChannel = _guild.GetVoiceChannel(_settings.DiscordSettings.Channels.Secondary.Id);
             if (_secondaryVoiceChannel == null) throw new Exception("Bad secondary channel ID in config.");
-
-            var intermediateChannelSetting = _settings.DiscordSettings.Channels.Intermediate;
-            if (intermediateChannelSetting != null)
-            {
-                _intermediateVoiceChannel = _guild.GetVoiceChannel(intermediateChannelSetting.Id);
-                if (_intermediateVoiceChannel == null)
-                {
-                    throw new Exception("Bad intermediate channel ID in config. Note that the intermediate channel is optional.");
-                }
-            }
         }
 
         private Task ReadyHandlerWithSignalAsync(TaskCompletionSource<bool> readyComplete)
@@ -257,22 +246,9 @@ namespace Left4DeadHelper
                         discordAccount.Username, discordAccount.Id,
                         currentVoiceChannel.Name, intendedChannel.Name);
 
-                    if (_intermediateVoiceChannel != null)
-                    {
-                        // TODO Some people lose incoming audio from some, but not always all, Discord users
-                        // in the same channel after they were moved by the bot.
-                        // A delay between moves on its own wasn't enough to avoid the issue, so we do a delay and
-                        // move to an intermediate channel, typically the AFK channel, and then a move to the intended channel.
-                        // This issue never happened to come up on manual moves so it could be some sort of race condition?
-
-                        await discordAccount.ModifyAsync(p => p.ChannelId = _intermediateVoiceChannel.Id);
-
-                        await Task.Delay(TimeSpan.FromMilliseconds(500));
-                    }
-
                     await discordAccount.ModifyAsync(p => p.ChannelId = intendedChannel.Id);
 
-                    await Task.Delay(TimeSpan.FromMilliseconds(500));
+                    await Task.Delay(TimeSpan.FromSeconds(1));
 
                     moveCount++;
                 }

@@ -10,6 +10,5 @@
 
         public DiscordEntity Primary { get; set; }
         public DiscordEntity Secondary { get; set; }
-        public DiscordEntity? Intermediate { get; set; }
     }
 }
