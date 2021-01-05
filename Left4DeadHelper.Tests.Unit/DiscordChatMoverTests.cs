@@ -61,19 +61,25 @@ namespace Left4DeadHelper.Tests.Unit
                 DiscordSettings = new DiscordSettings
                 {
                     BotToken = "THE_BOT_TOKEN",
-                    GuildId = 42,
                     Prefixes = new char[] { '!', '.' },
-                    Channels = new DiscordVoiceChannels
+                    Guilds = new GuildSettings[]
                     {
-                        Primary = new DiscordEntity
+                        new GuildSettings
                         {
-                            Id = 10,
-                            Name = "Channel 1",
-                        },
-                        Secondary = new DiscordEntity
+                        Id = 42,
+                        Channels = new DiscordVoiceChannels
                         {
-                            Id = 20,
-                            Name = "Channel 2",
+                            Primary = new DiscordEntity
+                            {
+                                Id = 10,
+                                Name = "Channel 1",
+                            },
+                            Secondary = new DiscordEntity
+                            {
+                                Id = 20,
+                                Name = "Channel 2",
+                            }
+                        }
                         }
                     }
                 },
@@ -129,10 +135,14 @@ namespace Left4DeadHelper.Tests.Unit
                     }
                 },
             };
+            var guildSettings = settings.DiscordSettings.Guilds.First();
 
             var guild = A.Fake<ISocketGuildWrapper>();
 
-            A.CallTo(() => client.GetGuild(settings.DiscordSettings.GuildId))
+            A.CallTo(() => guild.Id)
+                .Returns(guildSettings.Id);
+
+            A.CallTo(() => client.GetGuild(guildSettings.Id))
                 .Returns(guild);
             A.CallTo(() => rcon.SendCommandAsync<SmCvar>("sm_cvar mp_gamemode"))
                 .Returns(new SmCvar
@@ -216,7 +226,7 @@ namespace Left4DeadHelper.Tests.Unit
                 });
 
             // General / Survivor voice channel
-            var primaryChannelId = settings.DiscordSettings.Channels.Primary.Id;
+            var primaryChannelId = guildSettings.Channels.Primary.Id;
             var primaryVoiceChannel = A.Fake<ISocketVoiceChannelWrapper>(ob => ob.Named("Primary (General\\Survivor)"));
             var primaryRawVoiceChannel = A.Fake<IVoiceChannel>();
             var primaryVoiceChannelUsers = 
@@ -227,7 +237,7 @@ namespace Left4DeadHelper.Tests.Unit
                 .Returns(Task.FromResult(primaryRawVoiceChannel));
 
             // Infected voice channel
-            var secondaryChannelId = settings.DiscordSettings.Channels.Secondary.Id;
+            var secondaryChannelId = guildSettings.Channels.Secondary.Id;
             var secondaryVoiceChannel = A.Fake<ISocketVoiceChannelWrapper>(ob => ob.Named("Secondary (Infected)"));
             var secondaryRawVoiceChannel = A.Fake<IVoiceChannel>();
             A.CallTo(() => secondaryVoiceChannel.Id).Returns(secondaryChannelId);
@@ -272,15 +282,10 @@ namespace Left4DeadHelper.Tests.Unit
 
             var _mover = new DiscordChatMover(
                 _serviceProvider.GetRequiredService<ILogger<DiscordChatMover>>(),
-                settings)
-            {
-                _guild = guild,
-                _primaryVoiceChannel = primaryVoiceChannel,
-                _secondaryVoiceChannel = secondaryVoiceChannel,
-            };
+                settings);
 
             // Act
-            await _mover.MovePlayersToCorrectChannelsAsync(rcon, client, CancellationToken.None);
+            await _mover.MovePlayersToCorrectChannelsAsync(rcon, client, guild, CancellationToken.None);
 
             // Assert
             A.CallTo(() => socketGuildUser1.ModifyAsync(A<Action<GuildUserProperties>>._, null))

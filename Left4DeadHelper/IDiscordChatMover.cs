@@ -7,7 +7,9 @@ namespace Left4DeadHelper
 {
     public interface IDiscordChatMover
     {
-        Task StartAsync(IDiscordSocketClientWrapper client, CancellationToken cancellationToken);
-        Task<int> MovePlayersToCorrectChannelsAsync(IRCONWrapper rcon, IDiscordSocketClientWrapper client, CancellationToken cancellationToken);
+        Task<int> MovePlayersToCorrectChannelsAsync(
+            IRCONWrapper rcon,
+            IDiscordSocketClientWrapper client, ISocketGuildWrapper guild,
+            CancellationToken cancellationToken);
     }
 }

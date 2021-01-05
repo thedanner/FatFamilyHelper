@@ -32,8 +32,8 @@ namespace Left4DeadHelper.Discord.Modules
         {
             try
             {
-                var message = Context.Message;
-                if (message == null) return;
+                if (Context.Message == null) return;
+                if (Context.Guild == null) return;
 
                 using (var rcon = _serviceProvider.GetRequiredService<IRCONWrapper>())
                 {
@@ -42,7 +42,10 @@ namespace Left4DeadHelper.Discord.Modules
                     var mover = _serviceProvider.GetRequiredService<IDiscordChatMover>();
 
                     var moveCount = await mover.MovePlayersToCorrectChannelsAsync(
-                        rcon, new DiscordSocketClientWrapper(Context.Client), CancellationToken.None);
+                        rcon,
+                        new DiscordSocketClientWrapper(Context.Client),
+                        new SocketGuildWrapper(Context.Guild),
+                        CancellationToken.None);
 
                     string replyMessage;
 
