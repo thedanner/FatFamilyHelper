@@ -15,6 +15,7 @@ using NLog.Extensions.Logging;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -126,25 +127,29 @@ namespace Left4DeadHelper
                     e.Cancel = false;
                 };
 
+                var settings = serviceProvider.GetRequiredService<Settings>();
+                var guildSettings = settings.DiscordSettings.Guilds.First();
+
                 var mover = serviceProvider.GetRequiredService<IDiscordChatMover>();
 
-                using (var client = serviceProvider.GetRequiredService<DiscordSocketClient>())
-                {
-                    using var commandHandler = serviceProvider.GetRequiredService<CommandHandler>();
+                using var client = serviceProvider.GetRequiredService<DiscordSocketClient>();
+                using var commandHandler = serviceProvider.GetRequiredService<CommandHandler>();
 
-                    await commandHandler.InstallCommandsAsync();
+                await commandHandler.InstallCommandsAsync();
 
-                    var wrappedClient = new DiscordSocketClientWrapper(client);
+                var wrappedClient = new DiscordSocketClientWrapper(client);
 
-                    await mover.StartAsync(wrappedClient, ctSource.Token);
+                var bootstrapper = serviceProvider.GetRequiredService<IDiscordConnectionBootstrapper>();
+                await bootstrapper.StartAsync(wrappedClient, ctSource.Token);
 
-                    using var rcon = serviceProvider.GetRequiredService<IRCONWrapper>();
+                using var rcon = serviceProvider.GetRequiredService<IRCONWrapper>();
 
-                    await rcon.ConnectAsync();
+                await rcon.ConnectAsync();
 
-                    var moveCount = await mover.MovePlayersToCorrectChannelsAsync(
-                        rcon, wrappedClient, ctSource.Token);
-                }
+                var wrappedGuild = new SocketGuildWrapper(client.GetGuild(guildSettings.Id));
+
+                var moveCount = await mover.MovePlayersToCorrectChannelsAsync(
+                    rcon, wrappedClient, wrappedGuild, ctSource.Token);
 
                 return ExitCode.Success;
             }
@@ -196,9 +201,9 @@ namespace Left4DeadHelper
             // This type is thread-safe per MSDN.
             serviceCollection.AddSingleton<RNGCryptoServiceProvider>();
 
-            // TODO this isn't thread-safe. We're not using multiple threads for now, but be aware if that changes.
-            // This avoids having a bunch of different connections though.
-            serviceCollection.AddSingleton<IDiscordChatMover, DiscordChatMover>();
+            serviceCollection.AddTransient<IDiscordConnectionBootstrapper, DiscordConnectionBootstrapper>();
+
+            serviceCollection.AddTransient<IDiscordChatMover, DiscordChatMover>();
 
             serviceCollection.AddSingleton<CommandService>();
 

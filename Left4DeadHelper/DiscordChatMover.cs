@@ -1,5 +1,4 @@
 using Discord;
-using Left4DeadHelper.Helpers.Extensions;
 using Left4DeadHelper.Models;
 using Left4DeadHelper.Rcon;
 using Left4DeadHelper.Wrappers.DiscordNet;
@@ -18,80 +17,31 @@ namespace Left4DeadHelper
         private readonly ILogger<DiscordChatMover> _logger;
         private readonly Settings _settings;
 
-        internal ISocketGuildWrapper? _guild;
-        internal ISocketVoiceChannelWrapper? _primaryVoiceChannel;
-        internal ISocketVoiceChannelWrapper? _secondaryVoiceChannel;
-
         public DiscordChatMover(ILogger<DiscordChatMover> logger, Settings settings)
         {
             _logger = logger;
             _settings = settings;
         }
 
-        public async Task StartAsync(IDiscordSocketClientWrapper client, CancellationToken cancellationToken)
-        {
-            if (client == null) throw new ArgumentNullException(nameof(client));
-
-            var readyComplete = new TaskCompletionSource<bool>();
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-            client.Connected += async () => _logger.LogInformation("Discord client event: Connected");
-
-            async Task initalReadyAsync() => await ReadyHandlerWithSignalAsync(readyComplete);
-            client.Ready += initalReadyAsync;
-
-            client.Disconnected += async (ex) => _logger.LogError(ex, "Discord client event: Disconnected");
-            client.GuildAvailable += async (guild) => _logger.LogInformation("Discord client event: GuildAvailable");
-            client.GuildMembersDownloaded += async (ex) => _logger.LogInformation("Discord client event: GuildMembersDownloaded");
-            client.Log += async (logMessage) =>
-            {
-                var level = logMessage.Severity.ToLogLevel();
-
-                _logger.Log(
-                    level,
-                    logMessage.Exception,
-                    "Discord client event: Log: (Source: {0}): {1}",
-                    logMessage.Source, logMessage.Message);
-            };
-            client.LoggedIn += async () => _logger.LogInformation("Discord client event: LoggedIn");
-            client.LoggedOut += async () => _logger.LogInformation("Discord client event: LoggedOut");
-
-            await client.LoginAsync(TokenType.Bot, _settings.DiscordSettings.BotToken);
-            await client.StartAsync();
-
-            await readyComplete.Task;
-
-            client.Ready -= initalReadyAsync;
-            client.Ready += async () =>
-            {
-                _logger.LogInformation("Discord client event: Ready");
-            };
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
-
-            _guild = client.GetGuild(_settings.DiscordSettings.GuildId);
-            if (_guild == null) throw new Exception("guild is null");
-
-            // TODO listen for voice channel changes from the server, or config file changes.
-            _primaryVoiceChannel = _guild.GetVoiceChannel(_settings.DiscordSettings.Channels.Primary.Id);
-            if (_primaryVoiceChannel == null) throw new Exception("Bad primary channel ID in config.");
-            _secondaryVoiceChannel = _guild.GetVoiceChannel(_settings.DiscordSettings.Channels.Secondary.Id);
-            if (_secondaryVoiceChannel == null) throw new Exception("Bad secondary channel ID in config.");
-        }
-
-        private Task ReadyHandlerWithSignalAsync(TaskCompletionSource<bool> readyComplete)
-        {
-            _logger.LogInformation("Discord client event: Ready");
-            readyComplete.SetResult(true);
-            return Task.FromResult(0);
-        }
-
-        public async Task<int> MovePlayersToCorrectChannelsAsync(IRCONWrapper rcon, IDiscordSocketClientWrapper client, CancellationToken cancellationToken)
+        public async Task<int> MovePlayersToCorrectChannelsAsync(
+            IRCONWrapper rcon,
+            IDiscordSocketClientWrapper client, ISocketGuildWrapper guild,
+            CancellationToken cancellationToken)
         {
             if (rcon is null) throw new ArgumentNullException(nameof(rcon));
             if (client is null) throw new ArgumentNullException(nameof(client));
+            if (guild is null) throw new ArgumentNullException(nameof(guild));
 
-            if (_guild is null) throw new Exception(nameof(_guild) + " not set. Run StartAsync() first.");
-            if (_primaryVoiceChannel is null) throw new Exception(nameof(_primaryVoiceChannel) + " not set. Run StartAsync() first.");
-            if (_secondaryVoiceChannel is null) throw new Exception(nameof(_secondaryVoiceChannel) + " not set. Run StartAsync() first.");
+            var serverSettings = _settings.DiscordSettings.Guilds.FirstOrDefault(g => g.Id == guild.Id);
+            if (serverSettings == null)
+            {
+                throw new Exception($"Unable to find guild setting with ID {guild.Id} in the configuration.");
+            }
+
+            var primaryVoiceChannel = guild.GetVoiceChannel(serverSettings.Channels.Primary.Id);
+            if (primaryVoiceChannel == null) throw new Exception("Bad primary channel ID in config.");
+            var secondaryVoiceChannel = guild.GetVoiceChannel(serverSettings.Channels.Secondary.Id);
+            if (secondaryVoiceChannel == null) throw new Exception("Bad secondary channel ID in config.");
 
             var printInfo = await rcon.SendCommandAsync<PrintInfo>("sm_printinfo");
 
@@ -136,7 +86,7 @@ namespace Left4DeadHelper
                 .Select(p => p.DiscordId)
                 .ToList();
 
-            var discordAccountsForCurrentPlayers = _guild.Users
+            var discordAccountsForCurrentPlayers = guild.Users
                 .Where(u => currentPlayerDiscordSnowflakes.Contains(u.Id))
                 .ToList();
 
@@ -149,9 +99,9 @@ namespace Left4DeadHelper
 
             _logger.LogDebug("Getting current voice channel users.");
 
-            var getPrimaryChannelTask = _guild.GetVoiceChannelAsync(_primaryVoiceChannel.Id,
+            var getPrimaryChannelTask = guild.GetVoiceChannelAsync(primaryVoiceChannel.Id,
                 options: new RequestOptions { CancelToken = cancellationToken });
-            var getSecondaryChannelTask = _guild.GetVoiceChannelAsync(_secondaryVoiceChannel.Id,
+            var getSecondaryChannelTask = guild.GetVoiceChannelAsync(secondaryVoiceChannel.Id,
                 options: new RequestOptions { CancelToken = cancellationToken });
 
             await Task.WhenAll(getPrimaryChannelTask, getSecondaryChannelTask);
@@ -186,13 +136,13 @@ namespace Left4DeadHelper
 
                 if (usersInPrimaryChannel != null && usersInPrimaryChannel.Any(u => u.Id == discordAccount.Id))
                 {
-                    currentVoiceChannel = _primaryVoiceChannel;
+                    currentVoiceChannel = primaryVoiceChannel;
 
                     _logger.LogDebug("{0} ({1}) found in primary channel.", discordAccount.Username, discordAccount.Id);
                 }
                 else if (usersInSecondaryChannel != null && usersInSecondaryChannel.Any(u => u.Id == discordAccount.Id))
                 {
-                    currentVoiceChannel = _secondaryVoiceChannel;
+                    currentVoiceChannel = secondaryVoiceChannel;
 
                     _logger.LogDebug("{0} ({1}) found in secondary channel.", discordAccount.Username, discordAccount.Id);
                 }
@@ -203,7 +153,7 @@ namespace Left4DeadHelper
                     continue;
                 }
 
-                if (_primaryVoiceChannel.Id != currentVoiceChannel.Id && _secondaryVoiceChannel.Id != currentVoiceChannel.Id)
+                if (primaryVoiceChannel.Id != currentVoiceChannel.Id && secondaryVoiceChannel.Id != currentVoiceChannel.Id)
                 {
                     _logger.LogDebug("Skipping {0} ({1}): not in a designated voice channel.",
                         discordAccount.Username, discordAccount.Id);
@@ -229,11 +179,11 @@ namespace Left4DeadHelper
                 ISocketVoiceChannelWrapper intendedChannel;
                 if (usersPrintInfo.TeamIndex == PrintInfo.TeamIndexSurvivor)
                 {
-                    intendedChannel = _primaryVoiceChannel;
+                    intendedChannel = primaryVoiceChannel;
                 }
                 else if (usersPrintInfo.TeamIndex == PrintInfo.TeamIndexInfected)
                 {
-                    intendedChannel = _secondaryVoiceChannel;
+                    intendedChannel = secondaryVoiceChannel;
                 }
                 else
                 {

@@ -6,12 +6,11 @@
         {
             BotToken = "";
             Prefixes = new char[0];
-            Channels = new DiscordVoiceChannels();
+            Guilds = new GuildSettings[0];
         }
 
         public string BotToken { get; set; }
-        public ulong GuildId { get; set; }
         public char[] Prefixes { get; set; }
-        public DiscordVoiceChannels Channels { get; set; }
+        public GuildSettings[] Guilds { get; set; }
     }
 }

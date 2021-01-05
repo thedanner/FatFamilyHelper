@@ -31,8 +31,7 @@ namespace Left4DeadHelper.Discord.Modules
         [RequireUserPermission(GuildPermission.ManageRoles)]
         public async Task HandleCommandAsync()
         {
-            var guild = Context.Client.GetGuild(Settings.DiscordSettings.GuildId);
-
+            var guild = Context.Guild;
             if (guild == null)
             {
                 throw new Exception("Could not get guild.");

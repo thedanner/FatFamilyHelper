@@ -6,6 +6,18 @@ $Configuration = 'Release'
 $ServiceName = "Left4DeadHelper"
 $ServiceDescription = "Left 4 Dead Helper bot service"
 
+
+dotnet test --nologo `
+	--runtime $Runtime  --configuration $Configuration `
+	"..\Left4DeadHelper.Tests.Unit\"
+
+if ($LASTEXITCODE -ne 0)
+{
+	Write-Warning "Tests failed; cannot publish."
+	exit $LASTEXITCODE
+}
+
+
 $Service = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
 
 if ($Service -and $Service.Status -eq [System.ServiceProcess.ServiceControllerStatus]::Running)
@@ -14,11 +26,12 @@ if ($Service -and $Service.Status -eq [System.ServiceProcess.ServiceControllerSt
     $Service.WaitForStatus([System.ServiceProcess.ServiceControllerStatus]::Stopped)
 }
 
-Remove-Item -Recurse dist\* -ErrorAction SilentlyContinue
+Remove-Item -Recurse "dist\*" -ErrorAction SilentlyContinue
 dotnet clean --configuration $Configuration --nologo
 dotnet restore --runtime $Runtime
-dotnet build --runtime $Runtime --no-restore  `
-    --configuration $Configuration --nologo
+dotnet build --runtime $Runtime  --configuration $Configuration `
+    --no-restore --nologo
+
 dotnet publish --configuration Release `
     --no-restore --no-build --nologo `
     --runtime $Runtime `

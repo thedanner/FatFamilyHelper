@@ -9,26 +9,27 @@ using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.UI.Notifications;
 
 namespace Left4DeadHelper
 {
     public class Worker : BackgroundService, IDisposable
     {
         private readonly ILogger<Worker> _logger;
-        private readonly IDiscordChatMover _mover;
+        private readonly IDiscordConnectionBootstrapper _bootstrapper;
 
         // Singleton IDisposables
         private readonly DiscordSocketClient _client;
         private readonly CommandHandler _commandHandler;
         private readonly RNGCryptoServiceProvider _random;
 
-        public Worker(ILogger<Worker> logger, IDiscordChatMover mover,
+        public Worker(
+            ILogger<Worker> logger,
+            IDiscordConnectionBootstrapper bootstrapper,
             // Singleton IDisposables
             DiscordSocketClient client, CommandHandler commandHandler, RNGCryptoServiceProvider random)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _mover = mover ?? throw new ArgumentNullException(nameof(mover));
+            _bootstrapper = bootstrapper ?? throw new ArgumentNullException(nameof(bootstrapper));
 
             // Singleton IDisposables
             _client = client ?? throw new ArgumentNullException(nameof(client));
@@ -50,7 +51,7 @@ namespace Left4DeadHelper
                 {
                     try
                     {
-                        await _mover.StartAsync(
+                        await _bootstrapper.StartAsync(
                             new DiscordSocketClientWrapper(_client),
                             cancellationToken);
 
@@ -71,9 +72,6 @@ namespace Left4DeadHelper
                         attempts++;
                     }
                 }
-
-                await _client.SetStatusAsync(UserStatus.Online);
-                await _client.SetGameAsync(".l4d / !l4d2");
                 
                 _logger.LogInformation("Client ready; waiting for commands.");
             }
