@@ -6,11 +6,11 @@
         {
             BotToken = "";
             Prefixes = new char[0];
-            Guilds = new GuildSettings[0];
+            GuildSettings = new GuildSettings[0];
         }
 
         public string BotToken { get; set; }
         public char[] Prefixes { get; set; }
-        public GuildSettings[] Guilds { get; set; }
+        public GuildSettings[] GuildSettings { get; set; }
     }
 }

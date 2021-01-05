@@ -39,7 +39,7 @@ namespace Left4DeadHelper.Tests.Integration
             _settings = config.Get<Settings>();
 
             _botToken = _settings.DiscordSettings.BotToken;
-            var guildSettings = _settings.DiscordSettings.Guilds.First();
+            var guildSettings = _settings.DiscordSettings.GuildSettings.First();
             _guildId = guildSettings.Id;
 
             _primaryChannelId = guildSettings.Channels.Primary.Id;
