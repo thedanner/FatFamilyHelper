@@ -9,5 +9,6 @@
 
         public ulong Id { get; set; }
         public DiscordVoiceChannels Channels { get; set; }
+        public RoleColors? RoleColors { get; set; }
     }
 }

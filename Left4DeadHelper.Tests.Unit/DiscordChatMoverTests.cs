@@ -62,7 +62,7 @@ namespace Left4DeadHelper.Tests.Unit
                 {
                     BotToken = "THE_BOT_TOKEN",
                     Prefixes = new char[] { '!', '.' },
-                    Guilds = new GuildSettings[]
+                    GuildSettings = new GuildSettings[]
                     {
                         new GuildSettings
                         {
@@ -135,7 +135,7 @@ namespace Left4DeadHelper.Tests.Unit
                     }
                 },
             };
-            var guildSettings = settings.DiscordSettings.Guilds.First();
+            var guildSettings = settings.DiscordSettings.GuildSettings.First();
 
             var guild = A.Fake<ISocketGuildWrapper>();
 

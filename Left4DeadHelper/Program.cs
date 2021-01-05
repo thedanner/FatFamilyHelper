@@ -128,7 +128,7 @@ namespace Left4DeadHelper
                 };
 
                 var settings = serviceProvider.GetRequiredService<Settings>();
-                var guildSettings = settings.DiscordSettings.Guilds.First();
+                var guildSettings = settings.DiscordSettings.GuildSettings.First();
 
                 var mover = serviceProvider.GetRequiredService<IDiscordChatMover>();
 

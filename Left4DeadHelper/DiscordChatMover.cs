@@ -32,15 +32,15 @@ namespace Left4DeadHelper
             if (client is null) throw new ArgumentNullException(nameof(client));
             if (guild is null) throw new ArgumentNullException(nameof(guild));
 
-            var serverSettings = _settings.DiscordSettings.Guilds.FirstOrDefault(g => g.Id == guild.Id);
-            if (serverSettings == null)
+            var guildSettings = _settings.DiscordSettings.GuildSettings.FirstOrDefault(g => g.Id == guild.Id);
+            if (guildSettings == null)
             {
                 throw new Exception($"Unable to find guild setting with ID {guild.Id} in the configuration.");
             }
 
-            var primaryVoiceChannel = guild.GetVoiceChannel(serverSettings.Channels.Primary.Id);
+            var primaryVoiceChannel = guild.GetVoiceChannel(guildSettings.Channels.Primary.Id);
             if (primaryVoiceChannel == null) throw new Exception("Bad primary channel ID in config.");
-            var secondaryVoiceChannel = guild.GetVoiceChannel(serverSettings.Channels.Secondary.Id);
+            var secondaryVoiceChannel = guild.GetVoiceChannel(guildSettings.Channels.Secondary.Id);
             if (secondaryVoiceChannel == null) throw new Exception("Bad secondary channel ID in config.");
 
             var printInfo = await rcon.SendCommandAsync<PrintInfo>("sm_printinfo");
