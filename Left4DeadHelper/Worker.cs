@@ -5,7 +5,7 @@ using Left4DeadHelper.Wrappers.DiscordNet;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Net.Sockets;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
@@ -45,6 +45,7 @@ namespace Left4DeadHelper
 
                 // Try every 15 seconds (4 times a minute) for 15 minutes.
                 const int maxAttempts = 4 * 15;
+
                 var attempts = 0;
                 var retry = true;
                 while (retry)
@@ -57,7 +58,7 @@ namespace Left4DeadHelper
 
                         retry = false;
                     }
-                    catch (SocketException e)
+                    catch (HttpRequestException e)
                     {
                         if (attempts >= maxAttempts)
                         {
@@ -77,7 +78,8 @@ namespace Left4DeadHelper
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Error :(");
+                _logger.LogError(e, "Error :(. Exiting.");
+                throw;
             }
 
             await base.StartAsync(cancellationToken);
