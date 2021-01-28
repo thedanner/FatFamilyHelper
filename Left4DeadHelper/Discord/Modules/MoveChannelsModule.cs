@@ -1,11 +1,13 @@
 ﻿using Discord;
 using Discord.Commands;
 using Left4DeadHelper.Helpers;
+using Left4DeadHelper.Services;
 using Left4DeadHelper.Wrappers.DiscordNet;
 using Left4DeadHelper.Wrappers.Rcon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -41,7 +43,7 @@ namespace Left4DeadHelper.Discord.Modules
 
                     var mover = _serviceProvider.GetRequiredService<IDiscordChatMover>();
 
-                    var moveCount = await mover.MovePlayersToCorrectChannelsAsync(
+                    var moveResult = await mover.MovePlayersToCorrectChannelsAsync(
                         rcon,
                         new DiscordSocketClientWrapper(Context.Client),
                         new SocketGuildWrapper(Context.Guild),
@@ -49,17 +51,24 @@ namespace Left4DeadHelper.Discord.Modules
 
                     string replyMessage;
 
-                    if (moveCount == -1)
+                    if (!moveResult.Success)
                     {
                         replyMessage = "Nobody was playing.";
                     }
-                    else if (moveCount == 1)
+                    else if (moveResult.MoveCount == 1)
                     {
                         replyMessage = "1 player moved.";
                     }
                     else
                     {
-                        replyMessage = $"{moveCount} players moved.";
+                        replyMessage = $"{moveResult.MoveCount} players moved.";
+                    }
+                    
+                    if (moveResult.UnmappedSteamUsers.Any())
+                    {
+                        replyMessage +=
+                            $"\n\nSorry, I couldn't move these people: {string.Join(", ", moveResult.UnmappedSteamUsers.Select(u => u.Name))} " +
+                            "(missing mappings from the bot config). Bother you-know-who to fix it.";
                     }
 
                     await ReplyAsync(replyMessage);

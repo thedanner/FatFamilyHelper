@@ -3,6 +3,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Left4DeadHelper.Discord.Handlers;
 using Left4DeadHelper.Models;
+using Left4DeadHelper.Services;
 using Left4DeadHelper.Wrappers.DiscordNet;
 using Left4DeadHelper.Wrappers.Rcon;
 using Microsoft.Extensions.Configuration;

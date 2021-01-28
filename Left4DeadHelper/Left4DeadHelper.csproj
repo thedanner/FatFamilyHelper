@@ -22,15 +22,17 @@
     <PackageReference Include="CoreRCON" Version="5.0.0" />
     <PackageReference Include="Crc32.NET" Version="1.2.0" />
     <PackageReference Include="Discord.Net" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="5.0.1" />
     <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.19041.1" />
-    <PackageReference Include="NLog" Version="4.7.6" />
+    <PackageReference Include="NAudio" Version="1.10.0" />
+    <PackageReference Include="NLog" Version="4.7.7" />
     <PackageReference Include="NLog.Extensions.Logging" Version="1.7.0" />
-    <PackageReference Include="NLog.Schema" Version="4.7.6" />
+    <PackageReference Include="NLog.Schema" Version="4.7.7" />
     <PackageReference Include="SharpZipLib" Version="1.3.1" />
   </ItemGroup>
   

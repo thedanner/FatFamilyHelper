@@ -3,6 +3,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Left4DeadHelper.Helpers;
 using Left4DeadHelper.Models;
+using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -33,7 +34,7 @@ namespace Left4DeadHelper.Discord.Modules
         [Command(Command)]
         [Summary("Sets role colors!")]
         [RequireUserPermission(GuildPermission.ManageRoles)]
-        public async Task HandleCommandAsync(params string[] colors)
+        public async Task HandleCommandAsync(params string[] args)
         {
             // TODO run gradient calculation.
 
@@ -52,16 +53,35 @@ namespace Left4DeadHelper.Discord.Modules
             var guildRoleColorSettings = guildSettings.RoleColors;
             if (guildRoleColorSettings == null) return; // Disabled for guild.
 
+
             var gradientRoles = GetSortedRolesForColors(guild, guildRoleColorSettings);
 
-            if (colors.Length == 0 || (colors.Length == 1 && "dump".Equals(colors[0], StringComparison.CurrentCultureIgnoreCase)))
+            // https://docs.microsoft.com/en-us/archive/msdn-magazine/2016/september/essential-net-command-line-processing-with-net-core-1-0
+            var commandLineApplication = new CommandLineApplication(throwOnUnexpectedArg: false);
+
+            var list = commandLineApplication.Option(
+              "l|list",
+              "List the current colors.",
+              CommandOptionType.SingleValue);
+
+            var help = commandLineApplication.HelpOption("h|help");
+
+            commandLineApplication.OnExecute(async () =>
             {
-                await ReplyAsync(string.Join(" ", gradientRoles.Select(r => r.Color)));
-                return;
-            }
-            else
-            {
-                var invalidColors = colors.Where(c => !HexColorPattern.IsMatch(c)).ToList();
+                if (help.HasValue())
+                {
+                    var helpText = commandLineApplication.GetHelpText(null);
+                    await ReplyAsync(helpText);
+                    return 0;
+                }
+
+                if (args.Length == 0 || list.HasValue())
+                {
+                    await ReplyAsync(string.Join(" ", gradientRoles.Select(r => r.Color)));
+                    return 0;
+                }
+
+                var invalidColors = args.Where(c => !HexColorPattern.IsMatch(c)).ToList();
 
                 if (invalidColors.Any())
                 {
@@ -69,21 +89,21 @@ namespace Left4DeadHelper.Discord.Modules
                         $"Color{(invalidColors.Count != 1 ? "s " : "")} " +
                         $"{string.Join(", ", invalidColors.Select(c => "\"" + c + "\""))} " +
                         $"{(invalidColors.Count != 1 ? "are" : "is")} are not in the correct format (#rrggbb).");
-                    return;
+                    return 1;
                 }
 
-                if (colors.Length != gradientRoles.Count)
+                if (args.Length != gradientRoles.Count)
                 {
                     await ReplyAsync(
                         "The number of colors doesn't match the number of roles to update " +
-                        $"(got {colors.Length} colors, but there are {gradientRoles.Count} roles to change).");
+                        $"(got {args.Length} colors, but there are {gradientRoles.Count} roles to change).");
                 }
 
                 for (var i = 0; i < gradientRoles.Count; i++)
                 {
                     // TODO actually set role colors!
                     var role = gradientRoles[i];
-                    var color = colors[i];
+                    var color = args[i];
 
                     if (color.StartsWith("#"))
                     {
@@ -98,7 +118,13 @@ namespace Left4DeadHelper.Discord.Modules
                 }
 
                 await ReplyAsync($"{gradientRoles.Count} roles updated!");
-            }
+
+                return 0;
+            });
+
+            commandLineApplication.HelpOption("-? | -h | --help");
+
+            commandLineApplication.Execute(args);
         }
         
         private List<SocketRole> GetSortedRolesForColors(SocketGuild guild, RoleColors guildRoleColorSettings)
