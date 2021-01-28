@@ -2,6 +2,7 @@
 using FakeItEasy;
 using Left4DeadHelper.Models;
 using Left4DeadHelper.Rcon;
+using Left4DeadHelper.Services;
 using Left4DeadHelper.Wrappers.DiscordNet;
 using Left4DeadHelper.Wrappers.Rcon;
 using Microsoft.Extensions.Configuration;

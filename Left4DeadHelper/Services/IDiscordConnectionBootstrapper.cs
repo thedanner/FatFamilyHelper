@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Left4DeadHelper
+namespace Left4DeadHelper.Services
 {
     public interface IDiscordConnectionBootstrapper
     {

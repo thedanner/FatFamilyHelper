@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using Left4DeadHelper.Discord.Handlers;
+using Left4DeadHelper.Services;
 using Left4DeadHelper.Wrappers.DiscordNet;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

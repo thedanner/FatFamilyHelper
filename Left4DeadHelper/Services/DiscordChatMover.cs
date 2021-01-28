@@ -10,7 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Left4DeadHelper
+namespace Left4DeadHelper.Services
 {
     public class DiscordChatMover : IDiscordChatMover
     {
@@ -23,7 +23,7 @@ namespace Left4DeadHelper
             _settings = settings;
         }
 
-        public async Task<int> MovePlayersToCorrectChannelsAsync(
+        public async Task<MoveResult> MovePlayersToCorrectChannelsAsync(
             IRCONWrapper rcon,
             IDiscordSocketClientWrapper client, ISocketGuildWrapper guild,
             CancellationToken cancellationToken)
@@ -37,6 +37,8 @@ namespace Left4DeadHelper
             {
                 throw new Exception($"Unable to find guild setting with ID {guild.Id} in the configuration.");
             }
+
+            var result = new MoveResult();
 
             var primaryVoiceChannel = guild.GetVoiceChannel(guildSettings.Channels.Primary.Id);
             if (primaryVoiceChannel == null) throw new Exception("Bad primary channel ID in config.");
@@ -54,7 +56,7 @@ namespace Left4DeadHelper
             {
                 _logger.LogDebug("  {0}: {1} - {2}", i, currentPlayersOnServer[i].SteamId, currentPlayersOnServer[i].Name);
             }
-            if (!currentPlayersOnServer.Any()) return -1; // TODO better return status object.
+            if (!currentPlayersOnServer.Any()) return result;
 
             var currentlyPlayingSteamIds = currentPlayersOnServer
                 .Select(p => p.SteamId)
@@ -79,6 +81,7 @@ namespace Left4DeadHelper
             _logger.LogDebug("Current players MISSING from mapping data ({0}):", missingMappings.Count);
             for (var i = 0; i < missingMappings.Count; i++)
             {
+                result.UnmappedSteamUsers.Add(new UnmappedSteamUser(missingMappings[i].Name, missingMappings[i].SteamId));
                 _logger.LogDebug("  {0}: {1} - {2}", i, missingMappings[i].SteamId, missingMappings[i].Name);
             }
 
@@ -128,7 +131,7 @@ namespace Left4DeadHelper
                     discordAccountsForCurrentPlayers[i].Id, discordAccountsForCurrentPlayers[i].Username);
             }
 
-            var moveCount = 0;
+            result.Success = true;
 
             foreach (var discordAccount in discordAccountsForCurrentPlayers)
             {
@@ -200,11 +203,11 @@ namespace Left4DeadHelper
 
                     await Task.Delay(TimeSpan.FromSeconds(1));
 
-                    moveCount++;
+                    result.MoveCount++;
                 }
             }
 
-            return moveCount;
+            return result;
         }
     }
 }
