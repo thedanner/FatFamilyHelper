@@ -55,6 +55,8 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
 
         public virtual bool IsStreaming => _socketGuildUser.IsStreaming;
 
+        public virtual bool? IsPending => _socketGuildUser.IsPending;
+
         public virtual Task AddRoleAsync(IRole role, RequestOptions? options = null)
         {
             return _socketGuildUser.AddRoleAsync(role, options);

@@ -57,6 +57,11 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
             return ((IDiscordClient)_baseDiscordClient).GetApplicationInfoAsync(options);
         }
 
+        public virtual Task<BotGateway> GetBotGatewayAsync(RequestOptions? options = null)
+        {
+            return ((IDiscordClient)_baseDiscordClient).GetBotGatewayAsync(options);
+        }
+
         public virtual Task<IChannel> GetChannelAsync(ulong id, CacheMode mode = CacheMode.AllowDownload, RequestOptions? options = null)
         {
             return ((IDiscordClient)_baseDiscordClient).GetChannelAsync(id, mode, options);

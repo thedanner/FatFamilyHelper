@@ -1,4 +1,5 @@
 using CoreRCON;
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Left4DeadHelper.Discord.Handlers;
@@ -208,7 +209,17 @@ namespace Left4DeadHelper
 
             serviceCollection.AddSingleton<CommandService>();
 
-            serviceCollection.AddSingleton<DiscordSocketClient>();
+            serviceCollection.AddSingleton(sp =>
+            {
+                return new DiscordSocketClient(new DiscordSocketConfig
+                {
+                    GatewayIntents = GatewayIntents.Guilds
+                        | GatewayIntents.GuildIntegrations
+                        | GatewayIntents.GuildVoiceStates
+                        | GatewayIntents.GuildPresences
+                        | GatewayIntents.GuildMessages
+                });
+            });
             
             serviceCollection.AddSingleton<CommandHandler>();
 

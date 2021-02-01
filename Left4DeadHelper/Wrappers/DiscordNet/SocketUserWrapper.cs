@@ -53,6 +53,10 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
 
         public virtual IImmutableSet<ClientType> ActiveClients => _socketUser.ActiveClients;
 
+        public virtual UserProperties? PublicFlags => _socketUser.PublicFlags;
+
+        public virtual IImmutableList<IActivity> Activities => _socketUser.Activities;
+
         public virtual string GetAvatarUrl(ImageFormat format = ImageFormat.Auto, ushort size = 128)
         {
             return _socketUser.GetAvatarUrl(format, size);

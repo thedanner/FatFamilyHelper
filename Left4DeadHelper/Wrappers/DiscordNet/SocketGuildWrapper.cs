@@ -52,6 +52,7 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
 
         public virtual bool HasAllMembers => _socketGuild.HasAllMembers;
 
+        [Obsolete("This property is deprecated, use WidgetChannel instead.")]
         public virtual ISocketGuildChannelWrapper? EmbedChannel
         {
             get
@@ -121,7 +122,7 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
         public virtual IReadOnlyCollection<string> Features => _socketGuild.Features;
 
         public virtual IReadOnlyCollection<SocketRole> Roles => _socketGuild.Roles;
-        IReadOnlyCollection<IRole> IGuild.Roles => ((IGuild) _socketGuild).Roles;
+        IReadOnlyCollection<IRole> IGuild.Roles => ((IGuild)_socketGuild).Roles;
 
         public virtual PremiumTier PremiumTier => _socketGuild.PremiumTier;
 
@@ -142,6 +143,28 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
         public virtual CultureInfo PreferredCulture => _socketGuild.PreferredCulture;
 
         public virtual DateTimeOffset CreatedAt => _socketGuild.CreatedAt;
+
+        public bool IsWidgetEnabled => throw new NotImplementedException();
+
+        public string DiscoverySplashId => throw new NotImplementedException();
+
+        public string DiscoverySplashUrl => throw new NotImplementedException();
+
+        public ulong? WidgetChannelId => throw new NotImplementedException();
+
+        public ulong? RulesChannelId => throw new NotImplementedException();
+
+        public ulong? PublicUpdatesChannelId => throw new NotImplementedException();
+
+        public int? MaxPresences => throw new NotImplementedException();
+
+        public int? MaxMembers => throw new NotImplementedException();
+
+        public int? MaxVideoChannelUsers => throw new NotImplementedException();
+
+        public int? ApproximateMemberCount => throw new NotImplementedException();
+
+        public int? ApproximatePresenceCount => throw new NotImplementedException();
 
         public virtual Task AddBanAsync(IUser user, int pruneDays = 0, string? reason = null, RequestOptions? options = null)
         {
@@ -328,6 +351,7 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
             return ((IGuild)_socketGuild).GetDefaultChannelAsync(mode, options);
         }
 
+        [Obsolete("This endpoint is deprecated, use GetWidgetChannelAsync instead.")]
         public virtual Task<IGuildChannel> GetEmbedChannelAsync(CacheMode mode = CacheMode.AllowDownload, RequestOptions? options = null)
         {
             return ((IGuild)_socketGuild).GetEmbedChannelAsync(mode, options);
@@ -469,6 +493,7 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
             return _socketGuild.ModifyAsync(func, options);
         }
 
+        [Obsolete("This endpoint is deprecated, use ModifyWidgetAsync instead.")]
         public virtual Task ModifyEmbedAsync(Action<GuildEmbedProperties> func, RequestOptions? options = null)
         {
             return _socketGuild.ModifyEmbedAsync(func, options);
@@ -502,6 +527,36 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
         public virtual Task ReorderRolesAsync(IEnumerable<ReorderRoleProperties> args, RequestOptions? options = null)
         {
             return _socketGuild.ReorderRolesAsync(args, options);
+        }
+
+        public virtual Task ModifyWidgetAsync(Action<GuildWidgetProperties> func, RequestOptions? options = null)
+        {
+            return _socketGuild.ModifyWidgetAsync(func, options);
+        }
+
+        public virtual Task<IGuildChannel> GetWidgetChannelAsync(CacheMode mode = CacheMode.AllowDownload, RequestOptions? options = null)
+        {
+            return ((IGuild)_socketGuild).GetWidgetChannelAsync(mode, options);
+        }
+
+        public virtual Task<ITextChannel> GetRulesChannelAsync(CacheMode mode = CacheMode.AllowDownload, RequestOptions? options = null)
+        {
+            return ((IGuild)_socketGuild).GetRulesChannelAsync(mode, options);
+        }
+
+        public virtual Task<ITextChannel> GetPublicUpdatesChannelAsync(CacheMode mode = CacheMode.AllowDownload, RequestOptions? options = null)
+        {
+            return ((IGuild)_socketGuild).GetPublicUpdatesChannelAsync(mode, options);
+        }
+
+        public virtual Task<int> PruneUsersAsync(int days = 30, bool simulate = false, RequestOptions? options = null, IEnumerable<ulong>? includeRoleIds = null)
+        {
+            return _socketGuild.PruneUsersAsync(days, simulate, options, includeRoleIds);
+        }
+
+        public virtual Task<IReadOnlyCollection<IGuildUser>> SearchUsersAsync(string query, int limit = 1000, CacheMode mode = CacheMode.AllowDownload, RequestOptions? options = null)
+        {
+            return ((IGuild)_socketGuild).SearchUsersAsync(query, limit, mode, options);
         }
     }
 }
