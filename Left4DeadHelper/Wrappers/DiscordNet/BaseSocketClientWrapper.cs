@@ -17,6 +17,7 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
             _baseSocketClient = baseSocketClient ?? throw new ArgumentNullException(nameof(baseSocketClient));
         }
 
+        [Obsolete("This property is obsolete, use the GetVoiceRegionsAsync method instead.")]
         public virtual IReadOnlyCollection<RestVoiceRegion> VoiceRegions => _baseSocketClient.VoiceRegions;
 
         public virtual IReadOnlyCollection<ISocketPrivateChannel> PrivateChannels => _baseSocketClient.PrivateChannels;
@@ -244,6 +245,7 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
             return rawUser != null ? new SocketUserWrapper(rawUser) : null;
         }
 
+        [Obsolete("This method is obsolete, use GetVoiceRegionAsync instead.")]
         public virtual RestVoiceRegion GetVoiceRegion(string id)
         {
             return _baseSocketClient.GetVoiceRegion(id);
