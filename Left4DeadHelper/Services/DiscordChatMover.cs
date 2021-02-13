@@ -74,16 +74,9 @@ namespace Left4DeadHelper.Services
             }
 
             var allSteamIdsFromUserMappings = _settings.UserMappings.Select(um => um.SteamId).ToList();
-            var missingMappings = currentPlayersOnServer
+            var missingSteamMappings = currentPlayersOnServer
                 .Where(p => !allSteamIdsFromUserMappings.Contains(p.SteamId, StringComparer.CurrentCultureIgnoreCase))
                 .ToList();
-
-            _logger.LogDebug("Current players MISSING from mapping data ({0}):", missingMappings.Count);
-            for (var i = 0; i < missingMappings.Count; i++)
-            {
-                result.UnmappedSteamUsers.Add(new UnmappedSteamUser(missingMappings[i].Name, missingMappings[i].SteamId));
-                _logger.LogDebug("  {0}: {1} - {2}", i, missingMappings[i].SteamId, missingMappings[i].Name);
-            }
 
             var currentPlayerDiscordSnowflakes = currentPlayerMappings
                 .Select(p => p.DiscordId)
@@ -121,14 +114,44 @@ namespace Left4DeadHelper.Services
 
             await Task.WhenAll(getPrimaryChannelTask, getSecondaryChannelUsersTask);
 
-            List<IGuildUser> usersInPrimaryChannel = getPrimaryChannelUsersTask.Result.ToList();
-            List<IGuildUser> usersInSecondaryChannel = getSecondaryChannelUsersTask.Result.ToList();
+            var usersInPrimaryChannel = getPrimaryChannelUsersTask.Result.ToList();
+            var usersInSecondaryChannel = getSecondaryChannelUsersTask.Result.ToList();
 
             _logger.LogDebug("Discord accounts found from mappings ({0}):", discordAccountsForCurrentPlayers.Count);
             for (var i = 0; i < discordAccountsForCurrentPlayers.Count; i++)
             {
                 _logger.LogDebug("  {0}: {1} - {2}", i,
                     discordAccountsForCurrentPlayers[i].Id, discordAccountsForCurrentPlayers[i].Username);
+            }
+
+            var discordSnowflakesInVoice = usersInPrimaryChannel.Select(u => u.Id)
+                .Concat(usersInSecondaryChannel.Select(u => u.Id))
+                .ToList();
+
+            var missingDiscordMappings = discordAccountsForCurrentPlayers.Where(d =>
+                    !discordSnowflakesInVoice.Contains(d.Id))
+                .ToList();
+
+            if (missingSteamMappings.Any())
+            {
+                _logger.LogDebug("Current Steam users MISSING from mapping ({0}):", missingSteamMappings.Count);
+                for (var i = 0; i < missingSteamMappings.Count; i++)
+                {
+                    result.UnmappedSteamUsers.Add(new UnmappedSteamUser(missingSteamMappings[i].Name, missingSteamMappings[i].SteamId));
+                    _logger.LogDebug("  {0}: {1} - {2}", i, missingSteamMappings[i].SteamId, missingSteamMappings[i].Name);
+                }
+            }
+            if (missingDiscordMappings.Any())
+            {
+                _logger.LogDebug("Current Discord users MISSING from mapping ({0}):", missingDiscordMappings.Count);
+                for (var i = 0; i < missingDiscordMappings.Count; i++)
+                {
+                    _logger.LogDebug("  {0}: {1} - \"{2}\" (\"{3}\")",
+                        i,
+                        missingDiscordMappings[i].Id,
+                        missingDiscordMappings[i].Nickname,
+                        missingDiscordMappings[i].Username);
+                }
             }
 
             result.Success = true;
