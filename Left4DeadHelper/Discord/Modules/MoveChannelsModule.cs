@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Left4DeadHelper.Helpers;
+using Left4DeadHelper.Models;
 using Left4DeadHelper.Services;
 using Left4DeadHelper.Wrappers.DiscordNet;
 using Left4DeadHelper.Wrappers.Rcon;
@@ -66,9 +67,21 @@ namespace Left4DeadHelper.Discord.Modules
                     
                     if (moveResult.UnmappedSteamUsers.Any())
                     {
+                        var settings = _serviceProvider.GetRequiredService<Settings>();
+
+                        string whoShouldFix;
+                        if (settings.DiscordSettings.ConfigMaintainers.Any())
+                        {
+                            whoShouldFix = string.Join(", ", settings.DiscordSettings.ConfigMaintainers.Select(m => $"<@{m.DiscordId}>"));
+                        }
+                        else
+                        {
+                            whoShouldFix = "you-know-who";
+                        }
+
                         replyMessage +=
                             $"\n\nSorry, I couldn't move these people: {string.Join(", ", moveResult.UnmappedSteamUsers.Select(u => u.Name))} " +
-                            "(missing mappings from the bot config). Bother you-know-who to fix it.";
+                            $"(missing mappings from the bot config). Bother {whoShouldFix} to fix it.";
                     }
 
                     await ReplyAsync(replyMessage);
