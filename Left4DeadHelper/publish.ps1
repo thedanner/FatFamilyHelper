@@ -8,13 +8,13 @@ $ServiceDescription = "Left 4 Dead Helper bot service"
 
 
 dotnet test --nologo `
-	--runtime $Runtime  --configuration $Configuration `
-	"..\Left4DeadHelper.Tests.Unit\"
+    --runtime $Runtime  --configuration $Configuration `
+    "..\Left4DeadHelper.Tests.Unit\"
 
 if ($LASTEXITCODE -ne 0)
 {
-	Write-Warning "Tests failed; cannot publish."
-	exit $LASTEXITCODE
+    Write-Warning "Tests failed; cannot publish."
+    exit $LASTEXITCODE
 }
 
 
@@ -45,11 +45,11 @@ else
 {
     # This part requires admin. Too lazy to check for it since we'd
     # need to conditionally do that near the start of the script
-	# (we don't always need to install the service).
+    # (we don't always need to install the service).
 
     $BinPath = (Get-Item "dist\Left4DeadHelper.exe").FullName
     $Service = New-Service -Name $ServiceName -Description $ServiceDescription `
-		-BinaryPathName $BinPath -StartupType Automatic -DependsOn "TcpIp"
+        -BinaryPathName $BinPath -StartupType Automatic -DependsOn "TcpIp"
     $Service.Start()
 
     # Let the current user stop and start the service without admin.
