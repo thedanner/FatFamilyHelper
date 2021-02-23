@@ -354,3 +354,5 @@ MigrationBackup/
 dist*
 *app[Ss]ettings.json
 *app[Ss]ettings.*.json
+# SourceMod compiled plugins
+*.smx
