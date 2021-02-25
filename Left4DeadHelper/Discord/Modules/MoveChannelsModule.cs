@@ -69,10 +69,12 @@ namespace Left4DeadHelper.Discord.Modules
                     {
                         var settings = _serviceProvider.GetRequiredService<Settings>();
 
+                        var guildSettings = settings.DiscordSettings.GuildSettings.FirstOrDefault(g => g.Id == Context.Guild.Id);
+
                         string whoShouldFix;
-                        if (settings.DiscordSettings.ConfigMaintainers.Any())
+                        if (guildSettings != null && guildSettings.ConfigMaintainers.Any())
                         {
-                            whoShouldFix = string.Join(", ", settings.DiscordSettings.ConfigMaintainers.Select(m => $"<@{m.DiscordId}>"));
+                            whoShouldFix = string.Join(", ", guildSettings.ConfigMaintainers.Select(m => $"<@{m.DiscordId}>"));
                         }
                         else
                         {

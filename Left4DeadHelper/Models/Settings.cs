@@ -1,4 +1,5 @@
-﻿namespace Left4DeadHelper.Models
+﻿
+namespace Left4DeadHelper.Models
 {
     public class Settings
     {
