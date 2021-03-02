@@ -42,6 +42,9 @@ namespace Left4DeadHelper.Discord.Modules
                 {
                     await rcon.ConnectAsync();
 
+                    var settings = _serviceProvider.GetRequiredService<Settings>();
+                    var guildSettings = settings.DiscordSettings.GuildSettings.FirstOrDefault(g => g.Id == Context.Guild.Id);
+
                     var mover = _serviceProvider.GetRequiredService<IDiscordChatMover>();
 
                     var moveResult = await mover.MovePlayersToCorrectChannelsAsync(
@@ -65,11 +68,9 @@ namespace Left4DeadHelper.Discord.Modules
                         replyMessage = $"{moveResult.MoveCount} players moved.";
                     }
                     
+
                     if (moveResult.UnmappedSteamUsers.Any())
                     {
-                        var settings = _serviceProvider.GetRequiredService<Settings>();
-
-                        var guildSettings = settings.DiscordSettings.GuildSettings.FirstOrDefault(g => g.Id == Context.Guild.Id);
 
                         string whoShouldFix;
                         if (guildSettings != null && guildSettings.ConfigMaintainers.Any())
@@ -86,7 +87,12 @@ namespace Left4DeadHelper.Discord.Modules
                             $"(missing mappings from the bot config). Bother {whoShouldFix} to fix it.";
                     }
 
-                    var replyToMessageRef = new MessageReference(Context.Message.Id, Context.Channel.Id, Context.Guild.Id);
+                    MessageReference? replyToMessageRef = null;
+                    if (guildSettings != null && guildSettings.ReferenceCommandsInReplies)
+                    {
+                        replyToMessageRef = new MessageReference(Context.Message.Id, Context.Channel.Id, Context.Guild.Id);
+                    }
+
                     await ReplyAsync(replyMessage, messageReference: replyToMessageRef);
 
                     return;
