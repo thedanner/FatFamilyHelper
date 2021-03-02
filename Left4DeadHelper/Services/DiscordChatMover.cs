@@ -25,7 +25,8 @@ namespace Left4DeadHelper.Services
 
         public async Task<MoveResult> MovePlayersToCorrectChannelsAsync(
             IRCONWrapper rcon,
-            IDiscordSocketClientWrapper client, ISocketGuildWrapper guild,
+            IDiscordSocketClientWrapper client,
+            ISocketGuildWrapper guild,
             CancellationToken cancellationToken)
         {
             if (rcon is null) throw new ArgumentNullException(nameof(rcon));
