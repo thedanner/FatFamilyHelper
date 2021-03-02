@@ -86,7 +86,8 @@ namespace Left4DeadHelper.Discord.Modules
                             $"(missing mappings from the bot config). Bother {whoShouldFix} to fix it.";
                     }
 
-                    await ReplyAsync(replyMessage);
+                    var replyToMessageRef = new MessageReference(Context.Message.Id, Context.Channel.Id, Context.Guild.Id);
+                    await ReplyAsync(replyMessage, messageReference: replyToMessageRef);
 
                     return;
                 }
