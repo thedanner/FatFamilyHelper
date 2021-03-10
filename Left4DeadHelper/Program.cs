@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.EventLog;
+using Newtonsoft.Json;
 using NLog;
 using NLog.Extensions.Logging;
 using System;
@@ -39,11 +40,6 @@ namespace Left4DeadHelper
 
         public static async Task<int> Main(string[] args)
         {
-            if (args.Length >= 1 && "--interactive".Equals(args[0], StringComparison.CurrentCultureIgnoreCase))
-            {
-                return (int) await InteractiveMainAsync();
-            }
-
             try
             {
                 // When run as a service, the working directory is wrong,
@@ -58,6 +54,16 @@ namespace Left4DeadHelper
                 CreateHostBuilder(args).Build().Run();
             }
             catch (ObjectDisposedException ex) when (ex.ObjectName == "System.Net.Sockets.Socket") { }
+            catch (Exception ex)
+            {
+                var loggerFactory = LoggerFactory.Create(builder =>
+                {
+                    builder.AddNLog();
+                    builder.AddConsole();
+                });
+                var logger = loggerFactory.CreateLogger<Program>();
+                logger.LogError(ex, "Error starting service.");
+            }
 
             // TODO some thread is probably still running somewhere preventing a normal shutdown. Find out where.
             // Environment.Exit() doesn't even cut it here.
@@ -80,99 +86,6 @@ namespace Left4DeadHelper
                 }).UseWindowsService();
 
             return hostBuilder;
-        }
-
-        public static async Task<ExitCode> InteractiveMainAsync()
-        {
-            ExitCode? exitCode = null;
-            try
-            {
-                exitCode = await RunAsync();
-
-                return exitCode.Value;
-            }
-            finally
-            {
-                LogManager.Shutdown();
-
-                // TODO some thread is probably still running somewhere preventing a normal shutdown. Find out where.
-                Environment.Exit((int)(exitCode ?? ExitCode.ErrorUnknown));
-            }
-        }
-
-        public static async Task<ExitCode> RunAsync()
-        {
-            ILogger<Program>? logger = null;
-
-            try
-            {
-                var config = new ConfigurationBuilder()
-                     .SetBasePath(Directory.GetCurrentDirectory()) //From NuGet Package Microsoft.Extensions.Configuration.Json
-                     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                     .Build();
-
-                var serviceCollection = new ServiceCollection();
-
-                ConfigureServices(serviceCollection, config);
-
-                var serviceProvider = serviceCollection.BuildServiceProvider();
-
-                logger = serviceProvider.GetRequiredService<ILogger<Program>>();
-
-                var ctSource = new CancellationTokenSource();
-
-                Console.CancelKeyPress += (sender, e) =>
-                {
-                    logger.LogInformation("^C received. Shutting down.");
-
-                    ctSource.Cancel();
-                    e.Cancel = false;
-                };
-
-                var settings = serviceProvider.GetRequiredService<Settings>();
-                var guildSettings = settings.DiscordSettings.GuildSettings.First();
-
-                var mover = serviceProvider.GetRequiredService<IDiscordChatMover>();
-
-                using var client = serviceProvider.GetRequiredService<DiscordSocketClient>();
-                using var commandHandler = serviceProvider.GetRequiredService<CommandHandler>();
-
-                await commandHandler.InstallCommandsAsync();
-
-                var wrappedClient = new DiscordSocketClientWrapper(client);
-
-                var bootstrapper = serviceProvider.GetRequiredService<IDiscordConnectionBootstrapper>();
-                await bootstrapper.StartAsync(wrappedClient, ctSource.Token);
-
-                using var rcon = serviceProvider.GetRequiredService<IRCONWrapper>();
-
-                await rcon.ConnectAsync();
-
-                var wrappedGuild = new SocketGuildWrapper(client.GetGuild(guildSettings.Id));
-
-                var moveCount = await mover.MovePlayersToCorrectChannelsAsync(
-                    rcon, wrappedClient, wrappedGuild, ctSource.Token);
-
-                return ExitCode.Success;
-            }
-            catch (Exception e)
-            {
-                logger?.LogError(e, "Error :(");
-
-                var template = ToastNotificationManager.GetTemplateContent(ToastTemplateType.ToastText01);
-                var textNodes = template.GetElementsByTagName("text");
-                textNodes[0].InnerText = string.Join(Environment.NewLine,
-                    "Error running Left4DeadHelper",
-                    e.Message,
-                    "See logs for details.");
-
-                var toast = new ToastNotification(template);
-
-                var notifier = ToastNotificationManager.CreateToastNotifier("Left4DeadHelper");
-                notifier.Show(toast);
-
-                return ExitCode.ErrorException;
-            }
         }
 
         public static void ConfigureServices(IServiceCollection serviceCollection, IConfiguration config)
