@@ -60,7 +60,8 @@ namespace Left4DeadHelper.Services
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 
             await client.SetStatusAsync(UserStatus.Online);
-            await client.SetGameAsync(".l4d / !l4d2");
+            // TODO read commands/prefixes?
+            await client.SetGameAsync(".l4d / !l4d2", type: ActivityType.Listening);
         }
 
         private Task ReadyHandlerWithSignalAsync(TaskCompletionSource<bool> readyComplete)

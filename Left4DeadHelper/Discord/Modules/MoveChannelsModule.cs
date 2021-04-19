@@ -28,10 +28,10 @@ namespace Left4DeadHelper.Discord.Modules
         }
 
         [Command]
-        [Alias("vc")]
+        [Alias(Constants.CommandVoiceChat)]
         [Summary("Moves users into respective voice channels based on game team.")]
         [RequireUserPermission(GuildPermission.MoveMembers)]
-        public async Task HandleCommandAsync()
+        public async Task HandleVoiceChatAsync()
         {
             try
             {
@@ -67,7 +67,7 @@ namespace Left4DeadHelper.Discord.Modules
                     {
                         replyMessage = $"{moveResult.MoveCount} players moved.";
                     }
-                    
+
 
                     if (moveResult.UnmappedSteamUsers.Any())
                     {
@@ -100,7 +100,7 @@ namespace Left4DeadHelper.Discord.Modules
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Error in {0}.{1}().", nameof(MoveChannelsModule), nameof(HandleCommandAsync));
+                _logger.LogError(e, "Error in {0}.{1}().", nameof(MoveChannelsModule), nameof(HandleVoiceChatAsync));
             }
         }
     }
