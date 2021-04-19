@@ -41,6 +41,8 @@ namespace Left4DeadHelper.Services
 
             var result = new MoveResult();
 
+            var reunite = false;
+
             var primaryVoiceChannel = guild.GetVoiceChannel(guildSettings.Channels.Primary.Id);
             if (primaryVoiceChannel == null) throw new Exception("Bad primary channel ID in config.");
             var secondaryVoiceChannel = guild.GetVoiceChannel(guildSettings.Channels.Secondary.Id);
@@ -51,48 +53,6 @@ namespace Left4DeadHelper.Services
             var currentPlayersOnServer = printInfo.Players
                  .Where(p => !"BOT".Equals(p.SteamId, StringComparison.CurrentCultureIgnoreCase))
                  .ToList();
-
-            _logger.LogDebug("Current players per PrintInfo results ({0}):", currentPlayersOnServer.Count);
-            for (var i = 0; i < currentPlayersOnServer.Count; i++)
-            {
-                _logger.LogDebug("  {0}: {1} - {2}", i, currentPlayersOnServer[i].SteamId, currentPlayersOnServer[i].Name);
-            }
-            if (!currentPlayersOnServer.Any()) return result;
-
-            var currentlyPlayingSteamIds = currentPlayersOnServer
-                .Select(p => p.SteamId)
-                .ToList();
-
-            var currentPlayerMappings = _settings.UserMappings
-                .Where(d => currentlyPlayingSteamIds.Contains(d.SteamId, StringComparer.CurrentCultureIgnoreCase))
-                .ToList();
-
-            _logger.LogDebug("Current players found in mapping data ({0}):", currentPlayerMappings.Count);
-            for (var i = 0; i < currentPlayerMappings.Count; i++)
-            {
-                _logger.LogDebug("  {0}: {1} - {2} - {3}", i,
-                    currentPlayerMappings[i].SteamId, currentPlayerMappings[i].DiscordId, currentPlayerMappings[i].Name);
-            }
-
-            var allSteamIdsFromUserMappings = _settings.UserMappings.Select(um => um.SteamId).ToList();
-            var missingSteamMappings = currentPlayersOnServer
-                .Where(p => !allSteamIdsFromUserMappings.Contains(p.SteamId, StringComparer.CurrentCultureIgnoreCase))
-                .ToList();
-
-            var currentPlayerDiscordSnowflakes = currentPlayerMappings
-                .Select(p => p.DiscordId)
-                .ToList();
-
-            var discordAccountsForCurrentPlayers = guild.Users
-                .Where(u => currentPlayerDiscordSnowflakes.Contains(u.Id))
-                .ToList();
-
-            _logger.LogDebug("Discord accounts found from mappings ({0}):", discordAccountsForCurrentPlayers.Count);
-            for (var i = 0; i < discordAccountsForCurrentPlayers.Count; i++)
-            {
-                _logger.LogDebug("  {0}: {1} - {2}", i,
-                    discordAccountsForCurrentPlayers[i].Id, discordAccountsForCurrentPlayers[i].Username);
-            }
 
             _logger.LogDebug("Getting current voice channel users.");
 
@@ -118,118 +78,198 @@ namespace Left4DeadHelper.Services
             var usersInPrimaryChannel = getPrimaryChannelUsersTask.Result.ToList();
             var usersInSecondaryChannel = getSecondaryChannelUsersTask.Result.ToList();
 
-            _logger.LogDebug("Discord accounts found from mappings ({0}):", discordAccountsForCurrentPlayers.Count);
-            for (var i = 0; i < discordAccountsForCurrentPlayers.Count; i++)
+            _logger.LogDebug("Current players per PrintInfo results ({0}):", currentPlayersOnServer.Count);
+            for (var i = 0; i < currentPlayersOnServer.Count; i++)
             {
-                _logger.LogDebug("  {0}: {1} - {2}", i,
-                    discordAccountsForCurrentPlayers[i].Id, discordAccountsForCurrentPlayers[i].Username);
+                _logger.LogDebug("  {0}: {1} - {2}", i, currentPlayersOnServer[i].SteamId, currentPlayersOnServer[i].Name);
             }
+            if (!currentPlayersOnServer.Any()) reunite = true;
 
-            var discordSnowflakesInVoice = usersInPrimaryChannel.Select(u => u.Id)
-                .Concat(usersInSecondaryChannel.Select(u => u.Id))
-                .ToList();
+            var discordUsersToMove = new List<(ISocketGuildUserWrapper user, ISocketVoiceChannelWrapper intendedChannel)>();
 
-            var missingDiscordMappings = discordAccountsForCurrentPlayers.Where(d =>
-                    !discordSnowflakesInVoice.Contains(d.Id))
-                .ToList();
-
-            if (missingSteamMappings.Any())
+            if (reunite)
             {
-                _logger.LogDebug("Current Steam users MISSING from mapping ({0}):", missingSteamMappings.Count);
-                for (var i = 0; i < missingSteamMappings.Count; i++)
+                foreach (var userInSecondaryChannel in usersInSecondaryChannel)
                 {
-                    result.UnmappedSteamUsers.Add(new UnmappedSteamUser(missingSteamMappings[i].Name, missingSteamMappings[i].SteamId));
-                    _logger.LogDebug("  {0}: {1} - {2}", i, missingSteamMappings[i].SteamId, missingSteamMappings[i].Name);
+                    var discordAccountForUser = guild.Users.FirstOrDefault(u => u.Id == userInSecondaryChannel.Id);
+
+                    if (discordAccountForUser != null)
+                    {
+                        discordUsersToMove.Add((discordAccountForUser, primaryVoiceChannel));
+                    }
                 }
             }
-            if (missingDiscordMappings.Any())
+            else
             {
-                _logger.LogDebug("Current Discord users MISSING from mapping ({0}):", missingDiscordMappings.Count);
-                for (var i = 0; i < missingDiscordMappings.Count; i++)
+                var currentlyPlayingSteamIds = currentPlayersOnServer
+                .Select(p => p.SteamId)
+                .ToList();
+
+                var currentPlayerMappings = _settings.UserMappings
+                    .Where(d => currentlyPlayingSteamIds.Contains(d.SteamId, StringComparer.CurrentCultureIgnoreCase))
+                    .ToList();
+
+                _logger.LogDebug("Current players found in mapping data ({0}):", currentPlayerMappings.Count);
+                for (var i = 0; i < currentPlayerMappings.Count; i++)
                 {
-                    _logger.LogDebug("  {0}: {1} - \"{2}\" (\"{3}\")",
-                        i,
-                        missingDiscordMappings[i].Id,
-                        missingDiscordMappings[i].Nickname,
-                        missingDiscordMappings[i].Username);
+                    _logger.LogDebug("  {0}: {1} - {2} - {3}", i,
+                        currentPlayerMappings[i].SteamId, currentPlayerMappings[i].DiscordId, currentPlayerMappings[i].Name);
+                }
+
+                var allSteamIdsFromUserMappings = _settings.UserMappings.Select(um => um.SteamId).ToList();
+                var missingSteamMappings = currentPlayersOnServer
+                    .Where(p => !allSteamIdsFromUserMappings.Contains(p.SteamId, StringComparer.CurrentCultureIgnoreCase))
+                    .ToList();
+
+                var currentPlayerDiscordSnowflakes = currentPlayerMappings
+                    .Select(p => p.DiscordId)
+                    .ToList();
+
+                var discordAccountsForCurrentPlayers = guild.Users
+                    .Where(u => currentPlayerDiscordSnowflakes.Contains(u.Id))
+                    .ToList();
+
+                _logger.LogDebug("Discord accounts found from mappings ({0}):", discordAccountsForCurrentPlayers.Count);
+                for (var i = 0; i < discordAccountsForCurrentPlayers.Count; i++)
+                {
+                    _logger.LogDebug("  {0}: {1} - {2}", i,
+                        discordAccountsForCurrentPlayers[i].Id, discordAccountsForCurrentPlayers[i].Username);
+                }
+
+                _logger.LogDebug("Discord accounts found from mappings ({0}):", discordAccountsForCurrentPlayers.Count);
+                for (var i = 0; i < discordAccountsForCurrentPlayers.Count; i++)
+                {
+                    _logger.LogDebug("  {0}: {1} - {2}", i,
+                        discordAccountsForCurrentPlayers[i].Id, discordAccountsForCurrentPlayers[i].Username);
+                }
+
+                var discordSnowflakesInVoice = usersInPrimaryChannel.Select(u => u.Id)
+                    .Concat(usersInSecondaryChannel.Select(u => u.Id))
+                    .ToList();
+
+                var missingDiscordMappings = discordAccountsForCurrentPlayers.Where(d =>
+                        !discordSnowflakesInVoice.Contains(d.Id))
+                    .ToList();
+
+                if (missingSteamMappings.Any())
+                {
+                    _logger.LogDebug("Current Steam users MISSING from mapping ({0}):", missingSteamMappings.Count);
+                    for (var i = 0; i < missingSteamMappings.Count; i++)
+                    {
+                        result.UnmappedSteamUsers.Add(new UnmappedSteamUser(missingSteamMappings[i].Name, missingSteamMappings[i].SteamId));
+                        _logger.LogDebug("  {0}: {1} - {2}", i, missingSteamMappings[i].SteamId, missingSteamMappings[i].Name);
+                    }
+                }
+                if (missingDiscordMappings.Any())
+                {
+                    _logger.LogDebug("Current Discord users MISSING from mapping ({0}):", missingDiscordMappings.Count);
+                    for (var i = 0; i < missingDiscordMappings.Count; i++)
+                    {
+                        _logger.LogDebug("  {0}: {1} - \"{2}\" (\"{3}\")",
+                            i,
+                            missingDiscordMappings[i].Id,
+                            missingDiscordMappings[i].Nickname,
+                            missingDiscordMappings[i].Username);
+                    }
+                }
+
+                foreach (var discordAccount in discordAccountsForCurrentPlayers)
+                {
+                    ISocketVoiceChannelWrapper currentVoiceChannel;
+
+                    if (usersInPrimaryChannel != null && usersInPrimaryChannel.Any(u => u.Id == discordAccount.Id))
+                    {
+                        currentVoiceChannel = primaryVoiceChannel;
+
+                        _logger.LogDebug("{0} ({1}) found in primary channel.", discordAccount.Username, discordAccount.Id);
+                    }
+                    else if (usersInSecondaryChannel != null && usersInSecondaryChannel.Any(u => u.Id == discordAccount.Id))
+                    {
+                        currentVoiceChannel = secondaryVoiceChannel;
+
+                        _logger.LogDebug("{0} ({1}) found in secondary channel.", discordAccount.Username, discordAccount.Id);
+                    }
+                    else
+                    {
+                        _logger.LogDebug("Skipping {0} ({1}): not in voice chat.",
+                            discordAccount.Username, discordAccount.Id);
+                        continue;
+                    }
+
+                    if (primaryVoiceChannel.Id != currentVoiceChannel.Id && secondaryVoiceChannel.Id != currentVoiceChannel.Id)
+                    {
+                        _logger.LogDebug("Skipping {0} ({1}): not in a designated voice channel.",
+                            discordAccount.Username, discordAccount.Id);
+                        continue;
+                    }
+
+                    var userMapping = _settings.UserMappings.FirstOrDefault(um => um.DiscordId == discordAccount.Id);
+                    if (userMapping == null)
+                    {
+                        _logger.LogDebug("Skipping {0} ({1}): Couldn't find user mapping.",
+                            discordAccount.Username, discordAccount.Id);
+                        continue;
+                    }
+
+                    var usersPrintInfo = printInfo.Players.FirstOrDefault(pi => userMapping.SteamId.Equals(pi.SteamId, StringComparison.CurrentCultureIgnoreCase));
+                    if (usersPrintInfo == null)
+                    {
+                        _logger.LogDebug("Skipping {0} ({1}): Couldn't find user's Steam ID in PrintInfo results.",
+                            discordAccount.Username, discordAccount.Id);
+                        continue;
+                    }
+
+                    ISocketVoiceChannelWrapper intendedChannel;
+                    if (usersPrintInfo.TeamIndex == PrintInfo.TeamIndexSurvivor)
+                    {
+                        intendedChannel = primaryVoiceChannel;
+                    }
+                    else if (usersPrintInfo.TeamIndex == PrintInfo.TeamIndexInfected)
+                    {
+                        intendedChannel = secondaryVoiceChannel;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+
+                    discordUsersToMove.Add((discordAccount, intendedChannel));
                 }
             }
 
-            result.Success = true;
-
-            foreach (var discordAccount in discordAccountsForCurrentPlayers)
+            foreach (var (user, intendedChannel) in discordUsersToMove)
             {
                 ISocketVoiceChannelWrapper currentVoiceChannel;
 
-                if (usersInPrimaryChannel != null && usersInPrimaryChannel.Any(u => u.Id == discordAccount.Id))
+                if (usersInPrimaryChannel != null && usersInPrimaryChannel.Any(u => u.Id == user.Id))
                 {
                     currentVoiceChannel = primaryVoiceChannel;
-
-                    _logger.LogDebug("{0} ({1}) found in primary channel.", discordAccount.Username, discordAccount.Id);
                 }
-                else if (usersInSecondaryChannel != null && usersInSecondaryChannel.Any(u => u.Id == discordAccount.Id))
+                else if (usersInSecondaryChannel != null && usersInSecondaryChannel.Any(u => u.Id == user.Id))
                 {
                     currentVoiceChannel = secondaryVoiceChannel;
-
-                    _logger.LogDebug("{0} ({1}) found in secondary channel.", discordAccount.Username, discordAccount.Id);
                 }
                 else
                 {
-                    _logger.LogDebug("Skipping {0} ({1}): not in voice chat.",
-                        discordAccount.Username, discordAccount.Id);
-                    continue;
-                }
-
-                if (primaryVoiceChannel.Id != currentVoiceChannel.Id && secondaryVoiceChannel.Id != currentVoiceChannel.Id)
-                {
-                    _logger.LogDebug("Skipping {0} ({1}): not in a designated voice channel.",
-                        discordAccount.Username, discordAccount.Id);
-                    continue;
-                }
-
-                var userMapping = _settings.UserMappings.FirstOrDefault(um => um.DiscordId == discordAccount.Id);
-                if (userMapping == null)
-                {
-                    _logger.LogDebug("Skipping {0} ({1}): Couldn't find user mapping.",
-                        discordAccount.Username, discordAccount.Id);
-                    continue;
-                }
-
-                var usersPrintInfo = printInfo.Players.FirstOrDefault(pi => userMapping.SteamId.Equals(pi.SteamId, StringComparison.CurrentCultureIgnoreCase));
-                if (usersPrintInfo == null)
-                {
-                    _logger.LogDebug("Skipping {0} ({1}): Couldn't find user's Steam ID in PrintInfo results.",
-                        discordAccount.Username, discordAccount.Id);
-                    continue;
-                }
-
-                ISocketVoiceChannelWrapper intendedChannel;
-                if (usersPrintInfo.TeamIndex == PrintInfo.TeamIndexSurvivor)
-                {
-                    intendedChannel = primaryVoiceChannel;
-                }
-                else if (usersPrintInfo.TeamIndex == PrintInfo.TeamIndexInfected)
-                {
-                    intendedChannel = secondaryVoiceChannel;
-                }
-                else
-                {
+                    // Not in voice chat
                     continue;
                 }
 
                 if (currentVoiceChannel.Id != intendedChannel.Id)
                 {
                     _logger.LogDebug("Moving {0} ({1}) to other voice channel (from {2} to {3}).",
-                        discordAccount.Username, discordAccount.Id,
+                        user.Username, user.Id,
                         currentVoiceChannel.Name, intendedChannel.Name);
 
-                    await discordAccount.ModifyAsync(p => p.ChannelId = intendedChannel.Id);
+                    await user.ModifyAsync(p => p.ChannelId = intendedChannel.Id);
 
                     await Task.Delay(TimeSpan.FromSeconds(1));
 
                     result.MoveCount++;
                 }
             }
+
+            result.Success = true;
 
             return result;
         }
