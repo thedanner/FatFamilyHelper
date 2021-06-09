@@ -57,9 +57,19 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
 
         public virtual bool? IsPending => _socketGuildUser.IsPending;
 
+        public virtual Task AddRoleAsync(ulong roleId, RequestOptions? options = null)
+        {
+            return _socketGuildUser.AddRoleAsync(roleId, options);
+        }
+
         public virtual Task AddRoleAsync(IRole role, RequestOptions? options = null)
         {
             return _socketGuildUser.AddRoleAsync(role, options);
+        }
+
+        public virtual Task AddRolesAsync(IEnumerable<ulong> roleIds, RequestOptions? options = null)
+        {
+            return _socketGuildUser.AddRolesAsync(roleIds, options);
         }
 
         public virtual Task AddRolesAsync(IEnumerable<IRole> roles, RequestOptions? options = null)
@@ -82,9 +92,19 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
             return _socketGuildUser.ModifyAsync(func, options);
         }
 
+        public virtual Task RemoveRoleAsync(ulong roleId, RequestOptions? options = null)
+        {
+            return _socketGuildUser.RemoveRoleAsync(roleId, options);
+        }
+
         public virtual Task RemoveRoleAsync(IRole role, RequestOptions? options = null)
         {
             return _socketGuildUser.RemoveRoleAsync(role, options);
+        }
+
+        public virtual Task RemoveRolesAsync(IEnumerable<ulong> roleIds, RequestOptions? options = null)
+        {
+            return _socketGuildUser.RemoveRolesAsync(roleIds, options);
         }
 
         public virtual Task RemoveRolesAsync(IEnumerable<IRole> roles, RequestOptions? options = null)

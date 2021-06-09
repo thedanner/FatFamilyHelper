@@ -36,6 +36,10 @@
   </ItemGroup>
   
   <ItemGroup>
+    <ProjectReference Include="..\Left4DeadHelper.Sprays\Left4DeadHelper.Sprays.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <None Update="appSettings.Template.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>

@@ -6,5 +6,7 @@
         public const string GroupL4d2 = "l4d2";
 
         public const string GroupJesssicaDaniellleVoice = "jd";
+
+        public const string GroupSprayMe = "sprayme";
     }
 }

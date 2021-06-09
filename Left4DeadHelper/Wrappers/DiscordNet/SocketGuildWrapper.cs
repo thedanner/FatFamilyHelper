@@ -362,6 +362,11 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
             return _socketGuild.GetEmoteAsync(id, options);
         }
 
+        public virtual Task<IReadOnlyCollection<GuildEmote>> GetEmotesAsync(RequestOptions? options = null)
+        {
+            return _socketGuild.GetEmotesAsync(options);
+        }
+
         public virtual Task<IReadOnlyCollection<RestGuildIntegration>> GetIntegrationsAsync(RequestOptions? options = null)
         {
             return _socketGuild.GetIntegrationsAsync(options);
