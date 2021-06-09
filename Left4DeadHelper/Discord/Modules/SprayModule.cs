@@ -75,7 +75,11 @@ namespace Left4DeadHelper.Discord.Modules
             }
 
             // No source found
-            if (imageUri == null) return;
+            if (imageUri == null)
+            {
+                _logger.LogInformation("Couldn't resolve an image URI; nothing to convert.");
+                return;
+            }
 
             try
             {
