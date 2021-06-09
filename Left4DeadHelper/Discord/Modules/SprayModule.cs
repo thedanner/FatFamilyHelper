@@ -42,12 +42,14 @@ namespace Left4DeadHelper.Discord.Modules
                 // All good here.
                 _logger.LogInformation("Got URL as first token in message.");
             }
-            else if (Context.Message.Attachments.Any())
+            
+            if (imageUri == null && Context.Message.Attachments.Any())
             {
                 _logger.LogInformation("Got URL as attachment message.");
                 Uri.TryCreate(Context.Message.Attachments.First().Url, UriKind.Absolute, out imageUri);
             }
-            else if (Context.Message.ReferencedMessage != null)
+
+            if (imageUri == null && Context.Message.ReferencedMessage != null)
             {
                 _logger.LogInformation("Checking referenced message.");
 
@@ -67,7 +69,8 @@ namespace Left4DeadHelper.Discord.Modules
                         // All good here.
                     }
                 }
-                else if (originalMessage.Attachments.Any())
+
+                if (imageUri == null && originalMessage.Attachments.Any())
                 {
                     _logger.LogInformation("Got URL as first attachment in referenced message.");
                     Uri.TryCreate(originalMessage.Attachments.First().Url, UriKind.Absolute, out imageUri);

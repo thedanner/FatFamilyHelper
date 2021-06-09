@@ -11,8 +11,8 @@ namespace Left4DeadHelper.Sprays
 {
     public class SprayTools
     {
-        private const int MaxWidth = 1024;
-        private const int MaxHeight = 1024;
+        private const int MaxWidth = 256;
+        private const int MaxHeight = 256;
 
         // TODO: support animated sprays
         // TODO: optionally support VDF format?
