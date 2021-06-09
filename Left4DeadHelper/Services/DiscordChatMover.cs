@@ -160,6 +160,7 @@ namespace Left4DeadHelper.Services
                         _logger.LogDebug("  {0}: {1} - {2}", i, missingSteamMappings[i].SteamId, missingSteamMappings[i].Name);
                     }
                 }
+
                 if (missingDiscordMappings.Any())
                 {
                     _logger.LogDebug("Current Discord users MISSING from mapping ({0}):", missingDiscordMappings.Count);

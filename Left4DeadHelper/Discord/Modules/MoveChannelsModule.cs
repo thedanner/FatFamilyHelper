@@ -68,10 +68,8 @@ namespace Left4DeadHelper.Discord.Modules
                         replyMessage = $"{moveResult.MoveCount} players moved.";
                     }
 
-
                     if (moveResult.UnmappedSteamUsers.Any())
                     {
-
                         string whoShouldFix;
                         if (guildSettings != null && guildSettings.ConfigMaintainers.Any())
                         {
