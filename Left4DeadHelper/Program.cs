@@ -5,26 +5,20 @@ using Discord.WebSocket;
 using Left4DeadHelper.Discord.Handlers;
 using Left4DeadHelper.Models;
 using Left4DeadHelper.Services;
-using Left4DeadHelper.Wrappers.DiscordNet;
 using Left4DeadHelper.Wrappers.Rcon;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.EventLog;
-using Newtonsoft.Json;
-using NLog;
 using NLog.Extensions.Logging;
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Security.Cryptography;
-using System.Threading;
 using System.Threading.Tasks;
-using Windows.UI.Notifications;
 
 namespace Left4DeadHelper
 {
