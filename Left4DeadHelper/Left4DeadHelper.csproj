@@ -21,7 +21,7 @@
   <ItemGroup>
     <PackageReference Include="CoreRCON" Version="5.0.2" />
     <PackageReference Include="Crc32.NET" Version="1.2.0" />
-    <PackageReference Include="Discord.Net" Version="2.3.0" />
+    <PackageReference Include="Discord.Net" Version="2.4.0" />
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
@@ -29,10 +29,10 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="5.0.1" />
     <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.19041.1" />
-    <PackageReference Include="NLog" Version="4.7.8" />
-    <PackageReference Include="NLog.Extensions.Logging" Version="1.7.1" />
-    <PackageReference Include="NLog.Schema" Version="4.7.8" />
-    <PackageReference Include="SharpZipLib" Version="1.3.1" />
+    <PackageReference Include="NLog" Version="4.7.10" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="1.7.2" />
+    <PackageReference Include="NLog.Schema" Version="4.7.10" />
+    <PackageReference Include="SharpZipLib" Version="1.3.2" />
   </ItemGroup>
   
   <ItemGroup>
