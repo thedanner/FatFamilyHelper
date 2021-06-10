@@ -95,8 +95,23 @@ namespace Left4DeadHelper.Discord.Modules
                 var convertedStream = await sprayTools.ConvertAsync(sourceStream, CancellationToken.None);
 
                 var filePart = imageUri.LocalPath;
-                if (filePart.Contains('/')) filePart = filePart.Substring(filePart.LastIndexOf('/') + 1);
-                filePart = Path.ChangeExtension(filePart, ".tga");
+
+                if (filePart.Contains('/'))
+                {
+                    filePart = filePart.Substring(filePart.LastIndexOf('/') + 1);
+                    if (string.IsNullOrEmpty(filePart))
+                    {
+                        filePart = "spray.tga";
+                    }
+                    else
+                    {
+                        filePart = Path.ChangeExtension(filePart, ".tga");
+                    }
+                }
+                else if (string.IsNullOrEmpty(filePart))
+                {
+                    filePart = "spray.tga";
+                }
 
                 await Context.Channel.SendFileAsync(convertedStream, filePart, "Here ya go!", messageReference: replyToMessageRef);
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
