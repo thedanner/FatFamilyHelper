@@ -1,6 +1,7 @@
-#define VERSION "0.0.2"
+#define VERSION "1.0.0"
 /*
 Version history:
+2021-06-10  1.0.0 - Make generic, remove references to l4d. Bump to v1.
 2021-02-23  0.0.2 - Minor metadata and comment tweaks.
 2020-11-15  0.0.1 - Initial release.
 */
