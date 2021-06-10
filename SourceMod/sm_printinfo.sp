@@ -1,8 +1,3 @@
-/*
-  TODO:
-- Remove L4D-specific references in the source since the plugin itself uses both indexes and game-specific team names.
-*/
-
 #define VERSION "0.0.2"
 /*
 Version history:
@@ -22,16 +17,10 @@ x04 = Green (yellow/orange in L4D)
 #include <sourcemod>
 #include <sdktools>
 
-// constants.sp
-#define L4D_TEAM_UNASSIGNED 0
-#define L4D_TEAM_SPECTATOR 1
-#define L4D_TEAM_SURVIVORS 2
-#define L4D_TEAM_INFECTED 3
-
 
 public Plugin:myinfo = 
 {
-	name = "[L4D] Print Info",
+	name = "[SM] Print Info",
 	author = "The Danner",
 	description = "Prints misc. player info. Meant to be consumed and parsed by other components that can execute a command via rcon.",
 	version = VERSION,
@@ -47,7 +36,7 @@ public OnPluginStart()
 		"Prints player information.");
 	
 	CreateConVar(
-		"l4d_printinfo_version",
+		"sm_printinfo_version",
 		VERSION,
 		"Print Info plugin version",
 		FCVAR_SPONLY|FCVAR_NOTIFY|FCVAR_REPLICATED|FCVAR_DONTRECORD);
@@ -66,9 +55,7 @@ public Action Command_PrintInfo(client, args)
 			int team = GetClientTeam(i);
 			GetTeamName(team, teamName, sizeof(teamName));
 			
-			if (team == L4D_TEAM_SPECTATOR
-				|| team == L4D_TEAM_SURVIVORS
-				|| team == L4D_TEAM_INFECTED)
+			if (team > 0)
 			{
 				// Output line is "[PI] %L<%i><%s>" in SourceMod string formatting.
 				// https://wiki.alliedmods.net/Format_Class_Functions_(SourceMod_Scripting)

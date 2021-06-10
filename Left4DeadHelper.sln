@@ -12,7 +12,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{35200FB1-1B3B-48C9-9FD0-CF8A68C87DD9}"
 	ProjectSection(SolutionItems) = preProject
 		Directory.Build.Targets = Directory.Build.Targets
-		SourceMod\l4d2_printinfo.sp = SourceMod\l4d2_printinfo.sp
+		SourceMod\sm_printinfo.sp = SourceMod\sm_printinfo.sp
 	EndProjectSection
 EndProject
 Global
