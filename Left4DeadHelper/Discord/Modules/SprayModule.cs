@@ -17,10 +17,10 @@ namespace Left4DeadHelper.Discord.Modules
     [Group(Constants.GroupSprayMe)]
     public class SprayModule : ModuleBase<SocketCommandContext>
     {
-        private readonly ILogger<PickMapModule> _logger;
+        private readonly ILogger<SprayModule> _logger;
         private readonly Settings _settings;
 
-        public SprayModule(ILogger<PickMapModule> logger, Settings settings)
+        public SprayModule(ILogger<SprayModule> logger, Settings settings)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
@@ -28,7 +28,6 @@ namespace Left4DeadHelper.Discord.Modules
 
         [Command]
         [Summary("Converts an image into a Source engine-compatible spray")]
-        [RequireUserPermission(GuildPermission.ManageRoles)]
         public async Task HandleCommandAsync(string? url = null)
         {
             var client = new WebClient();
