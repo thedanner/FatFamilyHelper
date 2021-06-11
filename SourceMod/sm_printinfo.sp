@@ -18,8 +18,10 @@ x04 = Green (yellow/orange in L4D)
 #include <sourcemod>
 #include <sdktools>
 
+#pragma newdecls required
 
-public Plugin:myinfo = 
+
+public Plugin myinfo = 
 {
 	name = "[SM] Print Info",
 	author = "The Danner",
@@ -29,7 +31,7 @@ public Plugin:myinfo =
 }
 
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	RegConsoleCmd(
 		"sm_printinfo",
@@ -43,7 +45,7 @@ public OnPluginStart()
 		FCVAR_SPONLY|FCVAR_NOTIFY|FCVAR_REPLICATED|FCVAR_DONTRECORD);
 }
 
-public Action Command_PrintInfo(client, args)
+public Action Command_PrintInfo(int client, int args)
 {
 	char teamName[16];
 	
