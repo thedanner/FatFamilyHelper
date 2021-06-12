@@ -1,14 +1,17 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
+using Left4DeadHelper.Discord.EventInterfaces;
 using Left4DeadHelper.Discord.Modules;
 using Left4DeadHelper.Models;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Left4DeadHelper.Discord.Handlers
 {
-    public class CommandHandler : IDisposable
+    public class CommandAndEventHandler : IDisposable
     {
         private readonly DiscordSocketClient _client;
         private readonly CommandService _commandService;
@@ -18,7 +21,7 @@ namespace Left4DeadHelper.Discord.Handlers
         private bool disposedValue;
 
         // Retrieve client and CommandService instance via ctor
-        public CommandHandler(DiscordSocketClient client, CommandService commandService, Settings settings, IServiceProvider serviceProvider)
+        public CommandAndEventHandler(DiscordSocketClient client, CommandService commandService, Settings settings, IServiceProvider serviceProvider)
         {
             _client = client ?? throw new ArgumentNullException(nameof(client));
             _commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
@@ -30,6 +33,8 @@ namespace Left4DeadHelper.Discord.Handlers
         {
             // Hook the MessageReceived event into our command handler
             _client.MessageReceived += HandleCommandAsync;
+
+            _client.ReactionAdded += HandleReactionAddedAsync;
 
             // Here we discover all of the command modules in the entry 
             // assembly and load them. Starting from Discord.NET 2.0, a
@@ -70,6 +75,13 @@ namespace Left4DeadHelper.Discord.Handlers
                 services: _serviceProvider);
         }
 
+        private async Task HandleReactionAddedAsync(Cacheable<IUserMessage, ulong> maybeCachedMessage, ISocketMessageChannel channel, SocketReaction reaction)
+        {
+            var implementingServices = _serviceProvider.GetServices<IHandleReactionAddedAsync>();
+
+            await Task.WhenAll(implementingServices.Select(s => s.HandleReactionAddedAsync(maybeCachedMessage, channel, reaction)));
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -77,6 +89,7 @@ namespace Left4DeadHelper.Discord.Handlers
                 if (disposing)
                 {
                     _client.MessageReceived -= HandleCommandAsync;
+                    _client.ReactionAdded -= HandleReactionAddedAsync;
                 }
 
                 disposedValue = true;

@@ -1,10 +1,13 @@
 ﻿using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
+using Left4DeadHelper.Exceptions;
 using Left4DeadHelper.Helpers;
 using Left4DeadHelper.Models;
 using Left4DeadHelper.Sprays;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -20,11 +23,16 @@ namespace Left4DeadHelper.Discord.Modules
         private readonly ILogger<SprayModule> _logger;
         private readonly Settings _settings;
 
+        private const string DeleteEmojiString = "\u274C";
+        public static Emoji DeleteEmote => new Emoji(DeleteEmojiString);
+
         public SprayModule(ILogger<SprayModule> logger, Settings settings)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
+
+        // CROSS MARK emoji https://www.fileformat.info/info/emoji/x/index.htm
 
         [Command]
         [Summary("Converts an image into a Source engine-compatible spray")]
@@ -36,19 +44,32 @@ namespace Left4DeadHelper.Discord.Modules
             _logger.LogInformation("Triggered by message with ID {0}.", Context.Message.Id);
 
             Uri? imageUri = null;
-            if (url != null && Uri.TryCreate(url, UriKind.Absolute, out imageUri))
+            var imageUris = new List<Uri>();
+
+            if (url != null
+                && Uri.TryCreate(url, UriKind.Absolute, out imageUri)
+                && imageUri != null)
             {
-                // All good here.
+                imageUris.Add(imageUri);
                 _logger.LogInformation("Got URL as first token in message.");
             }
             
-            if (imageUri == null && Context.Message.Attachments.Any())
+            if (!imageUris.Any() && Context.Message.Attachments.Any())
             {
-                _logger.LogInformation("Got URL as attachment message.");
-                Uri.TryCreate(Context.Message.Attachments.First().Url, UriKind.Absolute, out imageUri);
+                foreach (var attachement in Context.Message.Attachments)
+                {
+                    if (Uri.TryCreate(attachement.Url, UriKind.Absolute, out imageUri)
+                        && imageUri != null)
+                    {
+                        imageUris.Add(imageUri);
+                    }
+                }
+
+                
+                _logger.LogInformation("Got {count} URL(s) as attachment message.", imageUris.Count);
             }
 
-            if (imageUri == null && Context.Message.ReferencedMessage != null)
+            if (!imageUris.Any() && Context.Message.ReferencedMessage != null)
             {
                 _logger.LogInformation("Checking referenced message.");
 
@@ -64,15 +85,23 @@ namespace Left4DeadHelper.Discord.Modules
 
                     if (firstToken != null && Uri.TryCreate(firstToken, UriKind.Absolute, out imageUri))
                     {
+                        imageUris.Add(imageUri);
                         _logger.LogInformation("Got URL as first token in referenced message.");
-                        // All good here.
                     }
                 }
 
                 if (imageUri == null && originalMessage.Attachments.Any())
                 {
-                    _logger.LogInformation("Got URL as first attachment in referenced message.");
-                    Uri.TryCreate(originalMessage.Attachments.First().Url, UriKind.Absolute, out imageUri);
+                    foreach (var attachement in originalMessage.Attachments)
+                    {
+                        if (Uri.TryCreate(attachement.Url, UriKind.Absolute, out imageUri)
+                            && imageUri != null)
+                        {
+                            imageUris.Add(imageUri);
+                        }
+                    }
+
+                    _logger.LogInformation("Got {count} URL(s) as first attachment in referenced message.", imageUris.Count);
                 }
             }
 
@@ -91,29 +120,46 @@ namespace Left4DeadHelper.Discord.Modules
                 using var sourceStream = await client.OpenReadTaskAsync(imageUri);
 
                 var sprayTools = new SprayTools();
-                var convertedStream = await sprayTools.ConvertAsync(sourceStream, CancellationToken.None);
 
-                var filePart = imageUri.LocalPath;
-
-                if (filePart.Contains('/'))
+                foreach (var sourceImageUri in imageUris)
                 {
-                    filePart = filePart.Substring(filePart.LastIndexOf('/') + 1);
-                    if (string.IsNullOrEmpty(filePart))
+                    try
                     {
-                        filePart = "spray.tga";
+                        var convertedStream = await sprayTools.ConvertAsync(sourceStream, CancellationToken.None);
+
+                        var fileName = sourceImageUri.LocalPath;
+
+                        if (fileName.Contains('/'))
+                        {
+                            fileName = fileName.Substring(fileName.LastIndexOf('/') + 1);
+                            if (string.IsNullOrEmpty(fileName))
+                            {
+                                fileName = $"spray.tga";
+                            }
+                            else
+                            {
+                                fileName = Path.ChangeExtension(fileName, ".tga");
+                            }
+                        }
+                        else if (string.IsNullOrEmpty(fileName))
+                        {
+                            fileName = $"spray.tga";
+                        }
+
+                        var sprayMessage = await Context.Channel.SendFileAsync(
+                            convertedStream, fileName,
+                            $"Here ya go!\n\n(If you requested the conversion, react with {DeleteEmojiString} to delete this message.)",
+                            messageReference: replyToMessageRef);
+                        await Task.Delay(TimeSpan.FromMilliseconds(500));
+
+                        await sprayMessage.AddReactionAsync(DeleteEmote);
+                        await Task.Delay(TimeSpan.FromMilliseconds(500));
                     }
-                    else
+                    catch (UnsupportedImageFormatException)
                     {
-                        filePart = Path.ChangeExtension(filePart, ".tga");
+                        continue;
                     }
                 }
-                else if (string.IsNullOrEmpty(filePart))
-                {
-                    filePart = "spray.tga";
-                }
-
-                await Context.Channel.SendFileAsync(convertedStream, filePart, "Here ya go!", messageReference: replyToMessageRef);
-                await Task.Delay(TimeSpan.FromMilliseconds(500));
 
                 await tempMessage.DeleteAsync();
             }

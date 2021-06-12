@@ -20,14 +20,14 @@ namespace Left4DeadHelper
 
         // Singleton IDisposables
         private readonly DiscordSocketClient _client;
-        private readonly CommandHandler _commandHandler;
+        private readonly CommandAndEventHandler _commandHandler;
         private readonly RNGCryptoServiceProvider _random;
 
         public Worker(
             ILogger<Worker> logger,
             IDiscordConnectionBootstrapper bootstrapper,
             // Singleton IDisposables
-            DiscordSocketClient client, CommandHandler commandHandler, RNGCryptoServiceProvider random)
+            DiscordSocketClient client, CommandAndEventHandler commandHandler, RNGCryptoServiceProvider random)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _bootstrapper = bootstrapper ?? throw new ArgumentNullException(nameof(bootstrapper));
