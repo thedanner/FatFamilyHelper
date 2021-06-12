@@ -2,9 +2,11 @@ using CoreRCON;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Left4DeadHelper.Discord.EventInterfaces;
 using Left4DeadHelper.Discord.Handlers;
 using Left4DeadHelper.Models;
 using Left4DeadHelper.Services;
+using Left4DeadHelper.Sprays;
 using Left4DeadHelper.Wrappers.Rcon;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,11 +15,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.EventLog;
 using NLog.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Left4DeadHelper
@@ -96,7 +101,7 @@ namespace Left4DeadHelper
             serviceCollection.AddLogging(loggerBuilder =>
             {
                 loggerBuilder.ClearProviders();
-                loggerBuilder.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Debug);
+                loggerBuilder.SetMinimumLevel(LogLevel.Debug);
                 loggerBuilder.AddNLog(config);
             });
 
@@ -125,15 +130,50 @@ namespace Left4DeadHelper
                         | GatewayIntents.GuildVoiceStates
                         | GatewayIntents.GuildPresences
                         | GatewayIntents.GuildMessages
+                        | GatewayIntents.GuildMessageReactions
                 });
             });
             
-            serviceCollection.AddSingleton<CommandHandler>();
+            serviceCollection.AddSingleton<CommandAndEventHandler>();
 
             var serverInfo = settings.Left4DeadSettings.ServerInfo;
 
             serviceCollection.AddTransient(sp => new RCON(new IPEndPoint(IPAddress.Parse(serverInfo.Ip), serverInfo.Port), serverInfo.RconPassword));
             serviceCollection.AddTransient<IRCONWrapper, RCONWrapper>();
+
+            // More specific handlers
+            BindEventHandlers(serviceCollection);
+        }
+
+        private static void BindEventHandlers(IServiceCollection serviceCollection)
+        {
+            var allLoadedTypes = AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes());
+
+            var handlerTypes = new List<Type>();
+            var eventInterfaceTypes = new List<Type>();
+
+            // Do all the filtering and sorting in one pass over the loaded types list.
+            foreach (var type in allLoadedTypes)
+            {
+                if (typeof(IHandleDiscordEvents).IsAssignableFrom(type) && !type.IsInterface && !type.IsAbstract)
+                {
+                    handlerTypes.Add(type);
+                }
+                else if (type != typeof(IHandleDiscordEvents)
+                    && typeof(IHandleDiscordEvents).IsAssignableFrom(type)
+                    && type.IsInterface)
+                {
+                    eventInterfaceTypes.Add(type);
+                }
+            }
+
+            foreach (var handlerType in handlerTypes)
+            {
+                foreach (var implmenetedHandlerInterface in handlerType.GetInterfaces().Intersect(eventInterfaceTypes))
+                {
+                    serviceCollection.AddTransient(implmenetedHandlerInterface, handlerType);
+                }
+            }
         }
     }
 }

@@ -33,7 +33,7 @@ namespace Left4DeadHelper.Services
 
             client.Disconnected += async (ex) => _logger.LogError(ex, "Discord client event: Disconnected");
             client.GuildAvailable += async (guild) => _logger.LogInformation("Discord client event: GuildAvailable");
-            client.GuildMembersDownloaded += async (ex) => _logger.LogInformation("Discord client event: GuildMembersDownloaded");
+            client.GuildMembersDownloaded += async (guild) => _logger.LogInformation("Discord client event: GuildMembersDownloaded");
             client.Log += async (logMessage) =>
             {
                 var level = logMessage.Severity.ToLogLevel();
