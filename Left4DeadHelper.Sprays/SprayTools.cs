@@ -29,11 +29,11 @@ namespace Left4DeadHelper.Sprays
             var inputFormat = Image.DetectFormat(memoryStream);
             memoryStream.Position = 0;
             var inputMimeTypes = inputFormat.MimeTypes.ToList();
-            var allowedMimeTypes = new[] { "image/jpeg", "image/png" };
+            var allowedMimeTypes = new[] { "image/jpeg", "image/png", "image/x-tga", "image/x-targa" };
 
             if (!allowedMimeTypes.Intersect(inputMimeTypes).Any())
             {
-                throw new Exception($"None of the following MIME types are currently supported: \"{string.Join("\", \"", inputMimeTypes)}\".");
+                throw new UnsupportedImageFormatException(inputMimeTypes);
             }
 
             using var image = await Image.LoadAsync(Configuration.Default, memoryStream, cancellationToken);
