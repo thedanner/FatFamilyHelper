@@ -29,6 +29,29 @@ namespace Left4DeadHelper.Discord.DiscordEventHandlers
 
         public async Task HandleReactionAddedAsync(Cacheable<IUserMessage, ulong> cachedMessage, ISocketMessageChannel simpleChannel, SocketReaction reaction)
         {
+            IUserMessage reactedMessage;
+            if (cachedMessage.HasValue)
+            {
+                reactedMessage = cachedMessage.Value;
+            }
+            else
+            {
+                reactedMessage = await cachedMessage.DownloadAsync();
+                await Task.Delay(500);
+            }
+
+            if (reactedMessage == null)
+            {
+                throw new Exception($"Couldn't get the reacted-to message with ID {cachedMessage.Id}.");
+            }
+
+            // I broke sesh RSVPs by missing this check.
+            // Only consider changing the reaction if it's on a message from this bot.
+            if (reactedMessage.Author.Id != _client.CurrentUser.Id) return;
+
+            // Skip reactions made by this bot itself.
+            if (reaction.UserId == _client.CurrentUser.Id) return;
+
             IUser? reactingUser;
             if (reaction.User.IsSpecified)
             {
@@ -40,37 +63,30 @@ namespace Left4DeadHelper.Discord.DiscordEventHandlers
                 await Task.Delay(500);
             }
 
+            if (reactingUser == null)
+            {
+                throw new Exception($"Couldn't get the reacting user with ID {reaction.UserId}.");
+            }
+
             var removeEmote = await TryHandleDeleteReactionAsync(reactingUser, simpleChannel, reaction);
 
             if (removeEmote)
             {
-                var reactedMessage = await cachedMessage.GetOrDownloadAsync();
-                await Task.Delay(500);
-
                 await reactedMessage.RemoveReactionAsync(reaction.Emote, reactingUser);
                 await Task.Delay(500);
             }
         }
 
-        private async Task<bool> TryHandleDeleteReactionAsync(IUser? reactingUser, ISocketMessageChannel simpleChannel, SocketReaction reaction)
+        private async Task<bool> TryHandleDeleteReactionAsync(IUser reactingUser, ISocketMessageChannel simpleChannel, SocketReaction reaction)
         {
-            var removeEmote = true;
+            if (reactingUser == null) throw new ArgumentNullException(nameof(reactingUser));
 
-            if (!SprayModule.DeleteEmote.Equals(reaction.Emote)) return removeEmote;
-
-            if (reactingUser == null) return removeEmote;
-            if (reactingUser.Id == _client.CurrentUser.Id)
-            {
-                removeEmote = false;
-                return removeEmote;
-            }
+            if (!SprayModule.DeleteEmote.Equals(reaction.Emote)) return true;
 
             var channel = (SocketGuildChannel)simpleChannel;
 
             var message = await simpleChannel.GetMessageAsync(reaction.MessageId);
             await Task.Delay(500);
-
-            if (message.Author.Id != _client.CurrentUser.Id) return removeEmote;
 
             // Make sure we have a reference. Don't allow cross-posts.
             if (message.Reference == null
@@ -82,13 +98,13 @@ namespace Left4DeadHelper.Discord.DiscordEventHandlers
                 // and same channel
                 || message.Reference.ChannelId != message.Channel.Id)
             {
-                return removeEmote;
+                return true;
             }
 
             var referencedIMessage = await simpleChannel.GetMessageAsync(message.Reference.MessageId.Value);
             await Task.Delay(500);
 
-            if (!(referencedIMessage is IUserMessage referencedMessage)) return removeEmote;
+            if (!(referencedIMessage is IUserMessage referencedMessage)) return true;
 
             var argPos = 0;
             var referencedMessageIsBotCommand = !(
@@ -102,8 +118,7 @@ namespace Left4DeadHelper.Discord.DiscordEventHandlers
                 await message.DeleteAsync();
             }
 
-            removeEmote = false;
-            return removeEmote;
+            return false;
         }
     }
 }
