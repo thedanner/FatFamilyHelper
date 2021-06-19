@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-namespace Left4DeadHelper.Sprays
+
+namespace Left4DeadHelper.Sprays.Exceptions
 {
     [Serializable]
-    internal class UnsupportedImageFormatException : Exception
+    public class UnsupportedImageFormatException : Exception
     {
         public UnsupportedImageFormatException(IEnumerable<string> inputMimeTypes) : this(inputMimeTypes, null)
         {

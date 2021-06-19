@@ -10,7 +10,6 @@
 
         public ulong Id { get; set; }
         public DiscordVoiceChannels Channels { get; set; }
-        public RoleColors? RoleColors { get; set; }
         public DiscordUser[] ConfigMaintainers { get; set; }
         public bool ReferenceCommandsInReplies { get; internal set; }
     }

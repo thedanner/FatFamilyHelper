@@ -37,7 +37,7 @@ namespace Left4DeadHelper.Discord.DiscordEventHandlers
             else
             {
                 reactedMessage = await cachedMessage.DownloadAsync();
-                await Task.Delay(500);
+                await Task.Delay(250);
             }
 
             if (reactedMessage == null)
@@ -45,11 +45,11 @@ namespace Left4DeadHelper.Discord.DiscordEventHandlers
                 throw new Exception($"Couldn't get the reacted-to message with ID {cachedMessage.Id}.");
             }
 
-            // I broke sesh RSVPs by missing this check.
+            // I broke sesh RSVPs by missing this check :(
             // Only consider changing the reaction if it's on a message from this bot.
             if (reactedMessage.Author.Id != _client.CurrentUser.Id) return;
 
-            // Skip reactions made by this bot itself.
+            // Skip reactions made by this bot itself (notably the one it immediately adds to indicate which emote will do the delete).
             if (reaction.UserId == _client.CurrentUser.Id) return;
 
             IUser? reactingUser;
@@ -60,7 +60,7 @@ namespace Left4DeadHelper.Discord.DiscordEventHandlers
             else
             {
                 reactingUser = await _client.Rest.GetUserAsync(reaction.UserId);
-                await Task.Delay(500);
+                await Task.Delay(250);
             }
 
             if (reactingUser == null)
@@ -73,7 +73,7 @@ namespace Left4DeadHelper.Discord.DiscordEventHandlers
             if (removeEmote)
             {
                 await reactedMessage.RemoveReactionAsync(reaction.Emote, reactingUser);
-                await Task.Delay(500);
+                await Task.Delay(250);
             }
         }
 
@@ -86,7 +86,7 @@ namespace Left4DeadHelper.Discord.DiscordEventHandlers
             var channel = (SocketGuildChannel)simpleChannel;
 
             var message = await simpleChannel.GetMessageAsync(reaction.MessageId);
-            await Task.Delay(500);
+            await Task.Delay(250);
 
             // Make sure we have a reference. Don't allow cross-posts.
             if (message.Reference == null
@@ -102,9 +102,24 @@ namespace Left4DeadHelper.Discord.DiscordEventHandlers
             }
 
             var referencedIMessage = await simpleChannel.GetMessageAsync(message.Reference.MessageId.Value);
-            await Task.Delay(500);
+            await Task.Delay(250);
 
-            if (!(referencedIMessage is IUserMessage referencedMessage)) return true;
+            // If the referenced message was deleted (referencedIMessage is null), let anyone remove the conversion
+            // message. This will allow users to delete their own requested conversions if they accidentally delete
+            // the original message first.
+            // I don't really care if anyone else deletes these either.
+
+            if (referencedIMessage == null)
+            {
+                await message.DeleteAsync();
+                await Task.Delay(250);
+                return false;
+            }
+
+            if (!(referencedIMessage is IUserMessage referencedMessage))
+            {
+                return true;
+            }
 
             var argPos = 0;
             var referencedMessageIsBotCommand = !(
@@ -116,6 +131,7 @@ namespace Left4DeadHelper.Discord.DiscordEventHandlers
                 && referencedMessageIsBotCommand)
             {
                 await message.DeleteAsync();
+                await Task.Delay(250);
             }
 
             return false;
