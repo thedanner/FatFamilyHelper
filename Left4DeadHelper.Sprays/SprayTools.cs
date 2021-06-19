@@ -19,7 +19,7 @@ namespace Left4DeadHelper.Sprays
         // TODO: optionally support VDF format?
         // TODO: support creating near/far sprays (requires VDF format support)
 
-        public async Task<Stream> ConvertAsync(Stream inputStream, CancellationToken cancellationToken)
+        public async Task<ConversionResult> ConvertAsync(Stream inputStream, CancellationToken cancellationToken)
         {
             if (inputStream == null) throw new ArgumentNullException(nameof(inputStream));
 
@@ -59,7 +59,6 @@ namespace Left4DeadHelper.Sprays
                 ));
             }
 
-            // 
             if (image.Width != MaxWidth || image.Height != MaxHeight)
             {
                 var resizeOptions = new ResizeOptions
@@ -97,7 +96,9 @@ namespace Left4DeadHelper.Sprays
 
             outputStream.Position = 0;
 
-            return outputStream;
+            var result = new ConversionResult(outputStream, ".tga");
+
+            return result;
         }
     }
 }
