@@ -69,7 +69,7 @@ namespace Left4DeadHelper.Discord.Modules
 
                 try
                 {
-                    var convertedStream = await sprayTools.ConvertAsync(sourceStream, CancellationToken.None);
+                    var conversionResult = await sprayTools.ConvertAsync(sourceStream, CancellationToken.None);
 
                     var fileName = !string.IsNullOrEmpty(result.FileName)
                         ? result.FileName
@@ -80,11 +80,11 @@ namespace Left4DeadHelper.Discord.Modules
                         fileName = fileName[(fileName.LastIndexOf('/') + 1)..];
                         if (string.IsNullOrEmpty(fileName))
                         {
-                            fileName = $"spray.tga";
+                            fileName = $"spray${conversionResult.FileExtension}";
                         }
                         else
                         {
-                            fileName = Path.ChangeExtension(fileName, ".tga");
+                            fileName = Path.ChangeExtension(fileName, conversionResult.FileExtension);
                         }
                     }
                     else if (string.IsNullOrEmpty(fileName))
@@ -98,7 +98,7 @@ namespace Left4DeadHelper.Discord.Modules
                     }
 
                     var sprayMessage = await Context.Channel.SendFileAsync(
-                        convertedStream, fileName,
+                        conversionResult.Stream, fileName,
                         $"Here ya go!\n\n(If you requested the conversion, react with {DeleteEmojiString} to delete this message.)",
                         messageReference: replyToMessageRef);
                     await Task.Delay(TimeSpan.FromMilliseconds(250));
