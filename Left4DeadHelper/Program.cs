@@ -4,9 +4,9 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Left4DeadHelper.Discord.EventInterfaces;
 using Left4DeadHelper.Discord.Handlers;
+using Left4DeadHelper.Helpers;
 using Left4DeadHelper.Models;
 using Left4DeadHelper.Services;
-using Left4DeadHelper.Sprays;
 using Left4DeadHelper.Wrappers.Rcon;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,8 +22,6 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Security.Cryptography;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Left4DeadHelper
 {
@@ -37,7 +35,7 @@ namespace Left4DeadHelper
             ErrorException = 30,
         }
 
-        public static async Task<int> Main(string[] args)
+        public static int Main(string[] args)
         {
             try
             {
@@ -118,6 +116,8 @@ namespace Left4DeadHelper
             serviceCollection.AddTransient<IDiscordConnectionBootstrapper, DiscordConnectionBootstrapper>();
 
             serviceCollection.AddTransient<IDiscordChatMover, DiscordChatMover>();
+
+            serviceCollection.AddTransient<ISprayModuleCommandResolver, SprayModuleCommandResolver>();
 
             serviceCollection.AddSingleton<CommandService>();
 
