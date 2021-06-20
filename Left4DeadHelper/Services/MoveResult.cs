@@ -9,7 +9,6 @@ namespace Left4DeadHelper.Services
             UnmappedSteamUsers = new List<UnmappedSteamUser>();
         }
 
-        public bool Success { get; set; }
         public int MoveCount { get; set; }
         public List<UnmappedSteamUser> UnmappedSteamUsers { get; set; }
     }

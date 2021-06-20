@@ -11,5 +11,9 @@ namespace Left4DeadHelper.Services
             IRCONWrapper rcon,
             IDiscordSocketClientWrapper client, ISocketGuildWrapper guild,
             CancellationToken cancellationToken);
+
+        Task<ReuniteResult> RenuitePlayersAsync(
+            IDiscordSocketClientWrapper client, ISocketGuildWrapper guild,
+            CancellationToken cancellationToken);
     }
 }

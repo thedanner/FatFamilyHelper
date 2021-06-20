@@ -14,14 +14,14 @@ using System.Threading.Tasks;
 
 namespace Left4DeadHelper.Discord.Modules
 {
-    [Group(Constants.GroupL4d)]
-    [Alias(Constants.GroupL4d2, Constants.GroupDivorce)]
-    public class MoveChannelsModule : ModuleBase<SocketCommandContext>
+    [Group(Constants.GroupReunite)]
+    [Alias(Constants.GroupRemarry)]
+    public class ReuniteModule : ModuleBase<SocketCommandContext>
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly ILogger<MoveChannelsModule> _logger;
+        private readonly ILogger<ReuniteModule> _logger;
 
-        public MoveChannelsModule(ILogger<MoveChannelsModule> logger, IServiceProvider serviceProvider) : base()
+        public ReuniteModule(ILogger<ReuniteModule> logger, IServiceProvider serviceProvider) : base()
         {
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -29,26 +29,21 @@ namespace Left4DeadHelper.Discord.Modules
 
         [Command]
         [Alias(Constants.CommandVoiceChat)]
-        [Summary("Moves users into respective voice channels based on game team.")]
+        [Summary("Moves users from the configured secondary channel into the primary channel.")]
         [RequireUserPermission(GuildPermission.MoveMembers)]
         public async Task HandleVoiceChatAsync()
         {
-            if (Context.Message == null) return;
-            if (Context.Guild == null) return;
-
             try
             {
-                using var rcon = _serviceProvider.GetRequiredService<IRCONWrapper>();
-
-                await rcon.ConnectAsync();
+                if (Context.Message == null) return;
+                if (Context.Guild == null) return;
 
                 var settings = _serviceProvider.GetRequiredService<Settings>();
                 var guildSettings = settings.DiscordSettings.GuildSettings.FirstOrDefault(g => g.Id == Context.Guild.Id);
 
                 var mover = _serviceProvider.GetRequiredService<IDiscordChatMover>();
 
-                var moveResult = await mover.MovePlayersToCorrectChannelsAsync(
-                    rcon,
+                var moveResult = await mover.RenuitePlayersAsync(
                     new DiscordSocketClientWrapper(Context.Client),
                     new SocketGuildWrapper(Context.Guild),
                     CancellationToken.None);
@@ -57,32 +52,15 @@ namespace Left4DeadHelper.Discord.Modules
 
                 if (moveResult.MoveCount == 0)
                 {
-                    replyMessage = "Nobody was playing.";
+                    replyMessage = "Nobody was in the channel to move.";
                 }
                 else if (moveResult.MoveCount == 1)
                 {
-                    replyMessage = "1 player moved.";
+                    replyMessage = "1 person moved.";
                 }
                 else
                 {
-                    replyMessage = $"{moveResult.MoveCount} players moved.";
-                }
-
-                if (moveResult.UnmappedSteamUsers.Any())
-                {
-                    string whoShouldFix;
-                    if (guildSettings != null && guildSettings.ConfigMaintainers.Any())
-                    {
-                        whoShouldFix = string.Join(", ", guildSettings.ConfigMaintainers.Select(m => $"<@{m.DiscordId}>"));
-                    }
-                    else
-                    {
-                        whoShouldFix = "you-know-who";
-                    }
-
-                    replyMessage +=
-                        $"\n\nSorry, I couldn't move these people: {string.Join(", ", moveResult.UnmappedSteamUsers.Select(u => u.Name))} " +
-                        $"(missing mappings from the bot config). Bother {whoShouldFix} to fix it.";
+                    replyMessage = $"{moveResult.MoveCount} people moved.";
                 }
 
                 MessageReference? replyToMessageRef = null;
@@ -97,7 +75,7 @@ namespace Left4DeadHelper.Discord.Modules
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Got an error trying to move players :(");
+                _logger.LogError(e, "Error trying to reuninte users :(");
             }
         }
     }

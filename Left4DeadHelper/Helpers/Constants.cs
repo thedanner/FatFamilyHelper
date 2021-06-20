@@ -5,10 +5,11 @@
         public const string GroupL4d = "l4d";
         public const string GroupL4d2 = "l4d2";
 
-        public const string CommandVoiceChat = "vc";
-        public const string CommandDone = "done";
+        public const string GroupDivorce = "divorce";
+        public const string GroupReunite = "reunite";
+        public const string GroupRemarry = "remarry";
 
-        public const string GroupJesssicaDaniellleVoice = "jd";
+        public const string CommandVoiceChat = "vc";
 
         public const string GroupSprayMe = "sprayme";
     }
