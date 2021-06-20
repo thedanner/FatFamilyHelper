@@ -4,7 +4,6 @@ using Left4DeadHelper.Helpers;
 using Left4DeadHelper.Models;
 using Left4DeadHelper.Services;
 using Left4DeadHelper.Wrappers.DiscordNet;
-using Left4DeadHelper.Wrappers.Rcon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -28,7 +27,6 @@ namespace Left4DeadHelper.Discord.Modules
         }
 
         [Command]
-        [Alias(Constants.CommandVoiceChat)]
         [Summary("Moves users from the configured secondary channel into the primary channel.")]
         [RequireUserPermission(GuildPermission.MoveMembers)]
         public async Task HandleVoiceChatAsync()
