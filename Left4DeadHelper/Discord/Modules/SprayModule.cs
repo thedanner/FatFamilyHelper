@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Net;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -71,31 +70,47 @@ namespace Left4DeadHelper.Discord.Modules
                 {
                     var conversionResult = await sprayTools.ConvertAsync(sourceStream, CancellationToken.None);
 
-                    var fileName = !string.IsNullOrEmpty(result.FileName)
-                        ? result.FileName
-                        : result.SourceImageUri.LocalPath;
+                    string fileName;
 
-                    if (fileName.Contains('/'))
+                    if (!string.IsNullOrEmpty(result.FileName))
                     {
-                        fileName = fileName[(fileName.LastIndexOf('/') + 1)..];
+                        fileName = result.FileName;
+                    }
+                    else
+                    {
+                        fileName = result.SourceImageUri.LocalPath;
+
+                        if (fileName.Contains('/'))
+                        {
+                            fileName = fileName[(fileName.LastIndexOf('/') + 1)..];
+                            if (string.IsNullOrEmpty(fileName)
+                                || string.Equals(fileName, conversionResult.FileExtension))
+                            {
+                                fileName = $"spray{conversionResult.FileExtension}";
+                            }
+                            else
+                            {
+                                fileName = Path.ChangeExtension(fileName, conversionResult.FileExtension);
+                            }
+                        }
+
                         if (string.IsNullOrEmpty(fileName))
                         {
-                            fileName = $"spray${conversionResult.FileExtension}";
+                            fileName = $"spray{conversionResult.FileExtension}";
                         }
-                        else
-                        {
-                            fileName = Path.ChangeExtension(fileName, conversionResult.FileExtension);
-                        }
-                    }
-                    else if (string.IsNullOrEmpty(fileName))
-                    {
-                        fileName = $"spray.tga";
                     }
 
-                    if (!fileName.EndsWith(".tga", StringComparison.CurrentCultureIgnoreCase))
+                    fileName = StringHelpers.SanitizeFileNameForDiscordAttachment(fileName);
+
+                    if (!fileName.EndsWith(conversionResult.FileExtension, StringComparison.CurrentCultureIgnoreCase))
                     {
-                        fileName += ".tga";
+                        fileName += conversionResult.FileExtension;
                     }
+
+                    if (string.Equals(fileName, conversionResult.FileExtension))
+                    {
+                        fileName = "spray" + conversionResult.FileExtension;
+                    }    
 
                     var sprayMessage = await Context.Channel.SendFileAsync(
                         conversionResult.Stream, fileName,
