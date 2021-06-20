@@ -60,7 +60,7 @@ namespace Left4DeadHelper.Discord.Modules
             try
             {
                 var tempMessage = await ReplyAsync("Working on it...", messageReference: replyToMessageRef);
-                await Task.Delay(TimeSpan.FromMilliseconds(250));
+                await Task.Delay(250);
 
                 using var sourceStream = await client.OpenReadTaskAsync(result.SourceImageUri);
 
@@ -110,20 +110,28 @@ namespace Left4DeadHelper.Discord.Modules
                     if (string.Equals(fileName, conversionResult.FileExtension))
                     {
                         fileName = "spray" + conversionResult.FileExtension;
-                    }    
+                    }
 
                     var sprayMessage = await Context.Channel.SendFileAsync(
                         conversionResult.Stream, fileName,
                         $"Here ya go!\n\n(If you requested the conversion, react with {DeleteEmojiString} to delete this message.)",
                         messageReference: replyToMessageRef);
-                    await Task.Delay(TimeSpan.FromMilliseconds(250));
+                    await Task.Delay(250);
 
                     await sprayMessage.AddReactionAsync(DeleteEmote);
-                    await Task.Delay(TimeSpan.FromMilliseconds(250));
+                    await Task.Delay(250);
                 }
                 catch (UnsupportedImageFormatException e)
                 {
                     _logger.LogError(e, "Got an image format I don't support.");
+
+                    var sorryMessage = await Context.Channel.SendMessageAsync(
+                        "Sorry, I don't support that type of image :(",
+                        messageReference: replyToMessageRef);
+                    await Task.Delay(250);
+
+                    await sorryMessage.AddReactionAsync(DeleteEmote);
+                    await Task.Delay(250);
                 }
 
                 await tempMessage.DeleteAsync();
@@ -132,7 +140,6 @@ namespace Left4DeadHelper.Discord.Modules
             catch (Exception e)
             {
                 _logger.LogError(e, "Got an error converting image to a spray :(");
-                throw;
             }
         }
     }

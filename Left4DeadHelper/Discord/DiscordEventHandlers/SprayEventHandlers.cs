@@ -27,7 +27,8 @@ namespace Left4DeadHelper.Discord.DiscordEventHandlers
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
 
-        public async Task HandleReactionAddedAsync(Cacheable<IUserMessage, ulong> cachedMessage, ISocketMessageChannel simpleChannel, SocketReaction reaction)
+        public async Task HandleReactionAddedAsync(Cacheable<IUserMessage, ulong> cachedMessage, ISocketMessageChannel simpleChannel,
+            SocketReaction reaction)
         {
             IUserMessage reactedMessage;
             if (cachedMessage.HasValue)
@@ -37,7 +38,6 @@ namespace Left4DeadHelper.Discord.DiscordEventHandlers
             else
             {
                 reactedMessage = await cachedMessage.DownloadAsync();
-                await Task.Delay(250);
             }
 
             if (reactedMessage == null)
@@ -60,7 +60,6 @@ namespace Left4DeadHelper.Discord.DiscordEventHandlers
             else
             {
                 reactingUser = await _client.Rest.GetUserAsync(reaction.UserId);
-                await Task.Delay(250);
             }
 
             if (reactingUser == null)
@@ -86,7 +85,6 @@ namespace Left4DeadHelper.Discord.DiscordEventHandlers
             var channel = (SocketGuildChannel)simpleChannel;
 
             var message = await simpleChannel.GetMessageAsync(reaction.MessageId);
-            await Task.Delay(250);
 
             // Make sure we have a reference. Don't allow cross-posts.
             if (message.Reference == null
@@ -102,7 +100,6 @@ namespace Left4DeadHelper.Discord.DiscordEventHandlers
             }
 
             var referencedIMessage = await simpleChannel.GetMessageAsync(message.Reference.MessageId.Value);
-            await Task.Delay(250);
 
             // If the referenced message was deleted (referencedIMessage is null), let anyone remove the conversion
             // message. This will allow users to delete their own requested conversions if they accidentally delete

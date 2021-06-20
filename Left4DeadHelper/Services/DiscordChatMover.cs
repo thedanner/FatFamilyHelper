@@ -39,12 +39,12 @@ namespace Left4DeadHelper.Services
                 throw new Exception($"Unable to find guild setting with ID {guild.Id} in the configuration.");
             }
 
-            var result = new MoveResult();
-
             var primaryVoiceChannel = guild.GetVoiceChannel(guildSettings.Channels.Primary.Id);
             if (primaryVoiceChannel == null) throw new Exception("Bad primary channel ID in config.");
             var secondaryVoiceChannel = guild.GetVoiceChannel(guildSettings.Channels.Secondary.Id);
             if (secondaryVoiceChannel == null) throw new Exception("Bad secondary channel ID in config.");
+            
+            var result = new MoveResult();
 
             var printInfo = await rcon.SendCommandAsync<PrintInfo>("sm_printinfo");
 
@@ -52,16 +52,41 @@ namespace Left4DeadHelper.Services
                  .Where(p => !"BOT".Equals(p.SteamId, StringComparison.CurrentCultureIgnoreCase))
                  .ToList();
 
+            _logger.LogDebug("Getting current voice channel users.");
+
+            var getPrimaryChannelTask = guild.GetVoiceChannelAsync(primaryVoiceChannel.Id,
+                options: new RequestOptions { CancelToken = cancellationToken });
+            var getSecondaryChannelTask = guild.GetVoiceChannelAsync(secondaryVoiceChannel.Id,
+                options: new RequestOptions { CancelToken = cancellationToken });
+
+            await Task.WhenAll(getPrimaryChannelTask, getSecondaryChannelTask);
+
+            var priamryChannel = getPrimaryChannelTask.Result;
+            var secondaryChannel = getSecondaryChannelTask.Result;
+
+            var getPrimaryChannelUsersTask = priamryChannel.GetUsersAsync(
+                    options: new RequestOptions { CancelToken = cancellationToken })
+                .FlattenAsync();
+            var getSecondaryChannelUsersTask = secondaryChannel.GetUsersAsync(
+                    options: new RequestOptions { CancelToken = cancellationToken })
+                .FlattenAsync();
+
+            await Task.WhenAll(getPrimaryChannelTask, getSecondaryChannelUsersTask);
+
+            var usersInPrimaryChannel = getPrimaryChannelUsersTask.Result.ToList();
+            var usersInSecondaryChannel = getSecondaryChannelUsersTask.Result.ToList();
+
             _logger.LogDebug("Current players per PrintInfo results ({0}):", currentPlayersOnServer.Count);
             for (var i = 0; i < currentPlayersOnServer.Count; i++)
             {
                 _logger.LogDebug("  {0}: {1} - {2}", i, currentPlayersOnServer[i].SteamId, currentPlayersOnServer[i].Name);
             }
-            if (!currentPlayersOnServer.Any()) return result;
+
+            var discordUsersToMove = new List<(ISocketGuildUserWrapper user, ISocketVoiceChannelWrapper intendedChannel)>();
 
             var currentlyPlayingSteamIds = currentPlayersOnServer
-                .Select(p => p.SteamId)
-                .ToList();
+            .Select(p => p.SteamId)
+            .ToList();
 
             var currentPlayerMappings = _settings.UserMappings
                 .Where(d => currentlyPlayingSteamIds.Contains(d.SteamId, StringComparer.CurrentCultureIgnoreCase))
@@ -94,30 +119,6 @@ namespace Left4DeadHelper.Services
                     discordAccountsForCurrentPlayers[i].Id, discordAccountsForCurrentPlayers[i].Username);
             }
 
-            _logger.LogDebug("Getting current voice channel users.");
-
-            var getPrimaryChannelTask = guild.GetVoiceChannelAsync(primaryVoiceChannel.Id,
-                options: new RequestOptions { CancelToken = cancellationToken });
-            var getSecondaryChannelTask = guild.GetVoiceChannelAsync(secondaryVoiceChannel.Id,
-                options: new RequestOptions { CancelToken = cancellationToken });
-
-            await Task.WhenAll(getPrimaryChannelTask, getSecondaryChannelTask);
-
-            var priamryChannel = getPrimaryChannelTask.Result;
-            var secondaryChannel = getSecondaryChannelTask.Result;
-
-            var getPrimaryChannelUsersTask = priamryChannel.GetUsersAsync(
-                    options: new RequestOptions { CancelToken = cancellationToken })
-                .FlattenAsync();
-            var getSecondaryChannelUsersTask = secondaryChannel.GetUsersAsync(
-                    options: new RequestOptions { CancelToken = cancellationToken })
-                .FlattenAsync();
-
-            await Task.WhenAll(getPrimaryChannelTask, getSecondaryChannelUsersTask);
-
-            var usersInPrimaryChannel = getPrimaryChannelUsersTask.Result.ToList();
-            var usersInSecondaryChannel = getSecondaryChannelUsersTask.Result.ToList();
-
             _logger.LogDebug("Discord accounts found from mappings ({0}):", discordAccountsForCurrentPlayers.Count);
             for (var i = 0; i < discordAccountsForCurrentPlayers.Count; i++)
             {
@@ -142,6 +143,7 @@ namespace Left4DeadHelper.Services
                     _logger.LogDebug("  {0}: {1} - {2}", i, missingSteamMappings[i].SteamId, missingSteamMappings[i].Name);
                 }
             }
+
             if (missingDiscordMappings.Any())
             {
                 _logger.LogDebug("Current Discord users MISSING from mapping ({0}):", missingDiscordMappings.Count);
@@ -154,8 +156,6 @@ namespace Left4DeadHelper.Services
                         missingDiscordMappings[i].Username);
                 }
             }
-
-            result.Success = true;
 
             foreach (var discordAccount in discordAccountsForCurrentPlayers)
             {
@@ -195,7 +195,8 @@ namespace Left4DeadHelper.Services
                     continue;
                 }
 
-                var usersPrintInfo = printInfo.Players.FirstOrDefault(pi => userMapping.SteamId.Equals(pi.SteamId, StringComparison.CurrentCultureIgnoreCase));
+                var usersPrintInfo = printInfo.Players.FirstOrDefault(pi =>
+                    userMapping.SteamId.Equals(pi.SteamId, StringComparison.CurrentCultureIgnoreCase));
                 if (usersPrintInfo == null)
                 {
                     _logger.LogDebug("Skipping {0} ({1}): Couldn't find user's Steam ID in PrintInfo results.",
@@ -217,18 +218,98 @@ namespace Left4DeadHelper.Services
                     continue;
                 }
 
+                discordUsersToMove.Add((discordAccount, intendedChannel));
+            }
+
+            foreach (var (user, intendedChannel) in discordUsersToMove)
+            {
+                ISocketVoiceChannelWrapper currentVoiceChannel;
+
+                if (usersInPrimaryChannel != null && usersInPrimaryChannel.Any(u => u.Id == user.Id))
+                {
+                    currentVoiceChannel = primaryVoiceChannel;
+                }
+                else if (usersInSecondaryChannel != null && usersInSecondaryChannel.Any(u => u.Id == user.Id))
+                {
+                    currentVoiceChannel = secondaryVoiceChannel;
+                }
+                else
+                {
+                    // Not in voice chat
+                    continue;
+                }
+
                 if (currentVoiceChannel.Id != intendedChannel.Id)
                 {
                     _logger.LogDebug("Moving {0} ({1}) to other voice channel (from {2} to {3}).",
-                        discordAccount.Username, discordAccount.Id,
+                        user.Username, user.Id,
                         currentVoiceChannel.Name, intendedChannel.Name);
 
-                    await discordAccount.ModifyAsync(p => p.ChannelId = intendedChannel.Id);
+                    await user.ModifyAsync(p => p.ChannelId = intendedChannel.Id);
 
                     await Task.Delay(TimeSpan.FromSeconds(1));
 
                     result.MoveCount++;
                 }
+            }
+
+            return result;
+        }
+
+        public async Task<ReuniteResult> RenuitePlayersAsync(IDiscordSocketClientWrapper client, ISocketGuildWrapper guild,
+            CancellationToken cancellationToken)
+        {
+            if (client is null) throw new ArgumentNullException(nameof(client));
+            if (guild is null) throw new ArgumentNullException(nameof(guild));
+
+            var guildSettings = _settings.DiscordSettings.GuildSettings.FirstOrDefault(g => g.Id == guild.Id);
+            if (guildSettings == null)
+            {
+                throw new Exception($"Unable to find guild setting with ID {guild.Id} in the configuration.");
+            }
+
+            var primaryVoiceChannel = guild.GetVoiceChannel(guildSettings.Channels.Primary.Id);
+            if (primaryVoiceChannel == null) throw new Exception("Bad primary channel ID in config.");
+            var secondaryVoiceChannel = guild.GetVoiceChannel(guildSettings.Channels.Secondary.Id);
+            if (secondaryVoiceChannel == null) throw new Exception("Bad secondary channel ID in config.");
+
+            var result = new ReuniteResult();
+
+            _logger.LogDebug("Getting current voice channel users.");
+
+            var getPrimaryChannelTask = guild.GetVoiceChannelAsync(primaryVoiceChannel.Id,
+                options: new RequestOptions { CancelToken = cancellationToken }); 
+            var getSecondaryChannelTask = guild.GetVoiceChannelAsync(secondaryVoiceChannel.Id,
+                options: new RequestOptions { CancelToken = cancellationToken });
+
+            await Task.WhenAll(getPrimaryChannelTask, getSecondaryChannelTask);
+
+            var priamryChannel = getPrimaryChannelTask.Result;
+            var secondaryChannel = getSecondaryChannelTask.Result;
+
+            var getPrimaryChannelUsersTask = priamryChannel.GetUsersAsync(
+                    options: new RequestOptions { CancelToken = cancellationToken })
+                .FlattenAsync();
+            var getSecondaryChannelUsersTask = secondaryChannel.GetUsersAsync(
+                    options: new RequestOptions { CancelToken = cancellationToken })
+                .FlattenAsync();
+
+            await Task.WhenAll(getPrimaryChannelTask, getSecondaryChannelUsersTask);
+
+            var usersInPrimaryChannel = getPrimaryChannelUsersTask.Result.ToList();
+            var usersInSecondaryChannel = getSecondaryChannelUsersTask.Result.ToList();
+
+            if (!usersInPrimaryChannel.Any() || !usersInSecondaryChannel.Any())
+            {
+                return result;
+            }
+
+            foreach (var user in usersInSecondaryChannel)
+            {
+                await user.ModifyAsync(p => p.ChannelId = primaryVoiceChannel.Id);
+                await Task.Delay(TimeSpan.FromSeconds(1));
+
+                result.MoveCount++;
             }
 
             return result;
