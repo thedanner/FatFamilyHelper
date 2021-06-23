@@ -18,7 +18,7 @@ namespace Left4DeadHelper.Discord.Handlers
         private readonly Settings _settings;
         private readonly IServiceProvider _serviceProvider;
 
-        private bool disposedValue;
+        private bool _disposedValue;
 
         // Retrieve client and CommandService instance via ctor
         public CommandAndEventHandler(DiscordSocketClient client, CommandService commandService, Settings settings, IServiceProvider serviceProvider)
@@ -84,7 +84,7 @@ namespace Left4DeadHelper.Discord.Handlers
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_disposedValue)
             {
                 if (disposing)
                 {
@@ -92,7 +92,7 @@ namespace Left4DeadHelper.Discord.Handlers
                     _client.ReactionAdded -= HandleReactionAddedAsync;
                 }
 
-                disposedValue = true;
+                _disposedValue = true;
             }
         }
 
