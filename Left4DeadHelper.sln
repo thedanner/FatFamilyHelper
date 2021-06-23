@@ -15,7 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		SourceMod\sm_printinfo.sp = SourceMod\sm_printinfo.sp
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Left4DeadHelper.Sprays", "Left4DeadHelper.Sprays\Left4DeadHelper.Sprays.csproj", "{6BD2BFDE-3A0E-4255-B132-587512DF8883}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Left4DeadHelper.Sprays", "Left4DeadHelper.Sprays\Left4DeadHelper.Sprays.csproj", "{6BD2BFDE-3A0E-4255-B132-587512DF8883}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

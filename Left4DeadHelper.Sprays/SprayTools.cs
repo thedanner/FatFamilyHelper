@@ -16,8 +16,8 @@ namespace Left4DeadHelper.Sprays
         private const int MaxHeight = 256;
 
         // TODO: support animated sprays
-        // TODO: optionally support VDF format?
-        // TODO: support creating near/far sprays (requires VDF format support)
+        // TODO: optionally support VTF format?
+        // TODO: support creating near/far sprays (requires VTF format support)
 
         public async Task<ConversionResult> ConvertAsync(Stream inputStream, CancellationToken cancellationToken)
         {
