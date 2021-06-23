@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 namespace Left4DeadHelper.Discord.Modules
 {
     [Group(Constants.GroupL4d)]
-    [Alias(Constants.GroupL4d2, Constants.GroupDivorce)]
+    [Alias(Constants.GroupL4d2, Constants.GroupLfd, Constants.GroupLfd2, Constants.GroupDivorce)]
     public class MoveChannelsModule : ModuleBase<SocketCommandContext>
     {
         private readonly IServiceProvider _serviceProvider;
