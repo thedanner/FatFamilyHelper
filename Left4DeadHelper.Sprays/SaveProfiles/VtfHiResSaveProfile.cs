@@ -8,10 +8,11 @@ using System.Threading.Tasks;
 
 namespace Left4DeadHelper.Sprays.SaveProfiles
 {
-    public class VtfHiResSaveProfile : BaseSaveProfile
+    internal class VtfHiResSaveProfile : BaseSaveProfile
     {
+        // TODO one of the dimensions should be 1020 to fit under the 512 KiB limit.
         public override int MaxWidth => 1024;
-        public override int MaxHeight => 1020;
+        public override int MaxHeight => 1024;
         public override string Extension => ".vtf";
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously

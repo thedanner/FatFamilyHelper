@@ -73,7 +73,7 @@ namespace Left4DeadHelper.Discord.Modules
 
                     var conversionResult = await sprayTools.ConvertAsync(
                         sourceStream, outputStream,
-                        new TgaSaveProfile(), CancellationToken.None);
+                        new VtfSaveProfile(), CancellationToken.None);
 
                     outputStream.Position = 0;
 
