@@ -1,6 +1,7 @@
 ﻿using Left4DeadHelper.Sprays.Exceptions;
+using Left4DeadHelper.Sprays.SaveProfiles;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Tga;
+using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using System;
 using System.IO;
@@ -12,16 +13,18 @@ namespace Left4DeadHelper.Sprays
 {
     public class SprayTools
     {
-        private const int MaxWidth = 256;
-        private const int MaxHeight = 256;
-
         // TODO: support animated sprays
         // TODO: optionally support VTF format?
         // TODO: support creating near/far sprays (requires VTF format support)
 
-        public async Task<ConversionResult> ConvertAsync(Stream inputStream, CancellationToken cancellationToken)
+        public async Task<ConversionResult> ConvertAsync(Stream inputStream, Stream outputStream, ISaveProfile saveProfile,
+            CancellationToken cancellationToken)
         {
             if (inputStream == null) throw new ArgumentNullException(nameof(inputStream));
+            if (outputStream is null) throw new ArgumentNullException(nameof(outputStream));
+            if (saveProfile is null) throw new ArgumentNullException(nameof(saveProfile));
+
+            saveProfile.Validate();
 
             var memoryStream = new MemoryStream();
             await inputStream.CopyToAsync(memoryStream);
@@ -37,20 +40,20 @@ namespace Left4DeadHelper.Sprays
                 throw new UnsupportedImageFormatException(inputMimeTypes);
             }
 
-            using var image = await Image.LoadAsync(Configuration.Default, memoryStream, cancellationToken);
+            using var image = await Image.LoadAsync<Rgba32>(Configuration.Default, memoryStream, cancellationToken);
 
             // If too big, scale down. Could be done with a transform below but this is simpler.
-            if (image.Width > MaxWidth || image.Height > MaxHeight)
+            if (image.Width > saveProfile.MaxWidth || image.Height > saveProfile.MaxHeight)
             {
                 double scaleFactor;
 
                 if (image.Width >= image.Height)
                 {
-                    scaleFactor = 1.0 * MaxWidth / image.Width;
+                    scaleFactor = 1.0 * saveProfile.MaxWidth / image.Width;
                 }
                 else
                 {
-                    scaleFactor = 1.0 * MaxHeight / image.Height;
+                    scaleFactor = 1.0 * saveProfile.MaxHeight / image.Height;
                 }
 
                 image.Mutate(x => x.Resize(
@@ -59,21 +62,21 @@ namespace Left4DeadHelper.Sprays
                 ));
             }
 
-            if (image.Width != MaxWidth || image.Height != MaxHeight)
+            if (image.Width != saveProfile.MaxWidth || image.Height != saveProfile.MaxHeight)
             {
                 var resizeOptions = new ResizeOptions
                 {
                     Size = new Size
                     {
-                        Width = MaxWidth,
-                        Height = MaxHeight
+                        Width = saveProfile.MaxWidth,
+                        Height = saveProfile.MaxHeight
                     },
                     Mode = ResizeMode.Manual,
                     Position = AnchorPositionMode.TopLeft,
                     TargetRectangle = new Rectangle
                     {
-                        X = (MaxWidth - image.Width) / 2,
-                        Y = (MaxHeight - image.Height) / 2,
+                        X = (saveProfile.MaxWidth - image.Width) / 2,
+                        Y = (saveProfile.MaxHeight - image.Height) / 2,
                         Width = image.Width,
                         Height = image.Height
                     },
@@ -85,18 +88,9 @@ namespace Left4DeadHelper.Sprays
                     .BackgroundColor(Color.Transparent));
             }
 
-            var encoder = new TgaEncoder
-            {
-                BitsPerPixel = TgaBitsPerPixel.Pixel32,
-                Compression = TgaCompression.None,
-            };
+            await saveProfile.ConvertAsync(image, outputStream, cancellationToken);
 
-            var outputStream = new MemoryStream();
-            await image.SaveAsync(outputStream, encoder, cancellationToken);
-
-            outputStream.Position = 0;
-
-            var result = new ConversionResult(outputStream, ".tga");
+            var result = new ConversionResult(saveProfile.Extension);
 
             return result;
         }

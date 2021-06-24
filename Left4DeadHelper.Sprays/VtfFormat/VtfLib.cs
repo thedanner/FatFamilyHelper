@@ -8,7 +8,7 @@ namespace Left4DeadHelper.Sprays.VtfFormat
         #region Wow64
         public static bool IsWow64()
         {
-            return Environment.Is64BitOperatingSystem;
+            return Environment.Is64BitProcess;
         }
         #endregion
 

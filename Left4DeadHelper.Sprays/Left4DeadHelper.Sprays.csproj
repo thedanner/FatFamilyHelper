@@ -7,11 +7,13 @@
     <WarningsAsErrors>CS8600;CS8602;CS8603</WarningsAsErrors>
     <RootNamespace>Left4DeadHelper.Sprays</RootNamespace>
     <AssemblyName>Left4DeadHelper.Sprays</AssemblyName>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Left4DeadHelper.Tests.Unit" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Remove="VtfFormat\VTFLib.x64.dll" />
@@ -19,16 +21,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="VtfFormat\VTFLib.x64.dll">
+    <Content Include="VTFLib.x64.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="VtfFormat\VTFLib.x86.dll">
+    <Content Include="VTFLib.x86.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
+    <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
   </ItemGroup>
 
 </Project>
