@@ -4,6 +4,7 @@ using Left4DeadHelper.Helpers;
 using Left4DeadHelper.Models;
 using Left4DeadHelper.Sprays;
 using Left4DeadHelper.Sprays.Exceptions;
+using Left4DeadHelper.Sprays.SaveProfiles;
 using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
@@ -68,7 +69,13 @@ namespace Left4DeadHelper.Discord.Modules
 
                 try
                 {
-                    var conversionResult = await sprayTools.ConvertAsync(sourceStream, CancellationToken.None);
+                    var outputStream = new MemoryStream();
+
+                    var conversionResult = await sprayTools.ConvertAsync(
+                        sourceStream, outputStream,
+                        new TgaSaveProfile(), CancellationToken.None);
+
+                    outputStream.Position = 0;
 
                     string fileName;
 
@@ -113,7 +120,7 @@ namespace Left4DeadHelper.Discord.Modules
                     }
 
                     var sprayMessage = await Context.Channel.SendFileAsync(
-                        conversionResult.Stream, fileName,
+                        outputStream, fileName,
                         $"Here ya go!\n\n(If you requested the conversion, react with {DeleteEmojiString} to delete this message.)",
                         messageReference: replyToMessageRef);
                     await Task.Delay(250);

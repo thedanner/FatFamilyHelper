@@ -6,7 +6,7 @@ using NUnit.Framework;
 namespace Left4DeadHelper.Tests.Unit
 {
     [TestFixture]
-    public class ByteArrayFindSequenceTests
+    public class VtfSprayTests
     {
         [Test]
         public void FindSequence2arg_NullSource_Throws()
