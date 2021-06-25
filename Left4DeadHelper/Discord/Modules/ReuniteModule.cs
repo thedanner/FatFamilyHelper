@@ -68,8 +68,6 @@ namespace Left4DeadHelper.Discord.Modules
                 }
 
                 await ReplyAsync(replyMessage, messageReference: replyToMessageRef);
-
-                return;
             }
             catch (Exception e)
             {

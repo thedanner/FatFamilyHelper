@@ -4,9 +4,11 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Left4DeadHelper.Discord.EventInterfaces;
 using Left4DeadHelper.Discord.Handlers;
+using Left4DeadHelper.Discord.TaskInterfaces;
 using Left4DeadHelper.Helpers;
 using Left4DeadHelper.Models;
 using Left4DeadHelper.Services;
+using Left4DeadHelper.Wrappers.DiscordNet;
 using Left4DeadHelper.Wrappers.Rcon;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +24,8 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Security.Cryptography;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Left4DeadHelper
 {
@@ -35,12 +39,12 @@ namespace Left4DeadHelper
             ErrorException = 30,
         }
 
-        public static int Main(string[] args)
+        public static async Task<int> Main(string[] args)
         {
             try
             {
                 // When run as a service, the working directory is wrong,
-                // and it can't be set frffom the service configuration.
+                // and it can't be set from the service configuration.
                 var exeLocation = Assembly.GetExecutingAssembly().Location;
                 var exeDirectory = Path.GetDirectoryName(exeLocation);
                 if (exeDirectory != null)
@@ -48,7 +52,22 @@ namespace Left4DeadHelper
                     Environment.CurrentDirectory = exeDirectory;
                 }
 
-                CreateHostBuilder(args).Build().Run();
+                if (args.Length >= 2
+                    && "--task".Equals(args[0], StringComparison.CurrentCultureIgnoreCase))
+                {
+                    var ctSource = new CancellationTokenSource();
+                    Console.CancelKeyPress += (sender, args) =>
+                    {
+                        ctSource.Cancel();
+                        args.Cancel = true;
+                    };
+
+                    await RunTaskAsync(args[1], ctSource.Token);
+                }
+                else
+                {
+                    CreateHostBuilder(args).Build().Run();
+                }
             }
             catch (ObjectDisposedException ex) when (ex.ObjectName == "System.Net.Sockets.Socket") { }
             catch (Exception ex)
@@ -69,23 +88,62 @@ namespace Left4DeadHelper
             return 0;
         }
 
+        private static async Task RunTaskAsync(string taskName, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(taskName))
+            {
+                throw new ArgumentException($"'{nameof(taskName)}' cannot be null or whitespace.", nameof(taskName));
+            }
+
+            var config = CreateConfiguration();
+
+            var serviceCollection = new ServiceCollection();
+
+            ConfigureServices(serviceCollection, config);
+
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+
+            var taskResolver = serviceProvider.GetRequiredService<Func<string, ITask>>();
+            var task = taskResolver(taskName);
+
+            // DiscordSocketClient is a singleton. Using 'using' is safe because we're stopping once this task is complete.
+            using var client = serviceProvider.GetRequiredService<DiscordSocketClient>();
+            var clientWrapper = new DiscordSocketClientWrapper(client);
+
+            var connectionBootstrapper = serviceProvider.GetRequiredService<IDiscordConnectionBootstrapper>();
+
+            await connectionBootstrapper.StartAsync(clientWrapper, cancellationToken);
+
+            var settings = serviceProvider.GetRequiredService<Settings>();
+
+            var taskSettings = settings.TaskSettings[taskName];
+
+            await task.RunTaskAsync(client, taskSettings, cancellationToken);
+        }
+
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
             var hostBuilder = Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) =>
                 {
-                    var config = new ConfigurationBuilder()
-                     .SetBasePath(Directory.GetCurrentDirectory()) //From NuGet Package Microsoft.Extensions.Configuration.Json
-                     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                     .Build();
-
+                    var config = CreateConfiguration();
                     ConfigureServices(services, config);
                 }).UseWindowsService();
 
             return hostBuilder;
         }
 
-        public static void ConfigureServices(IServiceCollection serviceCollection, IConfiguration config)
+        private static IConfigurationRoot CreateConfiguration()
+        {
+            var config = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory()) //From NuGet Package Microsoft.Extensions.Configuration.Json
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .Build();
+
+            return config;
+        }
+
+        private static void ConfigureServices(IServiceCollection serviceCollection, IConfiguration config)
         {
             var settings = config.Get<Settings>();
 
@@ -142,13 +200,18 @@ namespace Left4DeadHelper
             serviceCollection.AddTransient<IRCONWrapper, RCONWrapper>();
 
             // More specific handlers
-            BindEventHandlers(serviceCollection);
+            var allLoadedTypes = AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(x => x.GetTypes())
+                .ToList()
+                .AsReadOnly();
+
+            BindEventHandlers(allLoadedTypes, serviceCollection);
+
+            BindTasks(allLoadedTypes, serviceCollection);
         }
 
-        private static void BindEventHandlers(IServiceCollection serviceCollection)
+        private static void BindEventHandlers(IReadOnlyList<Type> allLoadedTypes, IServiceCollection serviceCollection)
         {
-            var allLoadedTypes = AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes());
-
             var handlerTypes = new List<Type>();
             var eventInterfaceTypes = new List<Type>();
 
@@ -174,6 +237,52 @@ namespace Left4DeadHelper
                     serviceCollection.AddTransient(implmenetedHandlerInterface, handlerType);
                 }
             }
+        }
+
+        private static void BindTasks(IReadOnlyList<Type> allLoadedTypes, IServiceCollection serviceCollection)
+        {
+            var handlerTypes = new List<Type>();
+
+            // Do all the filtering and sorting in one pass over the loaded types list.
+            foreach (var type in allLoadedTypes)
+            {
+                if (typeof(ITask).IsAssignableFrom(type) && !type.IsInterface && !type.IsAbstract)
+                {
+                    handlerTypes.Add(type);
+                }
+            }
+
+            var duplicatedNames = handlerTypes
+                .GroupBy(t => t.Name)
+                .Where(g => g.Count() > 1)
+                .Select(g => g.Key)
+                .ToList();
+            if (duplicatedNames.Any())
+            {
+                // If this comes up, we may need to create an attribute that allows a custom name to be specified or something.
+                throw new Exception(
+                    "Found tasks with duplicate names (note that only the class name and no part of the namespace is " +
+                    "used as the task name, and therefore class names must be unique: " +
+                    string.Join(", ", duplicatedNames));
+            }
+
+            foreach (var handlerType in handlerTypes)
+            {
+                serviceCollection.AddTransient(handlerType);
+            }
+
+            // Technique borrowed from
+            // https://dejanstojanovic.net/aspnet/2018/december/registering-multiple-implementations-of-the-same-interface-in-aspnet-core/
+            serviceCollection.AddTransient<Func<string, ITask>>(serviceProvider => key =>
+            {
+                var type = handlerTypes.FirstOrDefault(t => t.Name == key);
+                if (type == null)
+                {
+                    throw new Exception($"Couldn't find an ITask with class name of '{key}'.");
+                }
+                var task = (ITask) serviceProvider.GetRequiredService(type);
+                return task;
+            });
         }
     }
 }

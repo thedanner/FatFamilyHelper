@@ -5,8 +5,11 @@ using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Left4DeadHelper.Tests.Integration
@@ -46,26 +49,121 @@ namespace Left4DeadHelper.Tests.Integration
             _secondaryChannelId = guildSettings.Channels.Secondary.Id;
         }
 
+
+        [Test]
+        public async Task HowDoEmbedsWork()
+        {
+            using var client = await GetClientAsync();
+
+            var guild = client.GetGuild(_guildId);
+            var channel = guild.GetTextChannel(816907545280905266);
+            var messages = (await channel.GetMessagesAsync(100)
+                   .FlattenAsync())
+                   .ToList();
+
+            if (messages.Any())
+            {
+                //if (messages.Count == BatchSize)
+                //{
+                //    var olderMessages = (await simpleChannel.GetMessagesAsync(messages.Last(), Direction.Before, BatchSize)
+                //        .FlattenAsync())
+                //        .ToList();
+                //
+                //    ProcessListAsync(olderMessages);
+                //}
+
+                var messagesToDelete = GetMessagesWithExpiredCodes(messages);
+
+                // Only messages < 14 days old can be bulk deleted.
+                var bulkDeletableMessages = new List<IMessage>();
+                var singleDeletableMessages = new List<IMessage>();
+
+                foreach (var message in messagesToDelete)
+                {
+                    var bulkDeleteCutoff = DateTimeOffset.Now.AddMinutes(5).AddDays(-14);
+
+                    if (message.Timestamp >= bulkDeleteCutoff)
+                    {
+                        bulkDeletableMessages.Add(message);
+                    }
+                    else
+                    {
+                        singleDeletableMessages.Add(message);
+                    }
+                }
+
+                if (bulkDeletableMessages.Any())
+                {
+                    await channel.DeleteMessagesAsync(bulkDeletableMessages);
+                    await Task.Delay(250);
+                }
+                
+                foreach (var singleDeletableMessage in singleDeletableMessages)
+                {
+                    await channel.DeleteMessageAsync(singleDeletableMessage);
+                    await Task.Delay(250);
+                }
+            }
+        }
+
+        private static readonly Regex ExpiresRegex = new Regex(
+            @"Expires: (?<expires>(?<date>\d{1,2}) (?<month>[a-zA-Z]{3}) (?<time>(?<hours>\d{1,2}):(?<minutes>\d{2}))) (?<timezone>[a-zA-Z]{3})",
+            RegexOptions.Multiline);
+        private List<IMessage> GetMessagesWithExpiredCodes(List<IMessage> messages)
+        {
+            var messagesToDelete = new List<IMessage>();
+
+            foreach (var message in messages)
+            {
+                if (message.Author.IsBot
+                    && message.Embeds.Any())
+                {
+                    var embed = message.Embeds.First();
+                    if (!string.IsNullOrEmpty(embed.Description))
+                    {
+                        // Look for:
+                        // Expires: 24 JUN 15:00 UTC
+
+                        var match = ExpiresRegex.Match(embed.Description);
+                        if (match.Success
+                            &&  DateTimeOffset.TryParseExact(
+                                    match.Groups["expires"].Value,
+                                    "d MMM H:mm",
+                                    CultureInfo.CurrentCulture,
+                                    DateTimeStyles.AssumeUniversal,
+                                    out var givenExpiry))
+                        {
+                            if (!"UTC".Equals(match.Groups["timezone"].Value, StringComparison.CurrentCultureIgnoreCase))
+                            {
+                                Debug.WriteLine("Non-UTC expiration found for message with ID {0}.", message.Id);
+                                continue;
+                            }
+
+                            // Handles the case where the assumed year is incorrect.
+                            // E.g., a code is posted in December that expires in January. If the year is always
+                            // assumed to be current, that code will look invalid immediately.
+                            // To fix this, if the expiration is before the message post date, we just add a year.
+                            if (givenExpiry < message.Timestamp)
+                            {
+                                givenExpiry = givenExpiry.AddYears(1).AddDays(1);
+                            }
+
+                            if (givenExpiry <= DateTimeOffset.Now)
+                            {
+                                messagesToDelete.Add(message);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return messagesToDelete;
+        }
+
         [Test]
         public async Task Test()
         {
-            using var client = new DiscordSocketClient();
-
-            client.Log += Log;
-
-            await client.LoginAsync(TokenType.Bot, _botToken);
-            await client.StartAsync();
-
-            var tsc = new TaskCompletionSource<bool>();
-
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-            client.Ready += async () =>
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
-            {
-                tsc.SetResult(true);
-            };
-
-            await tsc.Task;
+            using var client = await GetClientAsync();
 
             var guild = client.GetGuild(_guildId);
 
@@ -76,23 +174,7 @@ namespace Left4DeadHelper.Tests.Integration
         [Test]
         public async Task GetRoles()
         {
-            using var client = new DiscordSocketClient();
-
-            client.Log += Log;
-
-            await client.LoginAsync(TokenType.Bot, _settings.DiscordSettings.BotToken);
-            await client.StartAsync();
-
-            var tsc = new TaskCompletionSource<bool>();
-
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-            client.Ready += async () =>
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
-            {
-                tsc.SetResult(true);
-            };
-
-            await tsc.Task;
+            using var client = await GetClientAsync();
 
             var guild = client.GetGuild(_guildId);
             var allRolesSorted = new List<SocketRole>(guild.Roles.OrderByDescending(r => r.Position));
@@ -116,6 +198,29 @@ namespace Left4DeadHelper.Tests.Integration
                     break;
                 }
             }
+        }
+
+        private async Task<DiscordSocketClient> GetClientAsync()
+        {
+            using var client = new DiscordSocketClient();
+
+            client.Log += Log;
+
+            await client.LoginAsync(TokenType.Bot, _botToken);
+            await client.StartAsync();
+
+            var tsc = new TaskCompletionSource<bool>();
+
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+            client.Ready += async () =>
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+            {
+                tsc.SetResult(true);
+            };
+
+            await tsc.Task;
+
+            return client;
         }
     }
 }
