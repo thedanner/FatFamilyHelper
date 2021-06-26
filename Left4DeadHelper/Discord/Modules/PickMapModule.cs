@@ -84,8 +84,7 @@ namespace Left4DeadHelper.Discord.Modules
                 || "all".Equals(firstArg, StringComparison.CurrentCultureIgnoreCase))
             {
                 var allMaps = maps.Categories.Values.SelectMany(m => m).ToList();
-                var rollResult = _random.RollDice((byte)allMaps.Count);
-                var map = allMaps[rollResult - 1];
+                var map = _random.PickRandom(allMaps);
 
                 await ReplyAsync($"You should play **{map}**! (from all maps)");
 
@@ -95,8 +94,7 @@ namespace Left4DeadHelper.Discord.Modules
             // Pick a map!
             if (maps.Categories.TryGetValue(firstArg, out var categoryMaps))
             {
-                var rollResult = _random.RollDice((byte)categoryMaps.Count);
-                var map = categoryMaps[rollResult - 1];
+                var map = _random.PickRandom(categoryMaps);
 
                 await ReplyAsync($"You should play **{map}**! (from the\"{firstArg}\" list)");
                 

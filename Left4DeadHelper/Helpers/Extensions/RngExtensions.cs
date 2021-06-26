@@ -1,20 +1,44 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 
 namespace Left4DeadHelper.Helpers.Extensions
 {
     public static class RngExtensions
     {
-        // Methods from https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.rngcryptoserviceprovider?redirectedfrom=MSDN&view=netcore-3.1#Anchor_3
+        // Methods from
+        // https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.rngcryptoserviceprovider?redirectedfrom=MSDN&view=netcore-3.1#Anchor_3
 
-        public static byte RollDice(this RNGCryptoServiceProvider rngCsp, byte numberSides)
+        public static T PickRandom<T>(this RNGCryptoServiceProvider rngCsp, IList<T> list)
         {
-            if (rngCsp is null)
+            return PickRandom(rngCsp, list, out var _);
+        }
+
+        public static T PickRandom<T>(this RNGCryptoServiceProvider rngCsp, IList<T> list, out byte index)
+        {
+            if (rngCsp is null) throw new ArgumentNullException(nameof(rngCsp));
+            if (list is null) throw new ArgumentNullException(nameof(list));
+            if (list.Count >= byte.MaxValue)
             {
-                throw new ArgumentNullException(nameof(rngCsp));
+                throw new ArgumentException(nameof(list), $"The list can't have more than {byte.MaxValue} sides.");
             }
 
-            if (numberSides <= 0) throw new ArgumentOutOfRangeException(nameof(numberSides));
+            index = RollDice(rngCsp, (byte) list.Count);
+            var item = list[index - 1];
+            return item;
+        }
+
+        /// <summary>
+        /// Gets a random number between 1 and <paramref name="numberSides" /> INCLUSIVE! You should subtract one if you want
+        /// to pick from an array.
+        /// </summary>
+        /// <param name="rngCsp">The RNG provider to use.</param>
+        /// <param name="numberSides">The number of sides on the die to roll.</param>
+        /// <returns>The number from a random dice roll, between 1 and <paramref name="numberSides" /> inclusive.</returns>
+        public static byte RollDice(this RNGCryptoServiceProvider rngCsp, byte numberSides)
+        {
+            if (rngCsp is null) throw new ArgumentNullException(nameof(rngCsp));
+            if (numberSides <= 1) throw new ArgumentOutOfRangeException(nameof(numberSides), "Value must be >= 2.");
 
             // Create a byte array to hold the random value.
             byte[] randomNumber = new byte[1];
