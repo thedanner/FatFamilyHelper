@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Left4DeadHelper.Discord.Interfaces;
 using Left4DeadHelper.Helpers;
 using Left4DeadHelper.Rcon;
 using Left4DeadHelper.Wrappers.Rcon;
@@ -11,10 +12,11 @@ using System.Threading.Tasks;
 namespace Left4DeadHelper.Discord.Modules
 {
     [Group(Constants.GroupL4d)]
-    [Alias(Constants.GroupL4d2)]
-    public class RconModule : ModuleBase<SocketCommandContext>
+    [Alias(Constants.GroupL4d2, Constants.GroupLfd, Constants.GroupLfd2)]
+    public class RconModule : ModuleBase<SocketCommandContext>, ICommandModule
     {
         private const string Command = "rcon";
+        public string CommandString => Command;
 
         private readonly ILogger<RconModule> _logger;
         private readonly IServiceProvider _serviceProvider;
@@ -28,30 +30,22 @@ namespace Left4DeadHelper.Discord.Modules
         [Command(Command)]
         [Summary("Tests rcon connectivity.")]
         [RequireUserPermission(GuildPermission.MoveMembers)] // Same as MoveChannelsModule.
-        public async Task HandleCommandAsync(string subcommand)
+        public async Task HandleCommandAsync()
         {
             try
             {
                 var message = Context.Message;
                 if (message == null) return;
 
-                if (!"test".Equals(subcommand, StringComparison.CurrentCultureIgnoreCase))
-                {
-                    await ReplyAsync("Only the 'test' command is currently supported.");
-                    return;
-                }
+                using var rcon = _serviceProvider.GetRequiredService<IRCONWrapper>();
+                
+                await rcon.ConnectAsync();
 
-                using (var rcon = _serviceProvider.GetRequiredService<IRCONWrapper>())
-                {
-                    await rcon.ConnectAsync();
+                var printInfo = await rcon.SendCommandAsync<PrintInfo>("sm_printinfo");
 
-                    // "test" option / command.
-                    var printInfo = await rcon.SendCommandAsync<PrintInfo>("sm_printinfo");
+                _logger.LogInformation("Got a result back from PrintInfo.");
 
-                    _logger.LogInformation("Got a result back from PrintInfo.");
-
-                    await ReplyAsync($"Test succeeded. Check bot logs for details.");
-                }
+                await ReplyAsync($"Test succeeded. Check bot logs for details.");
             }
             catch (Exception e)
             {
@@ -60,5 +54,8 @@ namespace Left4DeadHelper.Discord.Modules
                 await ReplyAsync($"Test FAILED. Check bot logs for details.");
             }
         }
+
+        public string GetGeneralHelpMessage() => $"Usage:\n" +
+            $"  - `{Constants.HelpMessageTriggerToken}{Command}`: tests an RCON connection to our Left 4 Dead 2 game server.";
     }
 }

@@ -11,6 +11,5 @@
         public ulong Id { get; set; }
         public DiscordVoiceChannels Channels { get; set; }
         public DiscordUser[] ConfigMaintainers { get; set; }
-        public bool ReferenceCommandsInReplies { get; internal set; }
     }
 }

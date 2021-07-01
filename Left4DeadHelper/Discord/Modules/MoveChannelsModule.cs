@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Left4DeadHelper.Discord.Interfaces;
 using Left4DeadHelper.Helpers;
 using Left4DeadHelper.Models;
 using Left4DeadHelper.Services;
@@ -15,9 +16,14 @@ using System.Threading.Tasks;
 namespace Left4DeadHelper.Discord.Modules
 {
     [Group(Constants.GroupL4d)]
-    [Alias(Constants.GroupL4d2, Constants.GroupLfd, Constants.GroupLfd2, Constants.GroupDivorce)]
-    public class MoveChannelsModule : ModuleBase<SocketCommandContext>
+    [Alias(Constants.GroupL4d2, Constants.GroupLfd, Constants.GroupLfd2, GroupDivorce)]
+    public class MoveChannelsModule : ModuleBase<SocketCommandContext>, ICommandModule
     {
+        private const string Command = "vc";
+        public string CommandString => Command;
+
+        public const string GroupDivorce = "divorce";
+
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<MoveChannelsModule> _logger;
 
@@ -28,7 +34,7 @@ namespace Left4DeadHelper.Discord.Modules
         }
 
         [Command]
-        [Alias(Constants.CommandVoiceChat)]
+        [Alias(Command)]
         [Summary("Moves users into respective voice channels based on game team.")]
         [RequireUserPermission(GuildPermission.MoveMembers)]
         public async Task HandleVoiceChatAsync()
@@ -85,18 +91,18 @@ namespace Left4DeadHelper.Discord.Modules
                         $"(missing mappings from the bot config). Bother {whoShouldFix} to fix it.";
                 }
 
-                MessageReference? replyToMessageRef = null;
-                if (guildSettings != null && guildSettings.ReferenceCommandsInReplies)
-                {
-                    replyToMessageRef = new MessageReference(Context.Message.Id, Context.Channel.Id, Context.Guild.Id);
-                }
-
-                await ReplyAsync(replyMessage, messageReference: replyToMessageRef);
+                await ReplyAsync(replyMessage);
             }
             catch (Exception e)
             {
                 _logger.LogError(e, "Got an error trying to move players :(");
             }
         }
+
+        public string GetGeneralHelpMessage() => $"Usage:\n" +
+            $"  - `{Constants.HelpMessageTriggerToken}{Constants.GroupL4d} [{Command}?]`:\n" +
+            $"    Moves players on our Left 4 Dead server into separate Discord voice channels channels per team.\n" +
+            $"    Base command aliases: `{Constants.GroupL4d2}`, `{Constants.GroupLfd}`, `{Constants.GroupLfd2}`, `{GroupDivorce}`;" +
+            $"    the `{Command}` sub-command is optional on all aliases.";
     }
 }

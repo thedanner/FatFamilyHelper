@@ -1,4 +1,5 @@
 ﻿using Discord.Commands;
+using Left4DeadHelper.Discord.Interfaces;
 using Left4DeadHelper.Helpers;
 using Left4DeadHelper.Helpers.Extensions;
 using Left4DeadHelper.Models;
@@ -11,10 +12,15 @@ using System.Threading.Tasks;
 namespace Left4DeadHelper.Discord.Modules
 {
     [Group(Constants.GroupL4d)]
-    [Alias(Constants.GroupL4d2)]
-    public class PickMapModule : ModuleBase<SocketCommandContext>
+    [Alias(Constants.GroupL4d2, Constants.GroupLfd, Constants.GroupLfd2)]
+    public class PickMapModule : ModuleBase<SocketCommandContext>, ICommandModule
     {
         private const string Command = "map";
+        public string CommandString => Command;
+        private const string CommandAlias = "maps";
+
+        private const string ArgList = "list";
+        private static readonly string[] ArgsAny = { "any", "all" };
 
         private readonly ILogger<PickMapModule> _logger;
         private readonly Settings _settings;
@@ -28,7 +34,7 @@ namespace Left4DeadHelper.Discord.Modules
         }
 
         [Command(Command)]
-        [Alias("maps")]
+        [Alias(CommandAlias)]
         [Summary("Picks a random map.")]
         public async Task HandleCommandAsync(string? firstArg = null, string? secondArg = null)
         {
@@ -39,23 +45,7 @@ namespace Left4DeadHelper.Discord.Modules
                 firstArg = maps.DefaultCategory;
             }
 
-            if ("help".Equals(firstArg, StringComparison.CurrentCultureIgnoreCase))
-            {
-                var linePrefix = $"{_settings.DiscordSettings.Prefixes[0]}{Constants.GroupL4d} {Command}";
-
-                var outputMessage = $@"Usage:
-**{linePrefix} help**: shows help
-**{linePrefix} list**: lists the categories
-**{linePrefix} list <category>**: lists the maps in the categories
-**{linePrefix}**: pick a random map from the ""{firstArg}"" category
-**{linePrefix} any** or **{linePrefix} all**: pick a random map from all of the categories
-**{linePrefix} <category>**: pick a map from the given category";
-
-                await ReplyAsync(outputMessage);
-                return;
-            }
-
-            if ("list".Equals(firstArg, StringComparison.CurrentCultureIgnoreCase))
+            if (ArgList.Equals(firstArg, StringComparison.CurrentCultureIgnoreCase))
             {
                 if (string.IsNullOrEmpty(secondArg))
                 {
@@ -80,8 +70,7 @@ namespace Left4DeadHelper.Discord.Modules
                 return;
             }
 
-            if ("any".Equals(firstArg, StringComparison.CurrentCultureIgnoreCase)
-                || "all".Equals(firstArg, StringComparison.CurrentCultureIgnoreCase))
+            if (ArgsAny.Contains(firstArg, StringComparer.CurrentCultureIgnoreCase))
             {
                 var allMaps = maps.Categories.Values.SelectMany(m => m).ToList();
                 var map = _random.PickRandom(allMaps);
@@ -108,5 +97,14 @@ namespace Left4DeadHelper.Discord.Modules
                 return;
             }
         }
+
+        public string GetGeneralHelpMessage() => $"Usage:\n" +
+            $"  - `{Constants.HelpMessageTriggerToken}{Command} {ArgList}`: lists the categories\n" +
+            $"  - `{Constants.HelpMessageTriggerToken}{Command} {ArgList} <category>**: lists the maps in the categories\n" +
+            $"  - `{Constants.HelpMessageTriggerToken}{Command}`: pick a random map from the \"{_settings.Left4DeadSettings.Maps.DefaultCategory}\" category\n" +
+            $"  - `{Constants.HelpMessageTriggerToken}{Command} <{string.Join("|", ArgsAny)}>`: pick a random map from all of the categories\n" +
+            $"  - `{Constants.HelpMessageTriggerToken}{Command} <category>**: pick a map from the given category\n" +
+            $"    Base command aliases: `{Constants.GroupL4d2}`, `{Constants.GroupLfd}`, `{Constants.GroupLfd2}`.\n" +
+            $"    Sub-command aliases `{CommandAlias}`.";
     }
 }

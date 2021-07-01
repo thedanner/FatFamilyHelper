@@ -1,6 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Left4DeadHelper.Discord.TaskInterfaces;
+using Left4DeadHelper.Discord.Interfaces.Tasks;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -78,13 +78,13 @@ namespace Left4DeadHelper.Discord.Modules
                     if (bulkDeletableMessages.Any())
                     {
                         await channel.DeleteMessagesAsync(bulkDeletableMessages);
-                        await Task.Delay(250);
+                        await Task.Delay(Constants.DelayAfterCommandMs);
                     }
 
                     foreach (var singleDeletableMessage in singleDeletableMessages)
                     {
                         await channel.DeleteMessageAsync(singleDeletableMessage);
-                        await Task.Delay(250);
+                        await Task.Delay(Constants.DelayAfterCommandMs);
                     }
                 }
             }

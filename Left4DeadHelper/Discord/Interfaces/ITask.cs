@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Left4DeadHelper.Discord.TaskInterfaces
+namespace Left4DeadHelper.Discord.Interfaces
 {
     public interface ITask
     {

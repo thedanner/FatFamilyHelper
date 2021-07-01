@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Left4DeadHelper.Discord.Interfaces;
 using Left4DeadHelper.Helpers;
 using Left4DeadHelper.Models;
 using Left4DeadHelper.Services;
@@ -13,10 +14,12 @@ using System.Threading.Tasks;
 
 namespace Left4DeadHelper.Discord.Modules
 {
-    [Group(Constants.GroupReunite)]
-    [Alias(Constants.GroupRemarry)]
-    public class ReuniteModule : ModuleBase<SocketCommandContext>
+    public class ReuniteModule : ModuleBase<SocketCommandContext>, ICommandModule
     {
+        private const string Command = "reunite";
+        public string CommandString => Command;
+        private const string CommandAlias = "remarry";
+
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<ReuniteModule> _logger;
 
@@ -26,7 +29,8 @@ namespace Left4DeadHelper.Discord.Modules
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        [Command]
+        [Command(Command)]
+        [Alias(CommandAlias)]
         [Summary("Moves users from the configured secondary channel into the primary channel.")]
         [RequireUserPermission(GuildPermission.MoveMembers)]
         public async Task HandleVoiceChatAsync()
@@ -61,18 +65,17 @@ namespace Left4DeadHelper.Discord.Modules
                     replyMessage = $"{moveResult.MoveCount} people moved.";
                 }
 
-                MessageReference? replyToMessageRef = null;
-                if (guildSettings != null && guildSettings.ReferenceCommandsInReplies)
-                {
-                    replyToMessageRef = new MessageReference(Context.Message.Id, Context.Channel.Id, Context.Guild.Id);
-                }
-
-                await ReplyAsync(replyMessage, messageReference: replyToMessageRef);
+                await ReplyAsync(replyMessage);
             }
             catch (Exception e)
             {
                 _logger.LogError(e, "Error trying to reuninte users :(");
             }
         }
+
+        public string GetGeneralHelpMessage() => $"Usage:\n" +
+            $"  - `{Constants.HelpMessageTriggerToken}{Command}`:\n" +
+            $"    Moves players from the second channel to the first one.\n" +
+            $"    Aliases: `{CommandAlias}`.";
     }
 }
