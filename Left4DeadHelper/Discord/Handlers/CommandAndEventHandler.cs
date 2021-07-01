@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Left4DeadHelper.Discord.EventInterfaces;
+using Left4DeadHelper.Discord.Interfaces.Events;
 using Left4DeadHelper.Discord.Modules;
 using Left4DeadHelper.Models;
 using Microsoft.Extensions.DependencyInjection;

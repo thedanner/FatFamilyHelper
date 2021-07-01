@@ -2,7 +2,7 @@
 using Discord.WebSocket;
 using System.Threading.Tasks;
 
-namespace Left4DeadHelper.Discord.EventInterfaces
+namespace Left4DeadHelper.Discord.Interfaces.Events
 {
     public interface IHandleReactionAddedAsync : IHandleDiscordEvents
     {

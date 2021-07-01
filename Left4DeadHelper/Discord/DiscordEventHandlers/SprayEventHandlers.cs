@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Left4DeadHelper.Discord.EventInterfaces;
+using Left4DeadHelper.Discord.Interfaces.Events;
 using Left4DeadHelper.Discord.Modules;
 using Left4DeadHelper.Helpers;
 using Left4DeadHelper.Models;
@@ -72,7 +72,7 @@ namespace Left4DeadHelper.Discord.DiscordEventHandlers
             if (removeEmote)
             {
                 await reactedMessage.RemoveReactionAsync(reaction.Emote, reactingUser);
-                await Task.Delay(250);
+                await Task.Delay(Constants.DelayAfterCommandMs);
             }
         }
 
@@ -109,7 +109,7 @@ namespace Left4DeadHelper.Discord.DiscordEventHandlers
             if (referencedIMessage == null)
             {
                 await message.DeleteAsync();
-                await Task.Delay(250);
+                await Task.Delay(Constants.DelayAfterCommandMs);
                 return false;
             }
 
@@ -128,7 +128,7 @@ namespace Left4DeadHelper.Discord.DiscordEventHandlers
                 && referencedMessageIsBotCommand)
             {
                 await message.DeleteAsync();
-                await Task.Delay(250);
+                await Task.Delay(Constants.DelayAfterCommandMs);
             }
 
             return false;

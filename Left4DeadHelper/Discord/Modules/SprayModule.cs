@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Left4DeadHelper.Discord.Interfaces;
 using Left4DeadHelper.Helpers;
 using Left4DeadHelper.Models;
 using Left4DeadHelper.Sprays;
@@ -14,9 +15,11 @@ using System.Threading.Tasks;
 
 namespace Left4DeadHelper.Discord.Modules
 {
-    [Group(Constants.GroupSprayMe)]
-    public class SprayModule : ModuleBase<SocketCommandContext>
+    public class SprayModule : ModuleBase<SocketCommandContext>, ICommandModule
     {
+        private const string Command = "sprayme";
+        public string CommandString => Command;
+
         private readonly ILogger<SprayModule> _logger;
         private readonly Settings _settings;
         private readonly ISprayModuleCommandResolver _resolver;
@@ -33,7 +36,7 @@ namespace Left4DeadHelper.Discord.Modules
 
         // CROSS MARK emoji https://www.fileformat.info/info/emoji/x/index.htm
 
-        [Command]
+        [Command(Command)]
         [Summary("Converts an image into a Source engine-compatible spray")]
         public async Task HandleCommandAsync(string? arg1 = null, string? arg2 = null)
         {
@@ -61,7 +64,7 @@ namespace Left4DeadHelper.Discord.Modules
             try
             {
                 var tempMessage = await ReplyAsync("Working on it...", messageReference: replyToMessageRef);
-                await Task.Delay(250);
+                await Task.Delay(Constants.DelayAfterCommandMs);
 
                 using var sourceStream = await client.OpenReadTaskAsync(result.SourceImageUri);
 
@@ -123,10 +126,10 @@ namespace Left4DeadHelper.Discord.Modules
                         outputStream, fileName,
                         $"Here ya go!\n\n(If you requested the conversion, react with {DeleteEmojiString} to delete this message.)",
                         messageReference: replyToMessageRef);
-                    await Task.Delay(250);
+                    await Task.Delay(Constants.DelayAfterCommandMs);
 
                     await sprayMessage.AddReactionAsync(DeleteEmote);
-                    await Task.Delay(250);
+                    await Task.Delay(Constants.DelayAfterCommandMs);
                 }
                 catch (UnsupportedImageFormatException e)
                 {
@@ -135,19 +138,24 @@ namespace Left4DeadHelper.Discord.Modules
                     var sorryMessage = await Context.Channel.SendMessageAsync(
                         "Sorry, I don't support that type of image :(",
                         messageReference: replyToMessageRef);
-                    await Task.Delay(250);
+                    await Task.Delay(Constants.DelayAfterCommandMs);
 
                     await sorryMessage.AddReactionAsync(DeleteEmote);
-                    await Task.Delay(250);
+                    await Task.Delay(Constants.DelayAfterCommandMs);
                 }
 
                 await tempMessage.DeleteAsync();
-                await Task.Delay(250);
+                await Task.Delay(Constants.DelayAfterCommandMs);
             }
             catch (Exception e)
             {
                 _logger.LogError(e, "Got an error converting image to a spray :(");
             }
         }
+
+        public string GetGeneralHelpMessage() => $"Usage:\n" +
+            $"  - `{Constants.HelpMessageTriggerToken}{Command}`:\n" +
+            $"    Creates a spray for use with Source-engine games. The spray can be referenced from any of these sources:\n" +
+            $"";
     }
 }

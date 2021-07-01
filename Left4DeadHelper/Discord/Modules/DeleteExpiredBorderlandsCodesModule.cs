@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Left4DeadHelper.Discord.Interfaces;
 using Left4DeadHelper.Helpers;
 using Microsoft.Extensions.Logging;
 using System;
@@ -10,21 +11,23 @@ using System.Threading.Tasks;
 
 namespace Left4DeadHelper.Discord.Modules
 {
-    public class DeleteExpiredBorderlandsCodesModule : ModuleBase<SocketCommandContext>
+    public class DeleteExpiredBorderlandsCodesModule : ModuleBase<SocketCommandContext>, ICommandModule
     {
+        private const string Command = "prune";
+        public string CommandString => Command;
+
+
         private const int BatchSize = 100;
 
-        private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<DeleteExpiredBorderlandsCodesModule> _logger;
 
-        public DeleteExpiredBorderlandsCodesModule(ILogger<DeleteExpiredBorderlandsCodesModule> logger, IServiceProvider serviceProvider)
+        public DeleteExpiredBorderlandsCodesModule(ILogger<DeleteExpiredBorderlandsCodesModule> logger)
             : base()
         {
-            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        [Command(Constants.CommandPruneExpiredCodes)]
+        [Command(Command)]
         [Summary("Deletes expired Borderlands codes.")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task DeleteExpiredBorderlandsCodesAsync(ulong? channelId = null)
@@ -53,7 +56,7 @@ namespace Left4DeadHelper.Discord.Modules
                     channel = (SocketTextChannel)Context.Channel;
                 }
 
-                var messages = (await Context.Channel.GetMessagesAsync(BatchSize)
+                var messages = (await channel.GetMessagesAsync(BatchSize)
                     .FlattenAsync())
                     .ToList();
 
@@ -86,22 +89,24 @@ namespace Left4DeadHelper.Discord.Modules
                     if (bulkDeletableMessages.Any())
                     {
                         await channel.DeleteMessagesAsync(bulkDeletableMessages);
-                        await Task.Delay(250);
+                        await Task.Delay(Constants.DelayAfterCommandMs);
                     }
 
                     foreach (var singleDeletableMessage in singleDeletableMessages)
                     {
                         await channel.DeleteMessageAsync(singleDeletableMessage);
-                        await Task.Delay(250);
+                        await Task.Delay(Constants.DelayAfterCommandMs);
                     }
 
                     if (messagesToDelete.Count > 0)
                     {
                         await ReplyAsync($"Deleted {messagesToDelete.Count} message{plural} in \"{channel.Name}\".");
+                        await Task.Delay(Constants.DelayAfterCommandMs);
                     }
                     else
                     {
                         await ReplyAsync($"No messages with epxired codes found to delete in \"{channel.Name}\".");
+                        await Task.Delay(Constants.DelayAfterCommandMs);
                     }
                 }
             }
@@ -110,5 +115,10 @@ namespace Left4DeadHelper.Discord.Modules
                 _logger.LogError(e, "Error trying to prune expired messages :(");
             }
         }
+
+        public string GetGeneralHelpMessage() => $"Usage:\n" +
+            $"  - {Constants.HelpMessageTriggerToken}{Command} [snowflake? channelId]:\n" +
+            $"    Scans the given channel (or the channel the command was run in) for messages posted by bots with\n" +
+            $"    an embed with text \"Expires:\" and a timestamp, so long as that timestamp is in the past.";
     }
 }
