@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Left4DeadHelper.Discord.Modules
@@ -19,6 +20,8 @@ namespace Left4DeadHelper.Discord.Modules
 
         private const int BatchSize = 100;
 
+        private static readonly Regex ChannelIdRefRegex = new Regex(@"<#(?<id>\d+)>", RegexOptions.Compiled);
+
         private readonly ILogger<DeleteExpiredBorderlandsCodesModule> _logger;
 
         public DeleteExpiredBorderlandsCodesModule(ILogger<DeleteExpiredBorderlandsCodesModule> logger)
@@ -30,10 +33,42 @@ namespace Left4DeadHelper.Discord.Modules
         [Command(Command)]
         [Summary("Deletes expired Borderlands codes.")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
-        public async Task DeleteExpiredBorderlandsCodesAsync(ulong? channelId = null)
+        public async Task DeleteExpiredBorderlandsCodesAsync(string channelToken)
         {
             if (Context.Message == null) return;
             if (Context.Guild == null) return;
+
+            ulong? channelId;
+            if (ulong.TryParse(channelToken, out var channelIdValue))
+            {
+                channelId = channelIdValue;
+            }
+            else if (!string.IsNullOrEmpty(channelToken))
+            {
+                var matches = ChannelIdRefRegex.Match(channelToken);
+                if (matches.Success)
+                {
+                    if (ulong.TryParse(matches.Groups["id"].Value, out channelIdValue))
+                    {
+                        channelId = channelIdValue;
+                    }
+                    else
+                    {
+                        // Meh, shorthand for invlid ref.
+                        channelId = 0;
+                    }
+                }
+                else
+                {
+                    // Meh, shorthand for invlid ref.
+                    channelId = 0;
+                }
+            }
+            else
+            {
+                // No channel specified, use the current one.
+                channelId = null;
+            }
 
             try
             {
@@ -45,7 +80,7 @@ namespace Left4DeadHelper.Discord.Modules
 
                     if (otherChannel == null)
                     {
-                        await ReplyAsync("Couldn't find a channel with that ID.");
+                        await ReplyAsync("Couldn't find a channel with that ID or name.");
                         return;
                     }
 
@@ -117,7 +152,7 @@ namespace Left4DeadHelper.Discord.Modules
         }
 
         public string GetGeneralHelpMessage() => $"Usage:\n" +
-            $"  - {Constants.HelpMessageTriggerToken}{Command} [snowflake? channelId]:\n" +
+            $"  - `{Constants.HelpMessageTriggerToken}{Command} [snowflake? channelId]`:\n" +
             $"    Scans the given channel (or the channel the command was run in) for messages posted by bots with\n" +
             $"    an embed with text \"Expires:\" and a timestamp, so long as that timestamp is in the past.";
     }

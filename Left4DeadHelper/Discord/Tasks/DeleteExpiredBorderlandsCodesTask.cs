@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Left4DeadHelper.Discord.Interfaces.Tasks;
+using Left4DeadHelper.Discord.Interfaces;
+using Left4DeadHelper.Helpers;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -20,12 +21,10 @@ namespace Left4DeadHelper.Discord.Modules
 
         private const int BatchSize = 100;
 
-        private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<DeleteExpiredBorderlandsCodesTask> _logger;
 
-        public DeleteExpiredBorderlandsCodesTask(ILogger<DeleteExpiredBorderlandsCodesTask> logger, IServiceProvider serviceProvider)
+        public DeleteExpiredBorderlandsCodesTask(ILogger<DeleteExpiredBorderlandsCodesTask> logger)
         {
-            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 

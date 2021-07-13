@@ -102,7 +102,7 @@ namespace Left4DeadHelper.Discord.Modules
         public string GetGeneralHelpMessage() => $"Usage:\n" +
             $"  - `{Constants.HelpMessageTriggerToken}{Constants.GroupL4d} [{Command}?]`:\n" +
             $"    Moves players on our Left 4 Dead server into separate Discord voice channels channels per team.\n" +
-            $"    Base command aliases: `{Constants.GroupL4d2}`, `{Constants.GroupLfd}`, `{Constants.GroupLfd2}`, `{GroupDivorce}`;" +
+            $"    Base command aliases: `{Constants.GroupL4d2}`, `{Constants.GroupLfd}`, `{Constants.GroupLfd2}`, `{GroupDivorce}`;\n" +
             $"    the `{Command}` sub-command is optional on all aliases.";
     }
 }

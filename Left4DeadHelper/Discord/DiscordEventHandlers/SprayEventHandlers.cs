@@ -8,12 +8,10 @@ using Left4DeadHelper.Models;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Left4DeadHelper.Discord.DiscordEventHandlers
 {
-    [Group(Constants.GroupSprayMe)]
     public class SprayEventHandlers : IHandleReactionAddedAsync
     {
         private readonly DiscordSocketClient _client;
