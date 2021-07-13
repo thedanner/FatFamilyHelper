@@ -100,10 +100,10 @@ namespace Left4DeadHelper.Discord.Modules
 
         public string GetGeneralHelpMessage() => $"Usage:\n" +
             $"  - `{Constants.HelpMessageTriggerToken}{Command} {ArgList}`: lists the categories\n" +
-            $"  - `{Constants.HelpMessageTriggerToken}{Command} {ArgList} <category>**: lists the maps in the categories\n" +
+            $"  - `{Constants.HelpMessageTriggerToken}{Command} {ArgList} <category>`: lists the maps in the categories\n" +
             $"  - `{Constants.HelpMessageTriggerToken}{Command}`: pick a random map from the \"{_settings.Left4DeadSettings.Maps.DefaultCategory}\" category\n" +
             $"  - `{Constants.HelpMessageTriggerToken}{Command} <{string.Join("|", ArgsAny)}>`: pick a random map from all of the categories\n" +
-            $"  - `{Constants.HelpMessageTriggerToken}{Command} <category>**: pick a map from the given category\n" +
+            $"  - `{Constants.HelpMessageTriggerToken}{Command} <category>`: pick a map from the given category\n" +
             $"    Base command aliases: `{Constants.GroupL4d2}`, `{Constants.GroupLfd}`, `{Constants.GroupLfd2}`.\n" +
             $"    Sub-command aliases `{CommandAlias}`.";
     }

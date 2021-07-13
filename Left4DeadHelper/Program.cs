@@ -3,6 +3,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Left4DeadHelper.Discord.Handlers;
+using Left4DeadHelper.Discord.Interfaces;
 using Left4DeadHelper.Discord.Interfaces.Events;
 using Left4DeadHelper.Helpers;
 using Left4DeadHelper.Models;
@@ -17,6 +18,7 @@ using Microsoft.Extensions.Logging.EventLog;
 using NLog.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -207,6 +209,8 @@ namespace Left4DeadHelper
             BindEventHandlers(allLoadedTypes, serviceCollection);
 
             BindTasks(allLoadedTypes, serviceCollection);
+
+            BindModulesWithHelpSupport(allLoadedTypes, serviceCollection);
         }
 
         private static void BindEventHandlers(IReadOnlyList<Type> allLoadedTypes, IServiceCollection serviceCollection)
@@ -282,6 +286,27 @@ namespace Left4DeadHelper
                 var task = (ITask) serviceProvider.GetRequiredService(type);
                 return task;
             });
+        }
+
+        private static void BindModulesWithHelpSupport(ReadOnlyCollection<Type> allLoadedTypes, IServiceCollection serviceCollection)
+        {
+            var modulesWithHelpSupport = new List<Type>();
+
+            // Do all the filtering and sorting in one pass over the loaded types list.
+            foreach (var type in allLoadedTypes)
+            {
+                if (!type.IsInterface && !type.IsAbstract
+                    && typeof(ModuleBase<SocketCommandContext>).IsAssignableFrom(type)
+                    && typeof(ICommandModule).IsAssignableFrom(type))
+                {
+                    modulesWithHelpSupport.Add(type);
+                }
+            }
+
+            foreach (var implmenetedHandlerInterface in modulesWithHelpSupport)
+            {
+                serviceCollection.AddTransient(typeof(ICommandModule), implmenetedHandlerInterface);
+            }
         }
     }
 }

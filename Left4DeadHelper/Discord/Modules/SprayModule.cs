@@ -156,6 +156,13 @@ namespace Left4DeadHelper.Discord.Modules
         public string GetGeneralHelpMessage() => $"Usage:\n" +
             $"  - `{Constants.HelpMessageTriggerToken}{Command}`:\n" +
             $"    Creates a spray for use with Source-engine games. The spray can be referenced from any of these sources:\n" +
-            $"";
+            $"    1. Message starts with a URL.\n" +
+            $"    2. Message starts with a filename and URL.\n" +
+            $"    3. Message starts with a filename and has an attachment.\n" +
+            $"    4. Message starts with a filename and is a reply to a message with only a URL as its content.\n" +
+            $"    5. Message starts with a filename and is a reply to a message with an attachement.\n" +
+            $"    6. Message is empty and has an attachment.\n" +
+            $"    7. Message is empty and is a reply to a message with only a URL as its content.\n" +
+            $"    8. Message is empty and is a reply to a message with an attachment.";
     }
 }
