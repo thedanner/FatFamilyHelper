@@ -42,8 +42,9 @@ namespace Left4DeadHelper.Sprays
 
             using var image = await Image.LoadAsync<Rgba32>(Configuration.Default, memoryStream, cancellationToken);
 
-            // If too big, scale down. Could be done with a transform below but this is simpler.
-            if (image.Width > saveProfile.MaxWidth || image.Height > saveProfile.MaxHeight)
+            // So the spary takes up full size, make the larger dimension the size of the max allowed.
+            // This could make the source bigger or smaller.
+            if (image.Width != saveProfile.MaxWidth || image.Height != saveProfile.MaxHeight)
             {
                 double scaleFactor;
 
