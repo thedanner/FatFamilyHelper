@@ -1,6 +1,4 @@
-﻿
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Left4DeadHelper.Models
 {
@@ -18,10 +16,5 @@ namespace Left4DeadHelper.Models
         public Left4DeadSettings Left4DeadSettings { get; set;}
         public Dictionary<string, Dictionary<string, object>> TaskSettings { get; set; }
         public UserMapping[] UserMappings { get; set; }
-
-        internal object? ToList()
-        {
-            throw new NotImplementedException();
-        }
     }
 }
