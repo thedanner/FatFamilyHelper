@@ -17,13 +17,15 @@ namespace Left4DeadHelper.Discord.Modules
 {
     public class SprayModule : ModuleBase<SocketCommandContext>, ICommandModule
     {
-        private const string Command = "sprayme";
-        public string CommandString => Command;
+        private const string CommandVtf = "sprayme";
+
+        private const string CommandTga = "sprayme_tga";
 
         private readonly ILogger<SprayModule> _logger;
         private readonly Settings _settings;
         private readonly ISprayModuleCommandResolver _resolver;
 
+        // CROSS MARK emoji https://www.fileformat.info/info/emoji/x/index.htm
         private const string DeleteEmojiString = "\u274C";
         public static Emoji DeleteEmote => new Emoji(DeleteEmojiString);
 
@@ -34,11 +36,23 @@ namespace Left4DeadHelper.Discord.Modules
             _resolver = resolver ?? throw new ArgumentNullException(nameof(resolver));
         }
 
-        // CROSS MARK emoji https://www.fileformat.info/info/emoji/x/index.htm
+        [Command(CommandVtf)]
+        [Summary("Converts an image into a Source engine-compatible spray in VTF format.")]
+        public Task ConvertVtfAsync(string? arg1 = null, string ? arg2 = null)
+        {
+            var saveProfile = new VtfSaveProfile();
+            return HandleAsync(saveProfile, arg1, arg2);
+        }
 
-        [Command(Command)]
-        [Summary("Converts an image into a Source engine-compatible spray")]
-        public async Task HandleCommandAsync(string? arg1 = null, string? arg2 = null)
+        [Command(CommandTga)]
+        [Summary("Converts an image into a Source engine-compatible spray in TGA format.")]
+        public Task ConvertTgaAsync(string? arg1 = null, string? arg2 = null)
+        {
+            var saveProfile = new TgaSaveProfile();
+            return HandleAsync(saveProfile, arg1, arg2);
+        }
+
+        private async Task HandleAsync(ISaveProfile saveProfile, string? arg1 = null, string? arg2 = null)
         {
             var client = new WebClient();
             var replyToMessageRef = new MessageReference(Context.Message.Id, Context.Channel.Id, Context.Guild.Id);
@@ -76,7 +90,7 @@ namespace Left4DeadHelper.Discord.Modules
 
                     var conversionResult = await sprayTools.ConvertAsync(
                         sourceStream, outputStream,
-                        new VtfSaveProfile(), CancellationToken.None);
+                        saveProfile, CancellationToken.None);
 
                     outputStream.Position = 0;
 
@@ -153,16 +167,28 @@ namespace Left4DeadHelper.Discord.Modules
             }
         }
 
-        public string GetGeneralHelpMessage() => $"Usage:\n" +
-            $"  - `{Constants.HelpMessageTriggerToken}{Command}`:\n" +
-            $"    Creates a spray for use with Source-engine games. The spray can be referenced from any of these sources:\n" +
-            $"    1. Message starts with a URL.\n" +
-            $"    2. Message starts with a filename and URL.\n" +
-            $"    3. Message starts with a filename and has an attachment.\n" +
-            $"    4. Message starts with a filename and is a reply to a message with only a URL as its content.\n" +
-            $"    5. Message starts with a filename and is a reply to a message with an attachement.\n" +
-            $"    6. Message is empty and has an attachment.\n" +
-            $"    7. Message is empty and is a reply to a message with only a URL as its content.\n" +
-            $"    8. Message is empty and is a reply to a message with an attachment.";
+        public string GetGeneralHelpMessage(HelpContext helpContext)
+        {
+            var c = helpContext.GenericCommandExample;
+            var u = "https://placekitten.com/200/300";
+
+            return
+                $"  - `{c} <string filenameOrSource>? <string sourceIfFilenameGiven>?`:\n" +
+                $"    Creates a spray for use with Source-engine games, in {(helpContext.Command == CommandVtf ? "VTF" : "TGA")} fomat.\n" +
+                $"    The spray can be specified in any of these ways:\n" +
+                $"    1. Message starts with a URL\n" +
+                $"    `{c} {u}`\n" +
+                $"    2. Message starts with a filename and URL.\n" +
+                $"    `{c} KITTEN {u}` or `{c} \"OMG A KITTEN\" {u}`\n" +
+                $"    3. Message starts with a filename and has an image attachment.\n" +
+                $"    `{c} KITTEN` or `{c} \"OMG A KITTEN\"` (must have an attached image)\n" +
+                $"    4. Message starts with a filename and is a reply to a message with only a URL as its content.\n" +
+                $"    `{c} KITTEN` or `{c} \"OMG A KITTEN\"` (must reply to an image-only message)\n" +
+                $"    5. Message starts with a filename and is a reply to a message with an attachement.\n" +
+                $"    `{c} KITTEN` or `{c} \"OMG A KITTEN\"` (must reply to a message with an attached image)\n" +
+                $"    6. Message is empty and has an attachment.\n" +
+                $"    7. Message is empty and is a reply to a message with only a URL as its content.\n" +
+                $"    8. Message is empty and is a reply to a message with an attachment.";
+        }
     }
 }

@@ -3,6 +3,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Left4DeadHelper.Discord.Interfaces;
 using Left4DeadHelper.Helpers;
+using Left4DeadHelper.Models;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,6 @@ namespace Left4DeadHelper.Discord.Modules
     public class DeleteExpiredBorderlandsCodesModule : ModuleBase<SocketCommandContext>, ICommandModule
     {
         private const string Command = "prune";
-        public string CommandString => Command;
 
 
         private const int BatchSize = 100;
@@ -135,12 +135,12 @@ namespace Left4DeadHelper.Discord.Modules
 
                     if (messagesToDelete.Count > 0)
                     {
-                        await ReplyAsync($"Deleted {messagesToDelete.Count} message{plural} in \"{channel.Name}\".");
+                        await ReplyAsync($"Deleted {messagesToDelete.Count} message{plural} in <#{channel.Id}>.");
                         await Task.Delay(Constants.DelayAfterCommandMs);
                     }
                     else
                     {
-                        await ReplyAsync($"No messages with epxired codes found to delete in \"{channel.Name}\".");
+                        await ReplyAsync($"No messages with epxired codes found to delete in <#{channel.Id}>.");
                         await Task.Delay(Constants.DelayAfterCommandMs);
                     }
                 }
@@ -151,9 +151,10 @@ namespace Left4DeadHelper.Discord.Modules
             }
         }
 
-        public string GetGeneralHelpMessage() => $"Usage:\n" +
-            $"  - `{Constants.HelpMessageTriggerToken}{Command} [snowflake? channelId]`:\n" +
+        public string GetGeneralHelpMessage(HelpContext helpContext) =>
+            $"  - `{helpContext.GenericCommandExample} <@channelReference|channelId>`:\n" +
             $"    Scans the given channel (or the channel the command was run in) for messages posted by bots with\n" +
-            $"    an embed with text \"Expires:\" and a timestamp, so long as that timestamp is in the past.";
+            $"    an embed with text \"Expires:\" and a timestamp. Those messages are deleted if that timestamp is in the past.\n" +
+            $"    To work, the bot must have the Manage Messages permission for the channel.";
     }
 }

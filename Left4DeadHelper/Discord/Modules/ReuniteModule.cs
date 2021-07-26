@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
 using Left4DeadHelper.Discord.Interfaces;
-using Left4DeadHelper.Helpers;
 using Left4DeadHelper.Models;
 using Left4DeadHelper.Services;
 using Left4DeadHelper.Wrappers.DiscordNet;
@@ -17,7 +16,6 @@ namespace Left4DeadHelper.Discord.Modules
     public class ReuniteModule : ModuleBase<SocketCommandContext>, ICommandModule
     {
         private const string Command = "reunite";
-        public string CommandString => Command;
         private const string CommandAlias = "remarry";
 
         private readonly IServiceProvider _serviceProvider;
@@ -73,9 +71,9 @@ namespace Left4DeadHelper.Discord.Modules
             }
         }
 
-        public string GetGeneralHelpMessage() => $"Usage:\n" +
-            $"  - `{Constants.HelpMessageTriggerToken}{Command}`:\n" +
+        public string GetGeneralHelpMessage(HelpContext helpContext) =>
+            $"  - `{helpContext.GenericCommandExample}`:\n" +
             $"    Moves players from the second channel to the first one.\n" +
-            $"    Aliases: `{CommandAlias}`.";
+            $"    Aliases: {helpContext.GetCommandAliasesString()}.";
     }
 }

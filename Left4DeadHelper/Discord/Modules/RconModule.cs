@@ -2,6 +2,7 @@
 using Discord.Commands;
 using Left4DeadHelper.Discord.Interfaces;
 using Left4DeadHelper.Helpers;
+using Left4DeadHelper.Models;
 using Left4DeadHelper.Rcon;
 using Left4DeadHelper.Wrappers.Rcon;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +17,6 @@ namespace Left4DeadHelper.Discord.Modules
     public class RconModule : ModuleBase<SocketCommandContext>, ICommandModule
     {
         private const string Command = "rcon";
-        public string CommandString => Command;
 
         private readonly ILogger<RconModule> _logger;
         private readonly IServiceProvider _serviceProvider;
@@ -55,7 +55,7 @@ namespace Left4DeadHelper.Discord.Modules
             }
         }
 
-        public string GetGeneralHelpMessage() => $"Usage:\n" +
-            $"  - `{Constants.HelpMessageTriggerToken}{Command}`: tests an RCON connection to our Left 4 Dead 2 game server.";
+        public string GetGeneralHelpMessage(HelpContext helpContext) =>
+            $"  - `{helpContext.GenericCommandExample}`: tests an RCON connection to our Left 4 Dead 2 game server.";
     }
 }

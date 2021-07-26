@@ -20,8 +20,7 @@ namespace Left4DeadHelper.Discord.Modules
     public class MoveChannelsModule : ModuleBase<SocketCommandContext>, ICommandModule
     {
         private const string Command = "vc";
-        public string CommandString => Command;
-
+        
         public const string GroupDivorce = "divorce";
 
         private readonly IServiceProvider _serviceProvider;
@@ -83,12 +82,12 @@ namespace Left4DeadHelper.Discord.Modules
                     }
                     else
                     {
-                        whoShouldFix = "you-know-who";
+                        whoShouldFix = "someone";
                     }
 
                     replyMessage +=
-                        $"\n\nSorry, I couldn't move these people: {string.Join(", ", moveResult.UnmappedSteamUsers.Select(u => u.Name))} " +
-                        $"(missing mappings from the bot config). Bother {whoShouldFix} to fix it.";
+                        $"\n\nSorry, I couldn't move these people because I don't know enough about them: " +
+                        $"\n{string.Join(", ", moveResult.UnmappedSteamUsers.Select(u => u.Name))}. Bother {whoShouldFix} to fix it.";
                 }
 
                 await ReplyAsync(replyMessage);
@@ -99,8 +98,8 @@ namespace Left4DeadHelper.Discord.Modules
             }
         }
 
-        public string GetGeneralHelpMessage() => $"Usage:\n" +
-            $"  - `{Constants.HelpMessageTriggerToken}{Constants.GroupL4d} [{Command}?]`:\n" +
+        public string GetGeneralHelpMessage(HelpContext helpContext) =>
+            $"  - `{helpContext.GenericCommandExample}`:\n" +
             $"    Moves players on our Left 4 Dead server into separate Discord voice channels channels per team.\n" +
             $"    Base command aliases: `{Constants.GroupL4d2}`, `{Constants.GroupLfd}`, `{Constants.GroupLfd2}`, `{GroupDivorce}`;\n" +
             $"    the `{Command}` sub-command is optional on all aliases.";

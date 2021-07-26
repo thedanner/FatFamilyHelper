@@ -1,9 +1,9 @@
-﻿namespace Left4DeadHelper.Discord.Interfaces
+﻿using Left4DeadHelper.Models;
+
+namespace Left4DeadHelper.Discord.Interfaces
 {
     public interface ICommandModule
     {
-        string CommandString { get; }
-
-        string GetGeneralHelpMessage();
+        string GetGeneralHelpMessage(HelpContext helpMessageContext);
     }
 }
