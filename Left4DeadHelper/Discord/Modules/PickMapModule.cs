@@ -16,7 +16,6 @@ namespace Left4DeadHelper.Discord.Modules
     public class PickMapModule : ModuleBase<SocketCommandContext>, ICommandModule
     {
         private const string Command = "map";
-        public string CommandString => Command;
         private const string CommandAlias = "maps";
 
         private const string ArgList = "list";
@@ -98,13 +97,13 @@ namespace Left4DeadHelper.Discord.Modules
             }
         }
 
-        public string GetGeneralHelpMessage() => $"Usage:\n" +
-            $"  - `{Constants.HelpMessageTriggerToken}{Command} {ArgList}`: lists the categories\n" +
-            $"  - `{Constants.HelpMessageTriggerToken}{Command} {ArgList} <category>`: lists the maps in the categories\n" +
-            $"  - `{Constants.HelpMessageTriggerToken}{Command}`: pick a random map from the \"{_settings.Left4DeadSettings.Maps.DefaultCategory}\" category\n" +
-            $"  - `{Constants.HelpMessageTriggerToken}{Command} <{string.Join("|", ArgsAny)}>`: pick a random map from all of the categories\n" +
-            $"  - `{Constants.HelpMessageTriggerToken}{Command} <category>`: pick a map from the given category\n" +
-            $"    Base command aliases: `{Constants.GroupL4d2}`, `{Constants.GroupLfd}`, `{Constants.GroupLfd2}`.\n" +
-            $"    Sub-command aliases `{CommandAlias}`.";
+        public string GetGeneralHelpMessage(HelpContext helpContext) =>
+            $"  - `{helpContext.GenericCommandExample} {ArgList}`: lists the categories\n" +
+            $"  - `{helpContext.GenericCommandExample} {ArgList} <category>`: lists the maps in the categories\n" +
+            $"  - `{helpContext.GenericCommandExample}`: pick a random map from the \"{_settings.Left4DeadSettings.Maps.DefaultCategory}\" category\n" +
+            $"  - `{helpContext.GenericCommandExample} <{string.Join("|", ArgsAny)}>`: pick a random map from all of the categories\n" +
+            $"  - `{helpContext.GenericCommandExample} <category>`: pick a map from the given category\n" +
+            $"    Base command aliases: {helpContext.GetGroupAliasesString()}.\n" +
+            $"    Sub-command aliases {helpContext.GetCommandAliasesString()}.";
     }
 }

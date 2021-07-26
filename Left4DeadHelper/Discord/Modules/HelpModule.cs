@@ -16,20 +16,22 @@ namespace Left4DeadHelper.Discord.Modules
 
         private readonly ILogger<HelpModule> _logger;
         private readonly Settings _settings;
-        private readonly List<ICommandModule> _commandModules;
+        private readonly IReadOnlyList<ICommandModule> _commandModules;
+
+        private Dictionary<ICommandModule, IReadOnlyList<HelpContext>>? _commandModuleHelpContexts;
 
         public HelpModule(ILogger<HelpModule> logger, Settings settings, IEnumerable<ICommandModule> commandModules)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
-            _commandModules = commandModules?.ToList() ?? throw new ArgumentNullException(nameof(commandModules));
+            _commandModules = commandModules?.ToList().AsReadOnly() ?? throw new ArgumentNullException(nameof(commandModules));
         }
 
         [Command(Command)]
         [Summary("Shows command help.")]
         public async Task HandleHelpAsync(string? subcommand = "")
         {
-            var lines = new List<string>(20);
+            var lines = new List<string>(50);
 
             var prefixes = _settings.DiscordSettings.Prefixes;
             var prefixesStr = "";
@@ -38,41 +40,59 @@ namespace Left4DeadHelper.Discord.Modules
                 prefixesStr = $"`{string.Join("`, `", prefixes)}`, and ";
             }
 
-            var triggers = $"{prefixesStr}\"<@{Context.Client.CurrentUser.Id}> \" (a.k.a., tag me)";
+            var triggers = $"{prefixesStr}\"<@{Context.Client.CurrentUser.Id}> \"";
 
             if (string.IsNullOrWhiteSpace(subcommand))
             {
-                lines.Add($"Welcome to my help message! I'm <@{Context.Client.CurrentUser.Id}>, as you can probably tell.");
+                lines.Add($"Welcome to my help message! I'm <@{Context.Client.CurrentUser.Id}>.");
                 lines.Add("");
                 lines.Add($"I listen to the following triggers (message prefixes):");
 
-                lines.Add(triggers + ".");
+                lines.Add(triggers + ". That last one is tagging me.");
 
                 lines.Add("");
                 lines.Add("I know about the following commands:");
                 lines.Add($"- `help <any of the commands below>`");
-                foreach (var cmd in _commandModules)
+                
+                foreach (var commandModule in CommandModuleHelpContexts)
                 {
-                    lines.Add($"- `{cmd.CommandString}`: {GetSummary(cmd)}");
+                    foreach (var helpContext in commandModule.Value)
+                    {
+                        lines.Add($"- `{helpContext.CommandShortcutForHelp}`: {helpContext.CommandSummary ?? helpContext.GroupSummary}");
+                    }
                 }
 
                 lines.Add("");
                 lines.Add("You can run help with any of those listed commands to get help and usage information.");
                 lines.Add("");
-                lines.Add("Note that actual command usage may vary a bit, due to aliases, shortcuts, etc.");
+                lines.Add("Actual command usage may vary a bit, due to aliases, shortcuts, etc.");
             }
             else
             {
-                var command = _commandModules.FirstOrDefault(c =>
-                    subcommand.Equals(c.CommandString, StringComparison.CurrentCultureIgnoreCase));
+                ICommandModule? command = null;
+                HelpContext? helpContextForCommand = null;
 
-                if (command != null)
+                foreach(var commandModule in CommandModuleHelpContexts)
                 {
-                    lines.Add($"Here's the help for `{command.CommandString}`:");
+                    foreach (var helpContext in commandModule.Value)
+                    {
+                        if (subcommand.Equals(helpContext.CommandShortcutForHelp, StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            command = commandModule.Key;
+                            helpContextForCommand = helpContext;
+                            break;
+                        }
+                    }
+                }
+
+                if (command != null && helpContextForCommand != null)
+                {
+                    lines.Add($"Here's the help for `{helpContextForCommand.GenericCommandExample}`:");
                     lines.Add("");
-                    lines.Add(command.GetGeneralHelpMessage());
+                    lines.Add("Usage:");
+                    lines.Add(command.GetGeneralHelpMessage(helpContextForCommand));
                     lines.Add("");
-                    lines.Add($"(As a reminder, the triggers are {triggers}.)");
+                    lines.Add($"The triggers are {triggers}.");
                 }
                 else
                 {
@@ -83,25 +103,80 @@ namespace Left4DeadHelper.Discord.Modules
             await ReplyAsync(string.Join("\n", lines));
         }
 
-        private string GetSummary(ICommandModule cmd)
+        private Dictionary<ICommandModule, IReadOnlyList<HelpContext>> CommandModuleHelpContexts
         {
-            if (cmd is ModuleBase<SocketCommandContext>)
+            get
             {
-                var methodWithSummary = cmd.GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public)
-                    .FirstOrDefault(m => m.GetCustomAttribute<SummaryAttribute>() != null);
-
-                if (methodWithSummary != null)
+                if (_commandModuleHelpContexts == null)
                 {
-                    var summary = methodWithSummary.GetCustomAttribute<SummaryAttribute>();
+                    _commandModuleHelpContexts = new Dictionary<ICommandModule, IReadOnlyList<HelpContext>>(_commandModules.Count);
 
-                    if (summary != null)
+                    var prefixes = new List<string>(_settings.DiscordSettings.Prefixes.Select(p => p.ToString()))
                     {
-                        return summary.Text;
+                        "<@{Context.Client.CurrentUser.Id}> " // tag the bot
+                    };
+
+                    foreach (var commandModule in _commandModules)
+                    {
+                        var moduleHelpContexts = BuildHelpContextFromCommandModule(commandModule, prefixes)
+                            .ToList()
+                            .AsReadOnly();
+
+                        if (moduleHelpContexts.Any())
+                        {
+                            _commandModuleHelpContexts[commandModule] = moduleHelpContexts;
+                        }
+                    }
+                }
+
+                return _commandModuleHelpContexts;
+            }
+        }
+
+        private IEnumerable<HelpContext> BuildHelpContextFromCommandModule(ICommandModule commandModule, List<string> triggers)
+        {
+            if (commandModule is null)
+            {
+                throw new ArgumentNullException(nameof(commandModule));
+            }
+
+            if (triggers is null)
+            {
+                throw new ArgumentNullException(nameof(triggers));
+            }
+
+            if (triggers.Count == 0)
+            {
+                throw new ArgumentException("At least one prefix is required.", nameof(triggers));
+            }
+
+            if (commandModule is ModuleBase<SocketCommandContext>)
+            {
+                var moduleType = commandModule.GetType();
+
+                var group = moduleType.GetCustomAttribute<GroupAttribute>()?.Prefix;
+                var groupAliases = moduleType.GetCustomAttribute<AliasAttribute>()?.Aliases;
+                var groupSummary = moduleType.GetCustomAttribute<SummaryAttribute>()?.Text;
+
+                var methods = moduleType.GetMethods(BindingFlags.Public | BindingFlags.Instance);
+                foreach (var method in methods)
+                {
+                    var commandAttribute = method.GetCustomAttribute<CommandAttribute>();
+
+                    if (commandAttribute != null)
+                    {
+                        var command = commandAttribute?.Text;
+
+                        var commandAliases = method.GetCustomAttribute<AliasAttribute>()?.Aliases;
+                        var commandSummary = method.GetCustomAttribute<SummaryAttribute>()?.Text;
+
+                        yield return new HelpContext(triggers,
+                            group, groupAliases?.ToList().AsReadOnly(), groupSummary,
+                            command, commandAliases?.ToList().AsReadOnly(), commandSummary,
+                            method.GetParameters().ToList().AsReadOnly());
                     }
                 }
             }
-
-            return "";
         }
     }
 }
