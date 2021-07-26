@@ -2,7 +2,6 @@
 {
     public static class Constants
     {
-        public const string HelpMessageTriggerToken = "<trigger>";
         public const int DelayAfterCommandMs = 250;
 
         public const string GroupL4d = "l4d";
