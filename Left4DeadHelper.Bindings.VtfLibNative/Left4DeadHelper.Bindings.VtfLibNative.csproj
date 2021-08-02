@@ -1,17 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <!-- Nullable settings described in https://stackoverflow.com/a/55492438 -->
     <Nullable>enable</Nullable>
     <WarningsAsErrors>CS8600;CS8602;CS8603</WarningsAsErrors>
-    <RootNamespace>Left4DeadHelper.Sprays</RootNamespace>
-    <AssemblyName>Left4DeadHelper.Sprays</AssemblyName>
     
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Left4DeadHelper.Sprays" />
     <InternalsVisibleTo Include="Left4DeadHelper.Tests.Unit" />
   </ItemGroup>
 
@@ -21,13 +20,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
-    <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
+    <Content Include="VTFLib.x64.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="VTFLib.x86.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Left4DeadHelper.Bindings.DevILNative\Left4DeadHelper.Bindings.DevILNative.csproj" />
-    <ProjectReference Include="..\Left4DeadHelper.Bindings.VtfLibNative\Left4DeadHelper.Bindings.VtfLibNative.csproj" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
+    <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
   </ItemGroup>
 
 </Project>
