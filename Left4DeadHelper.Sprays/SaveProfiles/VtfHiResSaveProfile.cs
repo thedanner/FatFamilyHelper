@@ -1,5 +1,4 @@
-﻿using Left4DeadHelper.Sprays.VtfFormat;
-using SixLabors.ImageSharp;
+﻿using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.IO;
@@ -8,9 +7,24 @@ using System.Threading.Tasks;
 
 namespace Left4DeadHelper.Sprays.SaveProfiles
 {
-    internal class VtfHiResSaveProfile : BaseSaveProfile
+    public class VtfHiResSaveProfile : BaseSaveProfile
     {
-        // TODO one of the dimensions should be 1020 to fit under the 512 KiB limit.
+        static VtfHiResSaveProfile()
+        {
+            // IL refers to the base library for loading, saving and converting images.
+            DevIL.il.IlInit();
+            
+            // ILU refers to the middle level library for image manipulation.
+            DevIL.ilu.IluInit();
+
+            // ILUT refers to the high level library for displaying images.
+            //DevIL.ilut.IlutRenderer(Constants.ILUT_DIRECT3D10);
+
+            // Functions in IL, ILU and ILUT are prefixed by ‘il’, ‘ilu’ and ‘ilut’, respectively
+        }
+
+
+        // With hi-res, the dimensions must be 1024x1020 or vice versa.
         public override int MaxWidth => 1024;
         public override int MaxHeight => 1024;
         public override string Extension => ".vtf";
@@ -22,26 +36,20 @@ namespace Left4DeadHelper.Sprays.SaveProfiles
             if (image is null) throw new ArgumentNullException(nameof(image));
             if (outputStream is null) throw new ArgumentNullException(nameof(outputStream));
 
-            var saveToken = new VtfSaveConfigToken(VtfSaveConfigTemplate.VtfTemplateSprayWithAlpha)
+            var imagePointer = DevIL.il.IlGenImage();
+            try
             {
-                eImageFormat = VtfLib.ImageFormat.ImageFormatDXT1
-            };
+                DevIL.il.IlSaveL();
 
-            var vtfFile = new VtfFile();
-
-            void createOptionsModifier(ref VtfLib.CreateOptions createOptions)
-            {
-                createOptions.bResize = false;
-
-                createOptions.uiResizeWidth =
-                    createOptions.uiResizeClampWidth =
-                    (uint)image.Width;
-
-                createOptions.uiResizeHeight =
-                    createOptions.uiResizeClampHeight =
-                    (uint)image.Height;
+                throw new NotImplementedException("TODO");
             }
-            vtfFile.Save(image, outputStream, saveToken, createOptionsModifier);
+            finally
+            {
+                if (imagePointer != 0)
+                {
+                    DevIL.il.IlDeleteImage(imagePointer);
+                }
+            }
         }
     }
 }
