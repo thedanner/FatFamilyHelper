@@ -80,56 +80,68 @@ namespace Left4DeadHelper.Discord.DiscordEventHandlers
 
             if (!SprayModule.DeleteEmote.Equals(reaction.Emote)) return true;
 
-            var channel = (SocketGuildChannel)simpleChannel;
+            // Support SocketGuildChannel and SocketDMChannel.
+            var channel = (SocketChannel)simpleChannel;
+            var guildChannel = simpleChannel as SocketGuildChannel;
 
             var message = await simpleChannel.GetMessageAsync(reaction.MessageId);
 
             // Make sure we have a reference. Don't allow cross-posts.
-            if (message.Reference == null
+            if (message.Reference != null
                 // And that it's to a message
-                || !message.Reference.MessageId.IsSpecified
-                // in the same guild
-                || !message.Reference.GuildId.IsSpecified
-                || message.Reference.GuildId.Value != channel.Guild.Id
+                && message.Reference.MessageId.IsSpecified
+                // in the same guild (or there is no guild, so it's a DM)
+                && (
+                    guildChannel == null
+                    || (
+                        message.Reference.GuildId.IsSpecified
+                        && message.Reference.GuildId.Value == guildChannel.Guild.Id
+                    )
+                )
                 // and same channel
-                || message.Reference.ChannelId != message.Channel.Id)
+                && message.Reference.ChannelId == message.Channel.Id)
             {
-                return true;
-            }
+                var referencedIMessage = await simpleChannel.GetMessageAsync(message.Reference.MessageId.Value);
 
-            var referencedIMessage = await simpleChannel.GetMessageAsync(message.Reference.MessageId.Value);
+                // If the referenced message was deleted (referencedIMessage is null), let anyone remove the conversion
+                // message. This will allow users to delete their own requested conversions if they accidentally delete
+                // the original message first.
+                // I don't really care if anyone else deletes these either.
 
-            // If the referenced message was deleted (referencedIMessage is null), let anyone remove the conversion
-            // message. This will allow users to delete their own requested conversions if they accidentally delete
-            // the original message first.
-            // I don't really care if anyone else deletes these either.
+                if (referencedIMessage == null)
+                {
+                    await message.DeleteAsync();
+                    await Task.Delay(Constants.DelayAfterCommandMs);
+                    return false;
+                }
 
-            if (referencedIMessage == null)
-            {
-                await message.DeleteAsync();
-                await Task.Delay(Constants.DelayAfterCommandMs);
+                if (!(referencedIMessage is IUserMessage referencedMessage))
+                {
+                    return true;
+                }
+
+                var argPos = 0;
+                var referencedMessageIsBotCommand =
+                    guildChannel == null // In a DM, everything is assumed to be a bot command.
+                    || !(
+                        !(_settings.DiscordSettings.Prefixes.Any(p => referencedMessage.HasCharPrefix(p, ref argPos)) ||
+                            referencedMessage.HasMentionPrefix(_client.CurrentUser, ref argPos))
+                        || referencedMessage.Author.IsBot
+                    );
+
+                if (reactingUser.Id == referencedMessage.Author.Id
+                    && referencedMessageIsBotCommand)
+                {
+                    await message.DeleteAsync();
+                    await Task.Delay(Constants.DelayAfterCommandMs);
+                }
+
                 return false;
             }
-
-            if (!(referencedIMessage is IUserMessage referencedMessage))
+            else
             {
                 return true;
             }
-
-            var argPos = 0;
-            var referencedMessageIsBotCommand = !(
-                !(_settings.DiscordSettings.Prefixes.Any(p => referencedMessage.HasCharPrefix(p, ref argPos)) ||
-                    referencedMessage.HasMentionPrefix(_client.CurrentUser, ref argPos))
-                || referencedMessage.Author.IsBot);
-
-            if (reactingUser.Id == referencedMessage.Author.Id
-                && referencedMessageIsBotCommand)
-            {
-                await message.DeleteAsync();
-                await Task.Delay(Constants.DelayAfterCommandMs);
-            }
-
-            return false;
         }
     }
 }

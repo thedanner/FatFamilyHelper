@@ -190,6 +190,8 @@ namespace Left4DeadHelper
                         | GatewayIntents.GuildPresences
                         | GatewayIntents.GuildMessages
                         | GatewayIntents.GuildMessageReactions
+                        | GatewayIntents.DirectMessages
+                        | GatewayIntents.DirectMessageReactions
                 });
             });
             

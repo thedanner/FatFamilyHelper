@@ -31,7 +31,6 @@ namespace Left4DeadHelper.Discord.Handlers
 
         public async Task InstallCommandsAsync()
         {
-            // Hook the MessageReceived event into our command handler
             _client.MessageReceived += HandleCommandAsync;
 
             _client.ReactionAdded += HandleReactionAddedAsync;
@@ -55,11 +54,15 @@ namespace Left4DeadHelper.Discord.Handlers
 
             // Create a number to track where the prefix ends and the command begins
             var argPos = 0;
-            
+
+
             // Determine if the message is a command based on the prefix and make sure no bots trigger commands
-            if (!(_settings.DiscordSettings.Prefixes.Any(p => message.HasCharPrefix(p, ref argPos)) ||
-                    message.HasMentionPrefix(_client.CurrentUser, ref argPos)) ||
-                message.Author.IsBot)
+            if (message.Author.IsBot) return;
+
+            var isPrivateChannel = message.Channel is IPrivateChannel;
+            var hasAnyPrefix = _settings.DiscordSettings.Prefixes.Any(p => message.HasCharPrefix(p, ref argPos));
+            if ((!isPrivateChannel
+                && !(hasAnyPrefix || message.HasMentionPrefix(_client.CurrentUser, ref argPos))))
             {
                 return;
             }

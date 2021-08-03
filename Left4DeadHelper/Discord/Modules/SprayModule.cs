@@ -55,7 +55,7 @@ namespace Left4DeadHelper.Discord.Modules
         private async Task HandleAsync(ISaveProfile saveProfile, string? arg1 = null, string? arg2 = null)
         {
             var client = new WebClient();
-            var replyToMessageRef = new MessageReference(Context.Message.Id, Context.Channel.Id, Context.Guild.Id);
+            var replyToMessageRef = new MessageReference(Context.Message.Id, Context.Channel.Id, Context.Guild?.Id);
 
             _logger.LogInformation("Triggered by message with ID {0}.", Context.Message.Id);
 
@@ -136,9 +136,11 @@ namespace Left4DeadHelper.Discord.Modules
                         fileName = "spray" + conversionResult.FileExtension;
                     }
 
+                    var isDm = Context.Channel is IPrivateChannel;
                     var sprayMessage = await Context.Channel.SendFileAsync(
                         outputStream, fileName,
-                        $"Here ya go!\n\n(If you requested the conversion, react with {DeleteEmojiString} to delete this message.)",
+                        $"Here ya go!\n\n(If you requested the conversion, react with {DeleteEmojiString} to delete this message." +
+                        $"{(isDm ? "\nSince this is a DM, you may need to send me any other message first; it doesn't have to be a command." : "")})",
                         messageReference: replyToMessageRef);
                     await Task.Delay(Constants.DelayAfterCommandMs);
 
