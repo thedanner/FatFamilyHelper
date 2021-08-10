@@ -14,6 +14,36 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="DevIL.x64.dll" />
+    <None Remove="DevIL.x86.dll" />
+    <None Remove="ILU.x64.dll" />
+    <None Remove="ILU.x86.dll" />
+    <None Remove="ILUT.x64.dll" />
+    <None Remove="ILUT.x86.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="DevIL.x86.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DevIL.x64.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ILU.x86.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ILU.x64.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ILUT.x86.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ILUT.x64.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CppSharp" Version="0.11.2" />
   </ItemGroup>
 
