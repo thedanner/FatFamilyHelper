@@ -2,7 +2,6 @@
 using Left4DeadHelper.Sprays.SaveProfiles;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 using System;
 using System.IO;
 using System.Linq;
