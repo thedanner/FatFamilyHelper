@@ -49,8 +49,4 @@
     <ProjectReference Include="..\Left4DeadHelper\Left4DeadHelper.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Exceptions\" />
-  </ItemGroup>
-
 </Project>

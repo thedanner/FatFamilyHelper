@@ -8,10 +8,9 @@ namespace Left4DeadHelper.Sprays.SaveProfiles
 {
     public interface ISaveProfile
     {
-        int MaxWidth { get; }
-        int MaxHeight { get; }
         string Extension { get; }
 
+        void ClampDimensions(Image<Rgba32> image);
         void Validate();
 
         Task ConvertAsync(Image<Rgba32> image, Stream outputStream, CancellationToken cancellationToken);

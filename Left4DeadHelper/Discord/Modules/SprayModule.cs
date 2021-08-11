@@ -18,7 +18,7 @@ namespace Left4DeadHelper.Discord.Modules
     public class SprayModule : ModuleBase<SocketCommandContext>, ICommandModule
     {
         private const string CommandVtf = "sprayme";
-
+        private const string CommandVtfHi = "sprayme_hi";
         private const string CommandTga = "sprayme_tga";
 
         private readonly ILogger<SprayModule> _logger;
@@ -38,9 +38,17 @@ namespace Left4DeadHelper.Discord.Modules
 
         [Command(CommandVtf)]
         [Summary("Converts an image into a Source engine-compatible spray in VTF format.")]
-        public Task ConvertVtfAsync(string? arg1 = null, string ? arg2 = null)
+        public Task ConvertVtfAsync(string? arg1 = null, string? arg2 = null)
         {
             var saveProfile = new VtfSaveProfile();
+            return HandleAsync(saveProfile, arg1, arg2);
+        }
+
+        [Command(CommandVtfHi)]
+        [Summary("Converts an image into a Source engine-compatible spray in VTF format.")]
+        public Task ConvertVtfHiAsync(string? arg1 = null, string? arg2 = null)
+        {
+            var saveProfile = new VtfHiResSaveProfile();
             return HandleAsync(saveProfile, arg1, arg2);
         }
 
@@ -174,9 +182,11 @@ namespace Left4DeadHelper.Discord.Modules
             var c = helpContext.GenericCommandExample;
             var u = "https://placekitten.com/200/300";
 
+            var isVtf = helpContext.Command == CommandVtf || helpContext.Command == CommandVtfHi;
+
             return
                 $"  - `{c} <string filenameOrSource>? <string sourceIfFilenameGiven>?`:\n" +
-                $"    Creates a spray for use with Source-engine games, in {(helpContext.Command == CommandVtf ? "VTF" : "TGA")} fomat.\n" +
+                $"    Creates a spray for use with Source-engine games, in {(isVtf ? "VTF" : "TGA")} fomat.\n" +
                 $"    The spray can be specified in any of these ways:\n" +
                 $"    1. Message starts with a URL\n" +
                 $"    `{c} {u}`\n" +
