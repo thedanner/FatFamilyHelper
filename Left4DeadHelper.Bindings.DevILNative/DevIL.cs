@@ -102,18 +102,32 @@ namespace Left4DeadHelper.Bindings.DevILNative
             _image = Il.GenImage();
             _hasImage = true;
             Il.BindImage(_image);
-            //Il.TexImage(width, height, 0, 4, Il.DataFormat.Rgba, Il.DataType.UnsignedByte, IntPtr.Zero);
-            fixed (byte* buffer = data)
-            {
-                var result = Il.TexImageDxtc(width, height, 0, Il.DxtcDefinition.Dxt5, buffer);
-                CheckError(result);
-            }
 
-            //var unmanagedPointer = Marshal.AllocHGlobal(data.Length);
-            //Marshal.Copy(data, 0, unmanagedPointer, data.Length);
-            //Marshal.FreeHGlobal(unmanagedPointer);
+            //fixed (byte* buffer = data)
+            //{
+            //    var result = Il.TexImageDxtc(width, height, 0, Il.DxtcDefinition.Dxt5, buffer);
+            //    CheckError(result);
+            //}
 
-            //Il.SetPixels(0, 0, 0, width, height, 1, Il.DataFormat.Rgba, Il.DataType.UnsignedByte, unmanagedPointer);
+            var Width = width;
+            var Height = height;
+            var Depth = 1;
+            var Bpp = 4;
+            var Bpc = 1;
+            var Bps = Width * Bpp * Bpc;
+            var SizeOfPlane = Bps * Height;
+            var SizeOfData = SizeOfPlane * Depth;
+
+            var unmanagedPointer = Marshal.AllocHGlobal(data.Length);
+            Marshal.Copy(data, 0, unmanagedPointer, data.Length);
+            Marshal.FreeHGlobal(unmanagedPointer);
+
+            if (SizeOfData != data.Length) throw new Exception("math wtf");
+
+            //Il.SetPixels(0, 0, 0, (uint) width, (uint) height, 1, Il.DataFormat.Rgba, Il.DataType.UnsignedByte, unmanagedPointer);
+            Il.TexImage((uint)width, (uint)height, 1, 4, Il.DataFormat.Rgba, Il.DataType.UnsignedByte, IntPtr.Zero);
+            Il.SetData(unmanagedPointer);
+            FailIfErrorSet();
         }
 
         public byte[] ConvertToVtf()
@@ -123,15 +137,17 @@ namespace Left4DeadHelper.Bindings.DevILNative
                 throw new InvalidOperationException("An image is has not been loaded. Load one before calling this method.");
             }
 
-            var result = Il.ImageToDxtcData(Il.DxtcDefinition.Dxt5);
-            CheckError(result);
+            //var result = Il.ImageToDxtcData(Il.DxtcDefinition.Dxt5);
+            //CheckError(result);
 
             // A NULL ptr + size of 0 means "tell me how big to make the buffer".
-            var fileSize = Il.SaveL(Il.ImageType.Vtf, IntPtr.Zero, 0);
-            CheckError(fileSize);
+            // BUT! VTF isn't supported and will have an error of Il.ErrorType.InvalidEnum.
+            //var fileSize = Il.SaveL(Il.ImageType.Vtf, IntPtr.Zero, 0);
+            //CheckError(fileSize);
 
-            var unmanagedPointer = Marshal.AllocHGlobal((int) fileSize);
-            fileSize = Il.SaveL(Il.ImageType.Vtf, unmanagedPointer, fileSize);
+            uint size = 128 * 1024 * 1024 * 4;
+            var unmanagedPointer = Marshal.AllocHGlobal((int)size);
+            var fileSize = Il.SaveL(Il.ImageType.Vtf, unmanagedPointer, size);
             CheckError(fileSize);
 
             var bytes = new byte[fileSize];
@@ -154,7 +170,16 @@ namespace Left4DeadHelper.Bindings.DevILNative
 
         private void Fail()
         {
-            throw new Exception("Error in Il.SaveL(): " + Il.GetError());
+            throw new Exception("Error in Il.SaveL(): 0x" + Il.GetError().ToString("x4"));
+        }
+
+        private void FailIfErrorSet()
+        {
+            var error = Il.GetError();
+            if (error != Il.ErrorType.NoError)
+            {
+                throw new Exception("Error in Il.SaveL(): 0x" + error.ToString("x4"));
+            }
         }
 
 

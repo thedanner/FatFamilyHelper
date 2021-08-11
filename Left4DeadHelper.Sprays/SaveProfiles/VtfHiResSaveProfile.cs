@@ -11,10 +11,10 @@ namespace Left4DeadHelper.Sprays.SaveProfiles
     public class VtfHiResSaveProfile : BaseSaveProfile
     {
         // With hi-res, the dimensions must be 1024x1020 or vice versa.
-        public override int MaxWidth => 1024;
-        public override int MaxHeight => 1024;
+        public override int MaxWidth => 512;
+        public override int MaxHeight => 512;
 
-        private const int MaxSmallerDimension = 1020;
+        private const int MaxSmallerDimension = 512;
 
         public override string Extension => ".hi.vtf";
 

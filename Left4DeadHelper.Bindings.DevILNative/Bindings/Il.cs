@@ -361,47 +361,47 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
         #region Callback Functions
 
         // Callback functions for file reading
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate void fCloseRProc(IntPtr handle);
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         [return: MarshalAs(UnmanagedType.U1)]
         public delegate bool fEofProc(IntPtr handle);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate int fGetcProc(IntPtr handle);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate IntPtr fOpenRProc([MarshalAs(UnmanagedType.LPWStr)] string str);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate int fReadProc(IntPtr ptr1, uint a, uint b, IntPtr ptr2);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate int fSeekRProc(IntPtr handle, int a, int b);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate int fTellRProc(IntPtr handle);
 
         // Callback functions for file writing
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate void fCloseWProc(IntPtr handle);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate IntPtr fOpenWProc([MarshalAs(UnmanagedType.LPWStr)] string str);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate int fPutcProc(char c, IntPtr handle);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate int fSeekWProc(IntPtr handle, int a, int b);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate int fTellWProc(IntPtr handle);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate int fWriteProc(IntPtr ptr1, uint a, uint b, IntPtr ptr2);
 
         // Callback functions for allocation and deallocation
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate IntPtr mAlloc(ulong size);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate void mFree(IntPtr ptr);
 
         // Registered format procedures
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate uint IL_LOADPROC([MarshalAs(UnmanagedType.LPWStr)] string str);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate uint IL_SAVEPROC([MarshalAs(UnmanagedType.LPWStr)] string str);
 
         #endregion
@@ -535,12 +535,12 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
 
         public unsafe static void DeleteImage(uint num)
         {
-            if (Common.IsWow64()) x64.ilDeleteImage(num); x86.ilDeleteImage(num);
+            if (Common.IsWow64()) x64.ilDeleteImage(num); else x86.ilDeleteImage(num);
         }
 
         public unsafe static void DeleteImages(UIntPtr num, uint* images)
         {
-            if (Common.IsWow64()) x64.ilDeleteImages(num, images); x86.ilDeleteImages(num, images);
+            if (Common.IsWow64()) x64.ilDeleteImages(num, images); else x86.ilDeleteImages(num, images);
         }
 
         public unsafe static ImageType DetermineType(string fileName)
@@ -645,12 +645,22 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
 
         public unsafe static ErrorType GetError()
         {
+            return Common.IsWow64() ? (ErrorType) x64.ilGetError() : (ErrorType) x86.ilGetError();
+        }
+
+        public unsafe static uint GetErrorUint()
+        {
             return Common.IsWow64() ? x64.ilGetError() : x86.ilGetError();
+        }
+
+        public unsafe static int GetInteger(FileFormatSpecificValue mode)
+        {
+            return Common.IsWow64() ? x64.ilGetInteger((uint)mode) : x86.ilGetInteger((uint)mode);
         }
 
         public unsafe static int GetInteger(Value mode)
         {
-            return Common.IsWow64() ? x64.ilGetInteger(mode) : x86.ilGetInteger(mode);
+            return Common.IsWow64() ? x64.ilGetInteger((uint)mode) : x86.ilGetInteger((uint)mode);
         }
 
         public unsafe static void GetIntegerv(Value mode, out int param)
@@ -865,7 +875,7 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
 
         public unsafe static uint SaveL(ImageType type, IntPtr lump, uint size)
         {
-            return Common.IsWow64() ? x64.ilSaveL(type, lump, size) : x86.ilSaveL(type, lump, size);
+            return Common.IsWow64() ? x64.ilSaveL((uint)type, lump, size) : x86.ilSaveL((uint)type, lump, size);
         }
 
         public unsafe static bool SavePal(string fileName)
@@ -1034,254 +1044,254 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
 
         private static class x86
         {
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern uint ilActiveFace(uint number);
 
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilActiveImage(uint number);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilActiveLayer(uint number);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilActiveMipmap(uint number);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilApplyPal([MarshalAs(UnmanagedType.LPWStr)] string fileName);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilApplyProfile(
                 [MarshalAs(UnmanagedType.LPWStr)] string inProfile,
                 [MarshalAs(UnmanagedType.LPWStr)] string outProfile);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilBindImage(uint image);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilBlit(uint source,
                 int destX, int destY, int destZ,
                 uint srcX, uint srcY, uint srcZ,
                 uint width, uint height, uint depth);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilClampNTSC();
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilClearColour(float red, float green, float blue, float alpha);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilClearImage();
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern uint ilCloneCurImage();
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern byte* ilCompressDXT(byte* data,
                 uint width, uint height, uint depth, DxtcDefinition dxtcFormat, uint* dxtcSize);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilCompressFunc(Compression mode);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilConvertImage(DataFormat destFormat, DataType destType);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilConvertPal(PaletteType destFormat);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilCopyImage(uint src);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern uint ilCopyPixels(
                 uint xOff, uint yOff, uint zOff,
                 uint width, uint height, uint depth,
                 DataFormat format, DataType type, IntPtr data);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern uint ilCreateSubImage(SubimageType type, uint num);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilDefaultImage();
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilDeleteImage(uint num);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilDeleteImages(UIntPtr num, uint* images);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern ImageType ilDetermineType([MarshalAs(UnmanagedType.LPWStr)] string fileName);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern ImageType ilDetermineTypeF(IntPtr fileHandle);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern ImageType ilDetermineTypeL(IntPtr lump, uint size);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilDisable(uint mode);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilDxtcDataToImage();
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilDxtcDataToSurface();
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilEnable(uint mode);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilFlipSurfaceDxtcData();
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilFormatFunc(DataFormat mode);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilGenImages(UIntPtr num, uint* images);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern uint ilGenImage();
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern byte* ilGetAlpha(DataType type);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilGetBoolean(uint mode);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilGetBooleanv(uint mode, out bool param);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern byte* ilGetData();
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern uint ilGetDXTCData(IntPtr buffer, uint bufferSize, DxtcDefinition dxtcFormat);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
-            public unsafe static extern ErrorType ilGetError();
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
-            public unsafe static extern int ilGetInteger(Value mode);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
+            public unsafe static extern uint ilGetError();
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
+            public unsafe static extern int ilGetInteger(uint mode);
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilGetIntegerv(Value mode, out int param);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern uint ilGetLumpPos();
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern byte* ilGetPalette();
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.LPWStr)]
             public unsafe static extern string ilGetString(uint stringName);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilHint(Hint target, Hint mode);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilInvertSurfaceDxtcDataAlpha();
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilInit();
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilImageToDxtcData(DxtcDefinition format);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilIsDisabled(uint mode);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilIsEnabled(uint mode);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilIsImage(uint image);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilIsValid(ImageType type, [MarshalAs(UnmanagedType.LPWStr)] string fileName);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilIsValidF(ImageType type, IntPtr fileHandle);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilIsValidL(ImageType type, IntPtr lump, uint size);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilKeyColour(float red, float green, float blue, float alpha);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilLoad(ImageType type, [MarshalAs(UnmanagedType.LPWStr)] string fileName);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilLoadF(ImageType type, IntPtr fileHandle);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilLoadImage([MarshalAs(UnmanagedType.LPWStr)] string fileName);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilLoadL(ImageType type, IntPtr lump, uint size);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilLoadPal([MarshalAs(UnmanagedType.LPWStr)] string fileName);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilModAlpha(double alphaValue);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilOriginFunc(OriginDefinition mode);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilOverlayImage(uint source, int xCoord, int yCoord, int zCoord);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilPopAttrib();
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilPushAttrib(uint bits);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilRegisterFormat(DataFormat format);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilRegisterLoad(
                 [MarshalAs(UnmanagedType.LPWStr)] string ext,
                 [MarshalAs(UnmanagedType.FunctionPtr)] IL_LOADPROC loadCb);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilRegisterMipNum(uint num);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilRegisterNumFaces(uint num);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilRegisterNumImages(uint num);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilRegisterOrigin(OriginDefinition origin);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilRegisterPal(IntPtr pal, uint size, PaletteType type);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilRegisterSave(
                 [MarshalAs(UnmanagedType.LPWStr)] string ext,
                 [MarshalAs(UnmanagedType.FunctionPtr)] IL_SAVEPROC saveCb);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilRegisterType(DataType type);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilRemoveLoad([MarshalAs(UnmanagedType.LPWStr)] string ext);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilRemoveSave([MarshalAs(UnmanagedType.LPWStr)] string ext);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilResetMemory(); // Deprecated
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilResetRead();
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilResetWrite();
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilSave(ImageType type, [MarshalAs(UnmanagedType.LPWStr)] string fileName);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern uint ilSaveF(ImageType type, IntPtr fileHandle);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilSaveImage([MarshalAs(UnmanagedType.LPWStr)] string fileName);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
-            public unsafe static extern uint ilSaveL(ImageType type, IntPtr lump, uint size);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
+            public unsafe static extern uint ilSaveL(uint type, IntPtr lump, uint size);
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilSavePal([MarshalAs(UnmanagedType.LPWStr)] string fileName);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilSetAlpha(double alphaValue);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilSetData(IntPtr data);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilSetDuration(uint duration);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilSetInteger(uint mode, int param);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilSetMemory(
                 [MarshalAs(UnmanagedType.FunctionPtr)] mAlloc mAllocCb,
                 [MarshalAs(UnmanagedType.FunctionPtr)] mFree mFreeCb);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilSetPixels(
                 int xOff, int yOff, int zOff,
                 uint width, uint height, uint depth,
                  DataFormat format, DataType type, IntPtr data);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilSetRead(
                 [MarshalAs(UnmanagedType.FunctionPtr)] fOpenRProc fOpenRProcCb,
                 [MarshalAs(UnmanagedType.FunctionPtr)] fCloseRProc fCloseRProcCb,
@@ -1290,9 +1300,9 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
                 [MarshalAs(UnmanagedType.FunctionPtr)] fReadProc fReadProcCb,
                 [MarshalAs(UnmanagedType.FunctionPtr)] fSeekRProc fSeekRProcCb,
                 [MarshalAs(UnmanagedType.FunctionPtr)] fTellRProc fTellRProcCb);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilSetString(FileFormatSpecificValue mode, [MarshalAs(UnmanagedType.LPStr)] string str);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilSetWrite(
                 [MarshalAs(UnmanagedType.FunctionPtr)] fOpenWProc fOpenWProcCb,
                 [MarshalAs(UnmanagedType.FunctionPtr)] fCloseWProc fCloseWProcCb,
@@ -1300,293 +1310,293 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
                 [MarshalAs(UnmanagedType.FunctionPtr)] fSeekWProc fSeekWProcCb,
                 [MarshalAs(UnmanagedType.FunctionPtr)] fTellWProc fTellWProcCb,
                 [MarshalAs(UnmanagedType.FunctionPtr)] fWriteProc fWriteProcCb);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilShutDown();
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilSurfaceToDxtcData(DxtcDefinition format);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilTexImage(
                 uint width, uint height, uint depth,
                 byte numChannels, DataFormat dataFormat, DataType dataType,
                 IntPtr dataPtr);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilTexImageDxtc(int w, int h, int d, DxtcDefinition dxtcFormat, byte* data);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern ImageType ilTypeFromExt([MarshalAs(UnmanagedType.LPWStr)] string fileName);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilTypeFunc(DataFormat mode);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilLoadData(
                 [MarshalAs(UnmanagedType.LPWStr)] string fileName,
                 uint width, uint height, uint depth, byte bpp);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilLoadDataF(IntPtr fileHandle,
                 uint width, uint height, uint depth, byte bpp);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilLoadDataL(IntPtr lump,
                 uint size, uint width, uint height, uint depth, byte bpp);
-            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilSaveData([MarshalAs(UnmanagedType.LPWStr)] string fileName);
         }
 
         private static class x64
         {
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern uint ilActiveFace(uint number);
 
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilActiveImage(uint number);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilActiveLayer(uint number);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilActiveMipmap(uint number);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilApplyPal([MarshalAs(UnmanagedType.LPWStr)] string fileName);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilApplyProfile(
                 [MarshalAs(UnmanagedType.LPWStr)] string inProfile,
                 [MarshalAs(UnmanagedType.LPWStr)] string outProfile);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilBindImage(uint image);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilBlit(uint source,
                 int destX, int destY, int destZ,
                 uint srcX, uint srcY, uint srcZ,
                 uint width, uint height, uint depth);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilClampNTSC();
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilClearColour(float red, float green, float blue, float alpha);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilClearImage();
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern uint ilCloneCurImage();
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern byte* ilCompressDXT(byte* data,
                 uint width, uint height, uint depth, DxtcDefinition dxtcFormat, uint* dxtcSize);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilCompressFunc(Compression mode);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilConvertImage(DataFormat destFormat, DataType destType);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilConvertPal(PaletteType destFormat);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilCopyImage(uint src);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern uint ilCopyPixels(
                 uint xOff, uint yOff, uint zOff,
                 uint width, uint height, uint depth,
                 DataFormat format, DataType type, IntPtr data);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern uint ilCreateSubImage(SubimageType type, uint num);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilDefaultImage();
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilDeleteImage(uint num);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilDeleteImages(UIntPtr num, uint* images);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern ImageType ilDetermineType([MarshalAs(UnmanagedType.LPWStr)] string fileName);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern ImageType ilDetermineTypeF(IntPtr fileHandle);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern ImageType ilDetermineTypeL(IntPtr lump, uint size);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilDisable(uint mode);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilDxtcDataToImage();
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilDxtcDataToSurface();
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilEnable(uint mode);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilFlipSurfaceDxtcData();
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilFormatFunc(DataFormat mode);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilGenImages(UIntPtr num, uint* images);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern uint ilGenImage();
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern byte* ilGetAlpha(DataType type);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilGetBoolean(uint mode);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilGetBooleanv(uint mode, out bool param);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern byte* ilGetData();
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern uint ilGetDXTCData(IntPtr buffer, uint bufferSize, DxtcDefinition dxtcFormat);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
-            public unsafe static extern ErrorType ilGetError();
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
-            public unsafe static extern int ilGetInteger(Value mode);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
+            public unsafe static extern uint ilGetError();
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
+            public unsafe static extern int ilGetInteger(uint mode);
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilGetIntegerv(Value mode, out int param);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern uint ilGetLumpPos();
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern byte* ilGetPalette();
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.LPWStr)]
             public unsafe static extern string ilGetString(uint stringName);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilHint(Hint target, Hint mode);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilInvertSurfaceDxtcDataAlpha();
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilInit();
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilImageToDxtcData(DxtcDefinition format);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilIsDisabled(uint mode);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilIsEnabled(uint mode);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilIsImage(uint image);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilIsValid(ImageType type, [MarshalAs(UnmanagedType.LPWStr)] string fileName);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilIsValidF(ImageType type, IntPtr fileHandle);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilIsValidL(ImageType type, IntPtr lump, uint size);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilKeyColour(float red, float green, float blue, float alpha); 
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilLoad(ImageType type, [MarshalAs(UnmanagedType.LPWStr)] string fileName);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilLoadF(ImageType type, IntPtr fileHandle);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilLoadImage([MarshalAs(UnmanagedType.LPWStr)] string fileName);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilLoadL(ImageType type, IntPtr lump, uint size);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilLoadPal([MarshalAs(UnmanagedType.LPWStr)] string fileName);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilModAlpha(double alphaValue);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilOriginFunc(OriginDefinition mode);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilOverlayImage(uint source, int xCoord, int yCoord, int zCoord);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilPopAttrib();
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilPushAttrib(uint bits);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilRegisterFormat(DataFormat format);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilRegisterLoad(
                 [MarshalAs(UnmanagedType.LPWStr)] string ext,
                 [MarshalAs(UnmanagedType.FunctionPtr)] IL_LOADPROC Load);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilRegisterMipNum(uint num);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilRegisterNumFaces(uint num);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilRegisterNumImages(uint num);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilRegisterOrigin(OriginDefinition origin);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilRegisterPal(IntPtr pal, uint size, PaletteType type);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilRegisterSave(
                 [MarshalAs(UnmanagedType.LPWStr)] string ext,
                 [MarshalAs(UnmanagedType.FunctionPtr)] IL_SAVEPROC saveCb);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilRegisterType(DataType type);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilRemoveLoad([MarshalAs(UnmanagedType.LPWStr)] string ext);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilRemoveSave([MarshalAs(UnmanagedType.LPWStr)] string ext);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilResetMemory(); // Deprecated
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilResetRead();
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilResetWrite();
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilSave(ImageType type, [MarshalAs(UnmanagedType.LPWStr)] string fileName);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern uint ilSaveF(ImageType type, IntPtr fileHandle);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilSaveImage([MarshalAs(UnmanagedType.LPWStr)] string fileName);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
-            public unsafe static extern uint ilSaveL(ImageType type, IntPtr lump, uint size);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
+            public unsafe static extern uint ilSaveL(uint type, IntPtr lump, uint size);
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilSavePal([MarshalAs(UnmanagedType.LPWStr)] string fileName);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilSetAlpha(double alphaValue);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilSetData(IntPtr data);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilSetDuration(uint duration);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilSetInteger(uint mode, int param);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilSetMemory(
                 [MarshalAs(UnmanagedType.FunctionPtr)] mAlloc mAllocCb,
                 [MarshalAs(UnmanagedType.FunctionPtr)] mFree mFreeCb);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilSetPixels(
                 int xOff, int yOff, int zOff,
                 uint width, uint height, uint depth,
                  DataFormat format, DataType type, IntPtr data);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilSetRead(
                 [MarshalAs(UnmanagedType.FunctionPtr)] fOpenRProc fOpenRProcCb,
                 [MarshalAs(UnmanagedType.FunctionPtr)] fCloseRProc fCloseRProcCb,
@@ -1595,9 +1605,9 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
                 [MarshalAs(UnmanagedType.FunctionPtr)] fReadProc fReadProcCb,
                 [MarshalAs(UnmanagedType.FunctionPtr)] fSeekRProc fSeekRProcCb,
                 [MarshalAs(UnmanagedType.FunctionPtr)] fTellRProc fTellRProcCb);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilSetString(FileFormatSpecificValue mode, [MarshalAs(UnmanagedType.LPStr)] string str);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilSetWrite(
                 [MarshalAs(UnmanagedType.FunctionPtr)] fOpenWProc fOpenWProcCb,
                 [MarshalAs(UnmanagedType.FunctionPtr)] fCloseWProc fCloseWProcCb,
@@ -1605,39 +1615,39 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
                 [MarshalAs(UnmanagedType.FunctionPtr)] fSeekWProc fSeekWProcCb,
                 [MarshalAs(UnmanagedType.FunctionPtr)] fTellWProc fTellWProcCb,
                 [MarshalAs(UnmanagedType.FunctionPtr)] fWriteProc fWriteProcCb);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void ilShutDown();
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilSurfaceToDxtcData(DxtcDefinition format);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilTexImage(
                 uint width, uint height, uint depth,
                 byte numChannels, DataFormat dataFormat, DataType dataType,
                 IntPtr dataPtr);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilTexImageDxtc(int w, int h, int d, DxtcDefinition dxtcFormat, byte* data);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern ImageType ilTypeFromExt([MarshalAs(UnmanagedType.LPWStr)] string fileName);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilTypeFunc(DataFormat mode);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilLoadData(
                 [MarshalAs(UnmanagedType.LPWStr)] string fileName,
                 uint width, uint height, uint depth, byte bpp);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilLoadDataF(IntPtr fileHandle,
                 uint width, uint height, uint depth, byte bpp);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilLoadDataL(IntPtr lump,
                 uint size, uint width, uint height, uint depth, byte bpp);
-            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("DevIL.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool ilSaveData([MarshalAs(UnmanagedType.LPWStr)] string fileName);
         }

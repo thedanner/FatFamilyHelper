@@ -393,300 +393,300 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
 
         private static class x86
         {
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluAlienify();
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluBlurAvg(uint iter);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluBlurGaussian(uint iter);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluBuildMipmaps();
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern uint iluColoursUsed();
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluCompareImage(uint comp);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluContrast(float contrast);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluCrop(
                 uint xOff, uint yOff, uint zOff,
                 uint width, uint height, uint depth);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [Obsolete("Deprecated per comment in header.")]
             public unsafe static extern void iluDeleteImage(uint id); // Deprecated
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluEdgeDetectE();
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluEdgeDetectP();
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluEdgeDetectS();
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluEmboss();
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluEnlargeCanvas(uint width, uint height, uint depth);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluEnlargeImage(float xDim, float yDim, float zDim);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluEqualize();
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluEqualize2();
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.LPWStr)]
             public unsafe static extern string iluErrorString(Il.ErrorType error);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluConvolution(int* matrix, int scale, int bias);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluFlipImage();
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluGammaCorrect(float gamma);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [Obsolete("Deprecated per comment in header.")]
             public unsafe static extern uint iluGenImage(); // Deprecated
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void iluGetImageInfo(ILinfo* info);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern int iluGetInteger(uint mode);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void iluGetIntegerv(uint mode, out int param);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.LPWStr)]
             public unsafe static extern string iluGetString(StringName stringName);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void iluImageParameter(
                 FilterNameEnum pName, Filter param);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void iluImageParameter(
                 PlacementNameEnum pName, Placement param);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void iluInit();
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluInvertAlpha();
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern uint iluLoadImage(
                 [MarshalAs(UnmanagedType.LPWStr)] string fileName);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluMirror();
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluNegative();
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluNoisify(float tolerance);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluPixelize(uint pixSize);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void iluRegionfv(ILpointf* points, uint n);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void iluRegioniv(ILpointi* points, uint n);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluReplaceColour(
                 byte red, byte green, byte blue, float tolerance);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluRotate(float angle);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluRotate3D(float x, float y, float z, float angle);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluSaturate1f(float saturation);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluSaturate4f(float r, float g, float b, float saturation);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluScale(uint width, uint height, uint depth);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluScaleAlpha(float scale);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluScaleColours(float r, float g, float b);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluSepia();
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluSetLanguage(Language language);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluSharpen(float factor, uint iter);
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluSwapColours();
-            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x86.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluWave(float angle);
         }
 
         private static class x64
         {
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluAlienify();
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluBlurAvg(uint iter);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluBlurGaussian(uint iter);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluBuildMipmaps();
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern uint iluColoursUsed();
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluCompareImage(uint comp);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluContrast(float contrast);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluCrop(
                 uint xOff, uint yOff, uint zOff,
                 uint width, uint height, uint depth);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [Obsolete("Deprecated per comment in header.")]
             public unsafe static extern void iluDeleteImage(uint id); // Deprecated
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluEdgeDetectE();
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluEdgeDetectP();
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluEdgeDetectS();
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluEmboss();
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluEnlargeCanvas(uint width, uint height, uint depth);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluEnlargeImage(float xDim, float yDim, float zDim);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluEqualize();
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluEqualize2();
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.LPWStr)]
             public unsafe static extern string iluErrorString(Il.ErrorType error);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluConvolution(int* matrix, int scale, int bias);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluFlipImage();
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluGammaCorrect(float gamma);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [Obsolete("Deprecated per comment in header.")]
             public unsafe static extern uint iluGenImage(); // Deprecated
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void iluGetImageInfo(ILinfo* info);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern int iluGetInteger(uint mode);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void iluGetIntegerv(uint mode, out int param);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.LPWStr)]
             public unsafe static extern string iluGetString(StringName stringName);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void iluImageParameter(
                 FilterNameEnum pName, Filter param);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void iluImageParameter(
                 PlacementNameEnum pName, Placement param);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void iluInit();
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluInvertAlpha();
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern uint iluLoadImage(
                 [MarshalAs(UnmanagedType.LPWStr)] string fileName);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluMirror();
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluNegative();
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluNoisify(float tolerance);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluPixelize(uint pixSize);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void iluRegionfv(ILpointf* points, uint n);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             public unsafe static extern void iluRegioniv(ILpointi* points, uint n);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluReplaceColour(
                 byte red, byte green, byte blue, float tolerance);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluRotate(float angle);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluRotate3D(float x, float y, float z, float angle);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluSaturate1f(float saturation);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluSaturate4f(float r, float g, float b, float saturation);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluScale(uint width, uint height, uint depth);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluScaleAlpha(float scale);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluScaleColours(float r, float g, float b);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluSepia();
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluSetLanguage(Language language);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluSharpen(float factor, uint iter);
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluSwapColours();
-            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("ILU.x64.dll", CallingConvention = CallingConvention.StdCall)]
             [return: MarshalAs(UnmanagedType.U1)]
             public unsafe static extern bool iluWave(float angle);
         }
