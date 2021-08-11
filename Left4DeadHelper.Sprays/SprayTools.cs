@@ -42,53 +42,8 @@ namespace Left4DeadHelper.Sprays
 
             using var image = await Image.LoadAsync<Rgba32>(Configuration.Default, memoryStream, cancellationToken);
 
-            // So the spary takes up full size, make the larger dimension the size of the max allowed.
-            // This could make the source bigger or smaller.
-            if (image.Width != saveProfile.MaxWidth || image.Height != saveProfile.MaxHeight)
-            {
-                double scaleFactor;
-
-                if (image.Width >= image.Height)
-                {
-                    scaleFactor = 1.0 * saveProfile.MaxWidth / image.Width;
-                }
-                else
-                {
-                    scaleFactor = 1.0 * saveProfile.MaxHeight / image.Height;
-                }
-
-                image.Mutate(x => x.Resize(
-                    (int)Math.Floor(image.Width * scaleFactor),
-                    (int)Math.Floor(image.Height * scaleFactor)
-                ));
-            }
-
-            if (image.Width != saveProfile.MaxWidth || image.Height != saveProfile.MaxHeight)
-            {
-                var resizeOptions = new ResizeOptions
-                {
-                    Size = new Size
-                    {
-                        Width = saveProfile.MaxWidth,
-                        Height = saveProfile.MaxHeight
-                    },
-                    Mode = ResizeMode.Manual,
-                    Position = AnchorPositionMode.TopLeft,
-                    TargetRectangle = new Rectangle
-                    {
-                        X = (saveProfile.MaxWidth - image.Width) / 2,
-                        Y = (saveProfile.MaxHeight - image.Height) / 2,
-                        Width = image.Width,
-                        Height = image.Height
-                    },
-                    Compand = false,
-                };
-
-                image.Mutate(x => x
-                    .Resize(resizeOptions)
-                    .BackgroundColor(Color.Transparent));
-            }
-
+            saveProfile.ClampDimensions(image);
+            
             await saveProfile.ConvertAsync(image, outputStream, cancellationToken);
 
             var result = new ConversionResult(saveProfile.Extension);

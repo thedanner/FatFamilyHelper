@@ -122,42 +122,42 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
 
         #region Functions
 
-        public unsafe static bool iluAlienify()
+        public unsafe static bool Alienify()
         {
             return Common.Wow64() ? x64.iluAlienify() : x86.iluAlienify();
         }
 
-        public unsafe static bool iluBlurAvg(uint iter)
+        public unsafe static bool BlurAvg(uint iter)
         {
             return Common.Wow64() ? x64.iluBlurAvg(iter) : x86.iluBlurAvg(iter);
         }
 
-        public unsafe static bool iluBlurGaussian(uint iter)
+        public unsafe static bool BlurGaussian(uint iter)
         {
             return Common.Wow64() ? x64.iluBlurGaussian(iter) : x86.iluBlurGaussian(iter);
         }
 
-        public unsafe static bool iluBuildMipmaps()
+        public unsafe static bool BuildMipmaps()
         {
             return Common.Wow64() ? x64.iluBuildMipmaps() : x86.iluBuildMipmaps();
         }
 
-        public unsafe static uint iluColoursUsed()
+        public unsafe static uint ColoursUsed()
         {
             return Common.Wow64() ? x64.iluColoursUsed() : x86.iluColoursUsed();
         }
 
-        public unsafe static bool iluCompareImage(uint comp)
+        public unsafe static bool CompareImage(uint comp)
         {
             return Common.Wow64() ? x64.iluCompareImage(comp) : x86.iluCompareImage(comp);
         }
 
-        public unsafe static bool iluContrast(float contrast)
+        public unsafe static bool Contrast(float contrast)
         {
             return Common.Wow64() ? x64.iluContrast(contrast) : x86.iluContrast(contrast);
         }
 
-        public unsafe static bool iluCrop(
+        public unsafe static bool Crop(
             uint xOff, uint yOff, uint zOff,
             uint width, uint height, uint depth)
         {
@@ -171,159 +171,159 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
         }
 
         [Obsolete("Deprecated per comment in header.")]
-        public unsafe static void iluDeleteImage(uint id) // Deprecated
+        public unsafe static void DeleteImage(uint id) // Deprecated
         {
             if (Common.Wow64()) x64.iluDeleteImage(id); else x86.iluDeleteImage(id);
         }
 
-        public unsafe static bool iluEdgeDetectE()
+        public unsafe static bool EdgeDetectE()
         {
             return Common.Wow64() ? x64.iluEdgeDetectE() : x86.iluEdgeDetectE();
         }
 
-        public unsafe static bool iluEdgeDetectP()
+        public unsafe static bool EdgeDetectP()
         {
             return Common.Wow64() ? x64.iluEdgeDetectP() : x86.iluEdgeDetectP();
         }
 
-        public unsafe static bool iluEdgeDetectS()
+        public unsafe static bool EdgeDetectS()
         {
             return Common.Wow64() ? x64.iluEdgeDetectS() : x86.iluEdgeDetectS();
         }
 
-        public unsafe static bool iluEmboss()
+        public unsafe static bool Emboss()
         {
             return Common.Wow64() ? x64.iluEmboss() : x86.iluEmboss();
         }
 
-        public unsafe static bool iluEnlargeCanvas(uint width, uint height, uint depth)
+        public unsafe static bool EnlargeCanvas(uint width, uint height, uint depth)
         {
             return Common.Wow64()
                 ? x64.iluEnlargeCanvas(width, height, depth)
                 : x86.iluEnlargeCanvas(width, height, depth);
         }
 
-        public unsafe static bool iluEnlargeImage(float xDim, float yDim, float zDim)
+        public unsafe static bool EnlargeImage(float xDim, float yDim, float zDim)
         {
             return Common.Wow64()
                 ? x64.iluEnlargeImage(xDim, yDim, zDim)
                 : x86.iluEnlargeImage(xDim, yDim, zDim);
         }
 
-        public unsafe static bool iluEqualize()
+        public unsafe static bool Equalize()
         {
             return Common.Wow64() ? x64.iluEqualize() : x86.iluEqualize();
         }
 
-        public unsafe static bool iluEqualize2()
+        public unsafe static bool Equalize2()
         {
             return Common.Wow64() ? x64.iluEqualize2() : x86.iluEqualize2();
         }
 
-        public unsafe static string iluErrorString(Il.ErrorType error)
+        public unsafe static string ErrorString(Il.ErrorType error)
         {
             return Common.Wow64() ? x64.iluErrorString(error) : x86.iluErrorString(error);
         }
 
-        public unsafe static bool iluConvolution(int* matrix, int scale, int bias)
+        public unsafe static bool Convolution(int* matrix, int scale, int bias)
         {
             return Common.Wow64()
                 ? x64.iluConvolution(matrix, scale, bias)
                 : x86.iluConvolution(matrix, scale, bias);
         }
 
-        public unsafe static bool iluFlipImage()
+        public unsafe static bool FlipImage()
         {
             return Common.Wow64() ? x64.iluFlipImage() : x86.iluFlipImage();
         }
 
-        public unsafe static bool iluGammaCorrect(float gamma)
+        public unsafe static bool GammaCorrect(float gamma)
         {
             return Common.Wow64() ? x64.iluGammaCorrect(gamma) : x86.iluGammaCorrect(gamma);
         }
 
         [Obsolete("Deprecated per comment in header.")]
-        public unsafe static uint iluGenImage() // Deprecated
+        public unsafe static uint GenImage() // Deprecated
         {
             return Common.Wow64() ? x64.iluGenImage() : x86.iluGenImage();
         }
 
-        public unsafe static void iluGetImageInfo(ILinfo* info)
+        public unsafe static void GetImageInfo(ILinfo* info)
         {
             if (Common.Wow64()) x64.iluGetImageInfo(info); else x86.iluGetImageInfo(info);
         }
 
-        public unsafe static int iluGetInteger(uint mode)
+        public unsafe static int GetInteger(uint mode)
         {
             return Common.Wow64() ? x64.iluGetInteger(mode) : x86.iluGetInteger(mode);
         }
 
-        public unsafe static void iluGetIntegerv(uint mode, out int param)
+        public unsafe static void GetIntegerv(uint mode, out int param)
         {
             if (Common.Wow64()) x64.iluGetIntegerv(mode, out param); else x86.iluGetIntegerv(mode, out param);
         }
 
-        public unsafe static string iluGetString(StringName stringName)
+        public unsafe static string GetString(StringName stringName)
         {
             return Common.Wow64() ? x64.iluGetString(stringName) : x86.iluGetString(stringName);
         }
 
-        public unsafe static void iluImageParameter(FilterNameEnum pName, Filter param)
+        public unsafe static void ImageParameter(FilterNameEnum pName, Filter param)
         {
             if (Common.Wow64()) x64.iluImageParameter(pName, param); else x86.iluImageParameter(pName, param);
         }
 
-        public unsafe static void iluImageParameter(PlacementNameEnum pName, Placement param)
+        public unsafe static void ImageParameter(PlacementNameEnum pName, Placement param)
         {
             if (Common.Wow64()) x64.iluImageParameter(pName, param); else x86.iluImageParameter(pName, param);
         }
 
-        public unsafe static void iluInit()
+        public unsafe static void Init()
         {
             if (Common.Wow64()) x64.iluInit(); else x86.iluInit();
         }
 
-        public unsafe static bool iluInvertAlpha()
+        public unsafe static bool InvertAlpha()
         {
             return Common.Wow64() ? x64.iluInvertAlpha() : x86.iluInvertAlpha();
         }
 
-        public unsafe static uint iluLoadImage(string fileName)
+        public unsafe static uint LoadImage(string fileName)
         {
             return Common.Wow64() ? x64.iluLoadImage(fileName) : x86.iluLoadImage(fileName);
         }
 
-        public unsafe static bool iluMirror()
+        public unsafe static bool Mirror()
         {
             return Common.Wow64() ? x64.iluMirror() : x86.iluMirror();
         }
 
-        public unsafe static bool iluNegative()
+        public unsafe static bool Negative()
         {
             return Common.Wow64() ? x64.iluNegative() : x86.iluNegative();
         }
 
-        public unsafe static bool iluNoisify(float tolerance)
+        public unsafe static bool Noisify(float tolerance)
         {
             return Common.Wow64() ? x64.iluNoisify(tolerance) : x86.iluNoisify(tolerance);
         }
 
-        public unsafe static bool iluPixelize(uint pixSize)
+        public unsafe static bool Pixelize(uint pixSize)
         {
             return Common.Wow64() ? x64.iluPixelize(pixSize) : x86.iluPixelize(pixSize);
         }
 
-        public unsafe static void iluRegionfv(ILpointf* points, uint n)
+        public unsafe static void Regionfv(ILpointf* points, uint n)
         {
             if (Common.Wow64()) x64.iluRegionfv(points, n); else x86.iluRegionfv(points, n);
         }
 
-        public unsafe static void iluRegioniv(ILpointi* points, uint n)
+        public unsafe static void Regioniv(ILpointi* points, uint n)
         {
             if (Common.Wow64()) x64.iluRegioniv(points, n); else x86.iluRegioniv(points, n);
         }
 
-        public unsafe static bool iluReplaceColour(
+        public unsafe static bool ReplaceColour(
             byte red, byte green, byte blue, float tolerance)
         {
             return Common.Wow64()
@@ -331,62 +331,62 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
                 : x86.iluReplaceColour(red, green, blue, tolerance);
         }
 
-        public unsafe static bool iluRotate(float angle)
+        public unsafe static bool Rotate(float angle)
         {
             return Common.Wow64() ? x64.iluRotate(angle) : x86.iluRotate(angle);
         }
 
-        public unsafe static bool iluRotate3D(float x, float y, float z, float angle)
+        public unsafe static bool Rotate3D(float x, float y, float z, float angle)
         {
             return Common.Wow64() ? x64.iluRotate3D(x, y, z, angle) : x86.iluRotate3D(x, y, z, angle);
         }
 
-        public unsafe static bool iluSaturate1f(float saturation)
+        public unsafe static bool Saturate1f(float saturation)
         {
             return Common.Wow64() ? x64.iluSaturate1f(saturation) : x86.iluSaturate1f(saturation);
         }
 
-        public unsafe static bool iluSaturate4f(float r, float g, float b, float saturation)
+        public unsafe static bool Saturate4f(float r, float g, float b, float saturation)
         {
             return Common.Wow64() ? x64.iluSaturate4f(r, g, b, saturation) : x86.iluSaturate4f(r, g, b, saturation);
         }
 
-        public unsafe static bool iluScale(uint width, uint height, uint depth)
+        public unsafe static bool Scale(uint width, uint height, uint depth)
         {
             return Common.Wow64() ? x64.iluScale(width, height, depth) : x86.iluScale(width, height, depth);
         }
 
-        public unsafe static bool iluScaleAlpha(float scale)
+        public unsafe static bool ScaleAlpha(float scale)
         {
             return Common.Wow64() ? x64.iluScaleAlpha(scale) : x86.iluScaleAlpha(scale);
         }
 
-        public unsafe static bool iluScaleColours(float r, float g, float b)
+        public unsafe static bool ScaleColours(float r, float g, float b)
         {
             return Common.Wow64() ? x64.iluScaleColours(r, g, b) : x86.iluScaleColours(r, g, b);
         }
 
-        public unsafe static bool iluSepia()
+        public unsafe static bool Sepia()
         {
             return Common.Wow64() ? x64.iluSepia() : x86.iluSepia();
         }
 
-        public unsafe static bool iluSetLanguage(Language language)
+        public unsafe static bool SetLanguage(Language language)
         {
             return Common.Wow64() ? x64.iluSetLanguage(language) : x86.iluSetLanguage(language);
         }
 
-        public unsafe static bool iluSharpen(float factor, uint iter)
+        public unsafe static bool Sharpen(float factor, uint iter)
         {
             return Common.Wow64() ? x64.iluSharpen(factor, iter) : x86.iluSharpen(factor, iter);
         }
 
-        public unsafe static bool iluSwapColours()
+        public unsafe static bool SwapColours()
         {
             return Common.Wow64() ? x64.iluSwapColours() : x86.iluSwapColours();
         }
 
-        public unsafe static bool iluWave(float angle)
+        public unsafe static bool Wave(float angle)
         {
             return Common.Wow64() ? x64.iluWave(angle) : x86.iluWave(angle);
         }

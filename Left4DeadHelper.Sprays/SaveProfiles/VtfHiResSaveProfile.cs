@@ -1,4 +1,5 @@
-﻿using SixLabors.ImageSharp;
+﻿using Left4DeadHelper.Bindings.DevILNative;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.IO;
@@ -9,25 +10,34 @@ namespace Left4DeadHelper.Sprays.SaveProfiles
 {
     public class VtfHiResSaveProfile : BaseSaveProfile
     {
-        static VtfHiResSaveProfile()
-        {
-            // IL refers to the base library for loading, saving and converting images.
-            DevIL.il.IlInit();
-            
-            // ILU refers to the middle level library for image manipulation.
-            DevIL.ilu.IluInit();
-
-            // ILUT refers to the high level library for displaying images.
-            //DevIL.ilut.IlutRenderer(Constants.ILUT_DIRECT3D10);
-
-            // Functions in IL, ILU and ILUT are prefixed by ‘il’, ‘ilu’ and ‘ilut’, respectively
-        }
-
-
         // With hi-res, the dimensions must be 1024x1020 or vice versa.
         public override int MaxWidth => 1024;
         public override int MaxHeight => 1024;
-        public override string Extension => ".vtf";
+
+        private const int MaxSmallerDimension = 1020;
+
+        public override string Extension => ".hi.vtf";
+
+        public override void ClampDimensions(Image<Rgba32> image)
+        {
+            var maxWidth = MaxWidth;
+            var maxHeight = MaxHeight;
+
+            if (image.Width > image.Height)
+            {
+                maxHeight = MaxSmallerDimension;
+            }
+            else if (maxWidth > maxHeight)
+            {
+                maxWidth = MaxSmallerDimension;
+            }
+            else
+            {
+                maxWidth = maxHeight = MaxSmallerDimension;
+            }
+
+            ClampDimensions(image, maxWidth, maxHeight);
+        }
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public override async Task ConvertAsync(Image<Rgba32> image, Stream outputStream, CancellationToken cancellationToken)
@@ -36,20 +46,16 @@ namespace Left4DeadHelper.Sprays.SaveProfiles
             if (image is null) throw new ArgumentNullException(nameof(image));
             if (outputStream is null) throw new ArgumentNullException(nameof(outputStream));
 
-            var imagePointer = DevIL.il.IlGenImage();
-            try
-            {
-                DevIL.il.IlSaveL();
+            using var devilImage = new DevIL();
 
-                throw new NotImplementedException("TODO");
-            }
-            finally
+            devilImage.LoadImage(image);
+
+            var outputBytes = devilImage.ConvertToVtf();
+
+            outputStream = new MemoryStream(outputBytes)
             {
-                if (imagePointer != 0)
-                {
-                    DevIL.il.IlDeleteImage(imagePointer);
-                }
-            }
+                Position = 0
+            };
         }
     }
 }

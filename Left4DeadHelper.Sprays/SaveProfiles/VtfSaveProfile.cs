@@ -1,4 +1,4 @@
-﻿using Left4DeadHelper.Sprays.VtfFormat;
+﻿using Left4DeadHelper.Bindings.VtfLibNative.VtfFormat;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
