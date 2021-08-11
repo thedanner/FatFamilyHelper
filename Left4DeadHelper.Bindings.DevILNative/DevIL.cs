@@ -105,7 +105,8 @@ namespace Left4DeadHelper.Bindings.DevILNative
             //Il.TexImage(width, height, 0, 4, Il.DataFormat.Rgba, Il.DataType.UnsignedByte, IntPtr.Zero);
             fixed (byte* buffer = data)
             {
-                Il.TexImageDxtc(width, height, 0, Il.DxtcDefinition.Dxt5, buffer);
+                var result = Il.TexImageDxtc(width, height, 0, Il.DxtcDefinition.Dxt5, buffer);
+                CheckError(result);
             }
 
             //var unmanagedPointer = Marshal.AllocHGlobal(data.Length);
@@ -123,12 +124,15 @@ namespace Left4DeadHelper.Bindings.DevILNative
             }
 
             var result = Il.ImageToDxtcData(Il.DxtcDefinition.Dxt5);
+            CheckError(result);
 
             // A NULL ptr + size of 0 means "tell me how big to make the buffer".
             var fileSize = Il.SaveL(Il.ImageType.Vtf, IntPtr.Zero, 0);
+            CheckError(fileSize);
 
             var unmanagedPointer = Marshal.AllocHGlobal((int) fileSize);
             fileSize = Il.SaveL(Il.ImageType.Vtf, unmanagedPointer, fileSize);
+            CheckError(fileSize);
 
             var bytes = new byte[fileSize];
             Marshal.Copy(unmanagedPointer, bytes, 0, bytes.Length);
@@ -137,6 +141,22 @@ namespace Left4DeadHelper.Bindings.DevILNative
 
             return bytes;
         }
+
+        private void CheckError(bool result)
+        {
+            if (!result) Fail();
+        }
+
+        private void CheckError(uint result)
+        {
+            if (result == 0) Fail();
+        }
+
+        private void Fail()
+        {
+            throw new Exception("Error in Il.SaveL(): " + Il.GetError());
+        }
+
 
         #region Disposing pattern
 

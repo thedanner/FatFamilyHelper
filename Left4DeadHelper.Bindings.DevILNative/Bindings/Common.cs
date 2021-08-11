@@ -5,7 +5,7 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
     internal static class Common
     {
         #region Wow64
-        public static bool Wow64() => Environment.Is64BitProcess;
+        public static bool IsWow64() => Environment.Is64BitProcess;
 
         #endregion
 
