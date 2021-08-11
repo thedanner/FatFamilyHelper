@@ -38,7 +38,7 @@ namespace Left4DeadHelper.Bindings.VtfLibNative.VtfFormat
         public delegate void CreateOptionsModifier(ref VtfLib.CreateOptions createOptions);
 
         public unsafe void Save(Image<Rgba32> image, Stream output, VtfSaveConfigToken token, CreateOptionsModifier createOptionsModifier)
-		{
+        {
             if (image is null) throw new ArgumentNullException(nameof(image));
             if (output is null) throw new ArgumentNullException(nameof(output));
             if (token is null) throw new ArgumentNullException(nameof(token));

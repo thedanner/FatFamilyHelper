@@ -1,4 +1,4 @@
-﻿using Left4DeadHelper.Bindings.DevILNative;
+﻿using Left4DeadHelper.ImageSharpExtensions.Formats.Vtf;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
@@ -11,10 +11,10 @@ namespace Left4DeadHelper.Sprays.SaveProfiles
     public class VtfHiResSaveProfile : BaseSaveProfile
     {
         // With hi-res, the dimensions must be 1024x1020 or vice versa.
-        public override int MaxWidth => 512;
-        public override int MaxHeight => 512;
+        public override int MaxWidth => 1024;
+        public override int MaxHeight => 1024;
 
-        private const int MaxSmallerDimension = 512;
+        private const int MaxSmallerDimension = 1020;
 
         public override string Extension => ".hi.vtf";
 
@@ -46,16 +46,9 @@ namespace Left4DeadHelper.Sprays.SaveProfiles
             if (image is null) throw new ArgumentNullException(nameof(image));
             if (outputStream is null) throw new ArgumentNullException(nameof(outputStream));
 
-            using var devilImage = new DevIL();
+            var encoder = new VtfEncoder();
 
-            devilImage.LoadImage(image);
-
-            var outputBytes = devilImage.ConvertToVtf();
-
-            outputStream = new MemoryStream(outputBytes)
-            {
-                Position = 0
-            };
+            await image.SaveAsync(outputStream, encoder, cancellationToken);
         }
     }
 }
