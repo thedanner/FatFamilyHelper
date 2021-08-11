@@ -411,36 +411,36 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
         // ImageLib Functions
         public unsafe static uint ActiveFace(uint number)
         {
-            return Common.Wow64() ? x64.ilActiveFace(number) : x86.ilActiveFace(number);
+            return Common.IsWow64() ? x64.ilActiveFace(number) : x86.ilActiveFace(number);
         }
 
         public unsafe static bool ActiveImage(uint number)
         {
-            return Common.Wow64() ? x64.ilActiveImage(number) : x86.ilActiveImage(number);
+            return Common.IsWow64() ? x64.ilActiveImage(number) : x86.ilActiveImage(number);
         }
 
         public unsafe static bool ActiveLayer(uint number)
         {
-            return Common.Wow64() ? x64.ilActiveLayer(number) : x86.ilActiveLayer(number);
+            return Common.IsWow64() ? x64.ilActiveLayer(number) : x86.ilActiveLayer(number);
         }
 
         public unsafe static bool ActiveMipmap(uint number)
         {
-            return Common.Wow64() ? x64.ilActiveMipmap(number) : x86.ilActiveMipmap(number);
+            return Common.IsWow64() ? x64.ilActiveMipmap(number) : x86.ilActiveMipmap(number);
         }
 
         public unsafe static bool ApplyPal(string fileName)
         {
-            return Common.Wow64() ? x64.ilApplyPal(fileName) : x86.ilApplyPal(fileName);
+            return Common.IsWow64() ? x64.ilApplyPal(fileName) : x86.ilApplyPal(fileName);
         }
 
         public unsafe static bool ApplyProfile(string inProfile, string outProfile)
         {
-            return Common.Wow64() ? x64.ilApplyProfile(inProfile, outProfile) : x86.ilApplyProfile(inProfile, outProfile);
+            return Common.IsWow64() ? x64.ilApplyProfile(inProfile, outProfile) : x86.ilApplyProfile(inProfile, outProfile);
         }
         public unsafe static void BindImage(uint image)
         {
-            if (Common.Wow64()) x64.ilBindImage(image); else x86.ilBindImage(image);
+            if (Common.IsWow64()) x64.ilBindImage(image); else x86.ilBindImage(image);
         }
 
         public unsafe static bool Blit(uint source,
@@ -448,7 +448,7 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
             uint srcX, uint srcY, uint srcZ,
             uint width, uint height, uint depth)
         {
-            return Common.Wow64()
+            return Common.IsWow64()
                 ? x64.ilBlit(source,
                     destX, destY, destZ,
                     srcX, srcY, srcZ,
@@ -461,50 +461,50 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
 
         public unsafe static bool ClampNTSC()
         {
-            return Common.Wow64() ? x64.ilClampNTSC() : x86.ilClampNTSC();
+            return Common.IsWow64() ? x64.ilClampNTSC() : x86.ilClampNTSC();
         }
 
         public unsafe static void ClearColour(float red, float green, float blue, float alpha)
         {
-            if (Common.Wow64()) x64.ilClearColour(red, green, blue, alpha); else x86.ilClearColour(red, green, blue, alpha);
+            if (Common.IsWow64()) x64.ilClearColour(red, green, blue, alpha); else x86.ilClearColour(red, green, blue, alpha);
         }
 
         public unsafe static bool ClearImage()
         {
-            return Common.Wow64() ? x64.ilClearImage() : x86.ilClearImage();
+            return Common.IsWow64() ? x64.ilClearImage() : x86.ilClearImage();
         }
 
         public unsafe static uint CloneCurImage()
         {
-            return Common.Wow64() ? x64.ilCloneCurImage() : x86.ilCloneCurImage();
+            return Common.IsWow64() ? x64.ilCloneCurImage() : x86.ilCloneCurImage();
         }
 
         public unsafe static byte* CompressDXT(byte* data,
             uint width, uint height, uint depth, DxtcDefinition dxtcFormat, uint* dxtcSize)
         {
-            return Common.Wow64()
+            return Common.IsWow64()
                 ? x64.ilCompressDXT(data, width, height, depth, dxtcFormat, dxtcSize)
                 : x86.ilCompressDXT(data, width, height, depth, dxtcFormat, dxtcSize);
         }
 
         public unsafe static bool CompressFunc(Compression mode)
         {
-            return Common.Wow64() ? x64.ilCompressFunc(mode) : x86.ilCompressFunc(mode);
+            return Common.IsWow64() ? x64.ilCompressFunc(mode) : x86.ilCompressFunc(mode);
         }
 
         public unsafe static bool ConvertImage(DataFormat destFormat, DataType destType)
         {
-            return Common.Wow64() ? x64.ilConvertImage(destFormat, destType) : x86.ilConvertImage(destFormat, destType);
+            return Common.IsWow64() ? x64.ilConvertImage(destFormat, destType) : x86.ilConvertImage(destFormat, destType);
         }
 
         public unsafe static bool ConvertPal(PaletteType destFormat)
         {
-            return Common.Wow64() ? x64.ilConvertPal(destFormat) : x86.ilConvertPal(destFormat);
+            return Common.IsWow64() ? x64.ilConvertPal(destFormat) : x86.ilConvertPal(destFormat);
         }
 
         public unsafe static bool CopyImage(uint src)
         {
-            return Common.Wow64() ? x64.ilCopyImage(src) : x86.ilCopyImage(src);
+            return Common.IsWow64() ? x64.ilCopyImage(src) : x86.ilCopyImage(src);
         }
 
         public unsafe static uint CopyPixels(
@@ -512,7 +512,7 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
             uint width, uint height, uint depth,
             DataFormat format, DataType type, IntPtr data)
         {
-            return Common.Wow64()
+            return Common.IsWow64()
                 ? x64.ilCopyPixels(
                     xOff, yOff, zOff,
                     width, height, depth,
@@ -525,42 +525,42 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
 
         public unsafe static uint CreateSubImage(SubimageType type, uint num)
         {
-            return Common.Wow64() ? x64.ilCreateSubImage(type, num) : x86.ilCreateSubImage(type, num);
+            return Common.IsWow64() ? x64.ilCreateSubImage(type, num) : x86.ilCreateSubImage(type, num);
         }
 
         public unsafe static bool DefaultImage()
         {
-            return Common.Wow64() ? x64.ilDefaultImage() : x86.ilDefaultImage();
+            return Common.IsWow64() ? x64.ilDefaultImage() : x86.ilDefaultImage();
         }
 
         public unsafe static void DeleteImage(uint num)
         {
-            if (Common.Wow64()) x64.ilDeleteImage(num); x86.ilDeleteImage(num);
+            if (Common.IsWow64()) x64.ilDeleteImage(num); x86.ilDeleteImage(num);
         }
 
         public unsafe static void DeleteImages(UIntPtr num, uint* images)
         {
-            if (Common.Wow64()) x64.ilDeleteImages(num, images); x86.ilDeleteImages(num, images);
+            if (Common.IsWow64()) x64.ilDeleteImages(num, images); x86.ilDeleteImages(num, images);
         }
 
         public unsafe static ImageType DetermineType(string fileName)
         {
-            return Common.Wow64() ? x64.ilDetermineType(fileName) : x86.ilDetermineType(fileName);
+            return Common.IsWow64() ? x64.ilDetermineType(fileName) : x86.ilDetermineType(fileName);
         }
 
         public unsafe static ImageType DetermineTypeF(IntPtr fileHandle)
         {
-            return Common.Wow64() ? x64.ilDetermineTypeF(fileHandle) : x86.ilDetermineTypeF(fileHandle);
+            return Common.IsWow64() ? x64.ilDetermineTypeF(fileHandle) : x86.ilDetermineTypeF(fileHandle);
         }
 
         public unsafe static ImageType DetermineTypeL(IntPtr lump, uint size)
         {
-            return Common.Wow64() ? x64.ilDetermineTypeL(lump, size) : x86.ilDetermineTypeL(lump, size);
+            return Common.IsWow64() ? x64.ilDetermineTypeL(lump, size) : x86.ilDetermineTypeL(lump, size);
         }
 
         public unsafe static bool Disable(uint mode)
         {
-            return Common.Wow64() ? x64.ilDisable(mode) : x86.ilDisable(mode);
+            return Common.IsWow64() ? x64.ilDisable(mode) : x86.ilDisable(mode);
         }
 
         public unsafe static bool Disable(FeatureControls mode)
@@ -570,17 +570,17 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
 
         public unsafe static bool DxtcDataToImage()
         {
-            return Common.Wow64() ? x64.ilDxtcDataToImage() : x86.ilDxtcDataToImage();
+            return Common.IsWow64() ? x64.ilDxtcDataToImage() : x86.ilDxtcDataToImage();
         }
 
         public unsafe static bool DxtcDataToSurface()
         {
-            return Common.Wow64() ? x64.ilDxtcDataToSurface() : x86.ilDxtcDataToSurface();
+            return Common.IsWow64() ? x64.ilDxtcDataToSurface() : x86.ilDxtcDataToSurface();
         }
 
         public unsafe static bool Enable(uint mode)
         {
-            return Common.Wow64() ? x64.ilEnable(mode) : x86.ilEnable(mode);
+            return Common.IsWow64() ? x64.ilEnable(mode) : x86.ilEnable(mode);
         }
 
         public unsafe static bool Enable(FeatureControls mode)
@@ -590,32 +590,32 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
 
         public unsafe static void FlipSurfaceDxtcData()
         {
-            if (Common.Wow64()) x64.ilFlipSurfaceDxtcData(); else x86.ilFlipSurfaceDxtcData();
+            if (Common.IsWow64()) x64.ilFlipSurfaceDxtcData(); else x86.ilFlipSurfaceDxtcData();
         }
 
         public unsafe static bool FormatFunc(DataFormat mode)
         {
-            return Common.Wow64() ? x64.ilFormatFunc(mode) : x86.ilFormatFunc(mode);
+            return Common.IsWow64() ? x64.ilFormatFunc(mode) : x86.ilFormatFunc(mode);
         }
 
         public unsafe static void GenImages(UIntPtr num, uint* images)
         {
-            if (Common.Wow64()) x64.ilGenImages(num, images); else x86.ilGenImages(num, images);
+            if (Common.IsWow64()) x64.ilGenImages(num, images); else x86.ilGenImages(num, images);
         }
 
         public unsafe static uint GenImage()
         {
-            return Common.Wow64() ? x64.ilGenImage() : x86.ilGenImage();
+            return Common.IsWow64() ? x64.ilGenImage() : x86.ilGenImage();
         }
 
         public unsafe static byte* GetAlpha(DataType type)
         {
-            return Common.Wow64() ? x64.ilGetAlpha(type) : x86.ilGetAlpha(type);
+            return Common.IsWow64() ? x64.ilGetAlpha(type) : x86.ilGetAlpha(type);
         }
 
         public unsafe static bool GetBoolean(uint mode)
         {
-            return Common.Wow64() ? x64.ilGetBoolean(mode) : x86.ilGetBoolean(mode);
+            return Common.IsWow64() ? x64.ilGetBoolean(mode) : x86.ilGetBoolean(mode);
         }
 
         public unsafe static bool GetBoolean(FeatureControls mode)
@@ -625,7 +625,7 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
 
         public unsafe static void GetBooleanv(uint mode, out bool param)
         {
-            if (Common.Wow64()) x64.ilGetBooleanv(mode, out param); else x86.ilGetBooleanv(mode, out param);
+            if (Common.IsWow64()) x64.ilGetBooleanv(mode, out param); else x86.ilGetBooleanv(mode, out param);
         }
 
         public unsafe static void GetBooleanv(FeatureControls mode, out bool param)
@@ -635,269 +635,269 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
 
         public unsafe static byte* GetData()
         {
-            return Common.Wow64() ? x64.ilGetData() : x86.ilGetData();
+            return Common.IsWow64() ? x64.ilGetData() : x86.ilGetData();
         }
 
         public unsafe static uint GetDXTCData(IntPtr buffer, uint bufferSize, DxtcDefinition dxtcFormat)
         {
-            return Common.Wow64() ? x64.ilGetDXTCData(buffer, bufferSize, dxtcFormat) : x86.ilGetDXTCData(buffer, bufferSize, dxtcFormat);
+            return Common.IsWow64() ? x64.ilGetDXTCData(buffer, bufferSize, dxtcFormat) : x86.ilGetDXTCData(buffer, bufferSize, dxtcFormat);
         }
 
         public unsafe static ErrorType GetError()
         {
-            return Common.Wow64() ? x64.ilGetError() : x86.ilGetError();
+            return Common.IsWow64() ? x64.ilGetError() : x86.ilGetError();
         }
 
         public unsafe static int GetInteger(Value mode)
         {
-            return Common.Wow64() ? x64.ilGetInteger(mode) : x86.ilGetInteger(mode);
+            return Common.IsWow64() ? x64.ilGetInteger(mode) : x86.ilGetInteger(mode);
         }
 
         public unsafe static void GetIntegerv(Value mode, out int param)
         {
-            if (Common.Wow64()) x64.ilGetIntegerv(mode, out param); else x86.ilGetIntegerv(mode, out param);
+            if (Common.IsWow64()) x64.ilGetIntegerv(mode, out param); else x86.ilGetIntegerv(mode, out param);
         }
 
         public unsafe static uint GetLumpPos()
         {
-            return Common.Wow64() ? x64.ilGetLumpPos() : x86.ilGetLumpPos();
+            return Common.IsWow64() ? x64.ilGetLumpPos() : x86.ilGetLumpPos();
         }
 
         public unsafe static byte* GetPalette()
         {
-            return Common.Wow64() ? x64.ilGetPalette() : x86.ilGetPalette();
+            return Common.IsWow64() ? x64.ilGetPalette() : x86.ilGetPalette();
         }
 
         public unsafe static string GetString(uint stringName)
         {
-            return Common.Wow64() ? x64.ilGetString(stringName) : x86.ilGetString(stringName);
+            return Common.IsWow64() ? x64.ilGetString(stringName) : x86.ilGetString(stringName);
         }
 
         public unsafe static void SetHint(Hint target, Hint mode)
         {
-            if (Common.Wow64()) x64.ilHint(target, mode); else x86.ilHint(target, mode);
+            if (Common.IsWow64()) x64.ilHint(target, mode); else x86.ilHint(target, mode);
         }
 
         public unsafe static bool InvertSurfaceDxtcDataAlpha()
         {
-            return Common.Wow64() ? x64.ilInvertSurfaceDxtcDataAlpha() : x86.ilInvertSurfaceDxtcDataAlpha();
+            return Common.IsWow64() ? x64.ilInvertSurfaceDxtcDataAlpha() : x86.ilInvertSurfaceDxtcDataAlpha();
         }
 
         public unsafe static void Init()
         {
-            if (Common.Wow64()) x64.ilInit(); else x86.ilInit();
+            if (Common.IsWow64()) x64.ilInit(); else x86.ilInit();
         }
 
         public unsafe static bool ImageToDxtcData(DxtcDefinition format)
         {
-            return Common.Wow64() ? x64.ilImageToDxtcData(format) : x86.ilImageToDxtcData(format);
+            return Common.IsWow64() ? x64.ilImageToDxtcData(format) : x86.ilImageToDxtcData(format);
         }
 
         public unsafe static bool IsDisabled(uint mode)
         {
-            return Common.Wow64() ? x64.ilIsDisabled(mode) : x86.ilIsDisabled(mode);
+            return Common.IsWow64() ? x64.ilIsDisabled(mode) : x86.ilIsDisabled(mode);
         }
 
         public unsafe static bool IsEnabled(uint mode)
         {
-            return Common.Wow64() ? x64.ilIsEnabled(mode) : x86.ilIsEnabled(mode);
+            return Common.IsWow64() ? x64.ilIsEnabled(mode) : x86.ilIsEnabled(mode);
         }
 
         public unsafe static bool IsImage(uint image)
         {
-            return Common.Wow64() ? x64.ilIsImage(image) : x86.ilIsImage(image);
+            return Common.IsWow64() ? x64.ilIsImage(image) : x86.ilIsImage(image);
         }
 
         public unsafe static bool IsValid(ImageType type, string fileName)
         {
-            return Common.Wow64() ? x64.ilIsValid(type, fileName) : x86.ilIsValid(type, fileName);
+            return Common.IsWow64() ? x64.ilIsValid(type, fileName) : x86.ilIsValid(type, fileName);
         }
 
         public unsafe static bool IsValidF(ImageType type, IntPtr fileHandle)
         {
-            return Common.Wow64() ? x64.ilIsValidF(type, fileHandle) : x86.ilIsValidF(type, fileHandle);
+            return Common.IsWow64() ? x64.ilIsValidF(type, fileHandle) : x86.ilIsValidF(type, fileHandle);
         }
 
         public unsafe static bool IsValidL(ImageType type, IntPtr lump, uint size)
         {
-            return Common.Wow64() ? x64.ilIsValidL(type, lump, size) : x86.ilIsValidL(type, lump, size);
+            return Common.IsWow64() ? x64.ilIsValidL(type, lump, size) : x86.ilIsValidL(type, lump, size);
         }
 
         public unsafe static void KeyColour(float red, float green, float blue, float alpha)
         {
-            if (Common.Wow64()) x64.ilKeyColour(red, green, blue, alpha); else x86.ilKeyColour(red, green, blue, alpha);
+            if (Common.IsWow64()) x64.ilKeyColour(red, green, blue, alpha); else x86.ilKeyColour(red, green, blue, alpha);
         }
 
         public unsafe static bool Load(ImageType type, string fileName)
         {
-            return Common.Wow64() ? x64.ilLoad(type, fileName) : x86.ilLoad(type, fileName);
+            return Common.IsWow64() ? x64.ilLoad(type, fileName) : x86.ilLoad(type, fileName);
         }
 
         public unsafe static bool LoadF(ImageType type, IntPtr fileHandle)
         {
-            return Common.Wow64() ? x64.ilLoadF(type, fileHandle) : x86.ilLoadF(type, fileHandle);
+            return Common.IsWow64() ? x64.ilLoadF(type, fileHandle) : x86.ilLoadF(type, fileHandle);
         }
 
         public unsafe static bool LoadImage(string fileName)
         {
-            return Common.Wow64() ? x64.ilLoadImage(fileName) : x86.ilLoadImage(fileName);
+            return Common.IsWow64() ? x64.ilLoadImage(fileName) : x86.ilLoadImage(fileName);
         }
 
         public unsafe static bool LoadL(ImageType type, IntPtr lump, uint size)
         {
-            return Common.Wow64() ? x64.ilLoadL(type, lump, size) : x86.ilLoadL(type, lump, size);
+            return Common.IsWow64() ? x64.ilLoadL(type, lump, size) : x86.ilLoadL(type, lump, size);
         }
 
         public unsafe static bool LoadPal(string fileName)
         {
-            return Common.Wow64() ? x64.ilLoadPal(fileName) : x86.ilLoadPal(fileName);
+            return Common.IsWow64() ? x64.ilLoadPal(fileName) : x86.ilLoadPal(fileName);
         }
 
         public unsafe static void ModAlpha(double alphaValue)
         {
-            if (Common.Wow64()) x64.ilModAlpha(alphaValue); else x86.ilModAlpha(alphaValue);
+            if (Common.IsWow64()) x64.ilModAlpha(alphaValue); else x86.ilModAlpha(alphaValue);
         }
 
         public unsafe static bool OriginFunc(OriginDefinition mode)
         {
-            return Common.Wow64() ? x64.ilOriginFunc(mode) : x86.ilOriginFunc(mode);
+            return Common.IsWow64() ? x64.ilOriginFunc(mode) : x86.ilOriginFunc(mode);
         }
 
         public unsafe static bool OverlayImage(uint source, int xCoord, int yCoord, int zCoord)
         {
-            return Common.Wow64() ? x64.ilOverlayImage(source, xCoord, yCoord, zCoord) : x86.ilOverlayImage(source, xCoord, yCoord, zCoord);
+            return Common.IsWow64() ? x64.ilOverlayImage(source, xCoord, yCoord, zCoord) : x86.ilOverlayImage(source, xCoord, yCoord, zCoord);
         }
 
         public unsafe static void PopAttrib()
         {
-            if (Common.Wow64()) x64.ilPopAttrib(); else x86.ilPopAttrib();
+            if (Common.IsWow64()) x64.ilPopAttrib(); else x86.ilPopAttrib();
         }
 
         public unsafe static void PushAttrib(uint bits)
         {
-            if (Common.Wow64()) x64.ilPushAttrib(bits); else x86.ilPushAttrib(bits);
+            if (Common.IsWow64()) x64.ilPushAttrib(bits); else x86.ilPushAttrib(bits);
         }
 
         public unsafe static void RegisterFormat(DataFormat format)
         {
-            if (Common.Wow64()) x64.ilRegisterFormat(format); else x86.ilRegisterFormat(format);
+            if (Common.IsWow64()) x64.ilRegisterFormat(format); else x86.ilRegisterFormat(format);
         }
 
         public unsafe static bool RegisterLoad(string ext, IL_LOADPROC loadCb)
         {
-            return Common.Wow64() ? x64.ilRegisterLoad(ext, loadCb) : x86.ilRegisterLoad(ext, loadCb);
+            return Common.IsWow64() ? x64.ilRegisterLoad(ext, loadCb) : x86.ilRegisterLoad(ext, loadCb);
         }
 
         public unsafe static bool RegisterMipNum(uint num)
         {
-            return Common.Wow64() ? x64.ilRegisterMipNum(num) : x86.ilRegisterMipNum(num);
+            return Common.IsWow64() ? x64.ilRegisterMipNum(num) : x86.ilRegisterMipNum(num);
         }
 
         public unsafe static bool RegisterNumFaces(uint num)
         {
-            return Common.Wow64() ? x64.ilRegisterNumFaces(num) : x86.ilRegisterNumFaces(num);
+            return Common.IsWow64() ? x64.ilRegisterNumFaces(num) : x86.ilRegisterNumFaces(num);
         }
 
         public unsafe static bool RegisterNumImages(uint num)
         {
-            return Common.Wow64() ? x64.ilRegisterNumImages(num) : x86.ilRegisterNumImages(num);
+            return Common.IsWow64() ? x64.ilRegisterNumImages(num) : x86.ilRegisterNumImages(num);
         }
 
         public unsafe static void RegisterOrigin(OriginDefinition origin)
         {
-            if (Common.Wow64()) x64.ilRegisterOrigin(origin); else x86.ilRegisterOrigin(origin);
+            if (Common.IsWow64()) x64.ilRegisterOrigin(origin); else x86.ilRegisterOrigin(origin);
         }
 
         public unsafe static void RegisterPal(IntPtr pal, uint size, PaletteType type)
         {
-            if (Common.Wow64()) x64.ilRegisterPal(pal, size, type); else x86.ilRegisterPal(pal, size, type);
+            if (Common.IsWow64()) x64.ilRegisterPal(pal, size, type); else x86.ilRegisterPal(pal, size, type);
         }
 
         public unsafe static bool RegisterSave(string ext, IL_SAVEPROC saveCb)
         {
-            return Common.Wow64() ? x64.ilRegisterSave(ext, saveCb) : x86.ilRegisterSave(ext, saveCb);
+            return Common.IsWow64() ? x64.ilRegisterSave(ext, saveCb) : x86.ilRegisterSave(ext, saveCb);
         }
 
         public unsafe static void RegisterType(DataType type)
         {
-            if (Common.Wow64()) x64.ilRegisterType(type); else x86.ilRegisterType(type);
+            if (Common.IsWow64()) x64.ilRegisterType(type); else x86.ilRegisterType(type);
         }
 
         public unsafe static bool RemoveLoad(string ext)
         {
-            return Common.Wow64() ? x64.ilRemoveLoad(ext) : x86.ilRemoveLoad(ext);
+            return Common.IsWow64() ? x64.ilRemoveLoad(ext) : x86.ilRemoveLoad(ext);
         }
 
         public unsafe static bool RemoveSave(string ext)
         {
-            return Common.Wow64() ? x64.ilRemoveSave(ext) : x86.ilRemoveSave(ext);
+            return Common.IsWow64() ? x64.ilRemoveSave(ext) : x86.ilRemoveSave(ext);
         }
 
         public unsafe static void ResetMemory() // Deprecated
         {
-            if (Common.Wow64()) x64.ilResetMemory(); else x86.ilResetMemory();
+            if (Common.IsWow64()) x64.ilResetMemory(); else x86.ilResetMemory();
         }
 
         public unsafe static void ResetRead()
         {
-            if (Common.Wow64()) x64.ilResetRead(); else x86.ilResetRead();
+            if (Common.IsWow64()) x64.ilResetRead(); else x86.ilResetRead();
         }
 
         public unsafe static void ResetWrite()
         {
-            if (Common.Wow64()) x64.ilResetWrite(); else x86.ilResetWrite();
+            if (Common.IsWow64()) x64.ilResetWrite(); else x86.ilResetWrite();
         }
 
         public unsafe static bool Save(ImageType type, string fileName)
         {
-            return Common.Wow64() ? x64.ilSave(type, fileName) : x86.ilSave(type, fileName);
+            return Common.IsWow64() ? x64.ilSave(type, fileName) : x86.ilSave(type, fileName);
         }
 
         public unsafe static uint SaveF(ImageType type, IntPtr fileHandle)
         {
-            return Common.Wow64() ? x64.ilSaveF(type, fileHandle) : x86.ilSaveF(type, fileHandle);
+            return Common.IsWow64() ? x64.ilSaveF(type, fileHandle) : x86.ilSaveF(type, fileHandle);
         }
 
         public unsafe static bool SaveImage(string fileName)
         {
-            return Common.Wow64() ? x64.ilSaveImage(fileName) : x86.ilSaveImage(fileName);
+            return Common.IsWow64() ? x64.ilSaveImage(fileName) : x86.ilSaveImage(fileName);
         }
 
         public unsafe static uint SaveL(ImageType type, IntPtr lump, uint size)
         {
-            return Common.Wow64() ? x64.ilSaveL(type, lump, size) : x86.ilSaveL(type, lump, size);
+            return Common.IsWow64() ? x64.ilSaveL(type, lump, size) : x86.ilSaveL(type, lump, size);
         }
 
         public unsafe static bool SavePal(string fileName)
         {
-            return Common.Wow64() ? x64.ilSavePal(fileName) : x86.ilSavePal(fileName);
+            return Common.IsWow64() ? x64.ilSavePal(fileName) : x86.ilSavePal(fileName);
         }
 
         public unsafe static bool SetAlpha(double alphaValue)
         {
-            return Common.Wow64() ? x64.ilSetAlpha(alphaValue) : x86.ilSetAlpha(alphaValue);
+            return Common.IsWow64() ? x64.ilSetAlpha(alphaValue) : x86.ilSetAlpha(alphaValue);
         }
 
         public unsafe static bool SetData(IntPtr data)
         {
-            return Common.Wow64() ? x64.ilSetData(data) : x86.ilSetData(data);
+            return Common.IsWow64() ? x64.ilSetData(data) : x86.ilSetData(data);
         }
 
         public unsafe static bool SetDuration(uint duration)
         {
-            return Common.Wow64() ? x64.ilSetDuration(duration) : x86.ilSetDuration(duration);
+            return Common.IsWow64() ? x64.ilSetDuration(duration) : x86.ilSetDuration(duration);
         }
 
         public unsafe static void SetInteger(uint mode, int param)
         {
-            if (Common.Wow64()) x64.ilSetInteger(mode, param); else x86.ilSetInteger(mode, param);
+            if (Common.IsWow64()) x64.ilSetInteger(mode, param); else x86.ilSetInteger(mode, param);
         }
 
         public unsafe static void SetMemory(
             mAlloc mAllocCb,
             mFree mFreeCb)
         {
-            if (Common.Wow64()) x64.ilSetMemory(mAllocCb, mFreeCb); else x86.ilSetMemory(mAllocCb, mFreeCb);
+            if (Common.IsWow64()) x64.ilSetMemory(mAllocCb, mFreeCb); else x86.ilSetMemory(mAllocCb, mFreeCb);
         }
 
         public unsafe static void SetPixels(
@@ -905,7 +905,7 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
             uint width, uint height, uint depth,
             DataFormat format, DataType type, IntPtr data)
         {
-            if (Common.Wow64())
+            if (Common.IsWow64())
                 x64.ilSetPixels(
                     xOff, yOff, zOff,
                     width, height, depth,
@@ -926,7 +926,7 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
             fSeekRProc fSeekRProcCb,
             fTellRProc fTellRProcCb)
         {
-            if (Common.Wow64())
+            if (Common.IsWow64())
                 x64.ilSetRead(
                     fOpenRProcCb, fCloseRProcCb, fEofProcCb,
                     fGetcProcCb, fReadProcCb, fSeekRProcCb,
@@ -940,7 +940,7 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
 
         public unsafe static void SetString(FileFormatSpecificValue mode, string str)
         {
-            if (Common.Wow64()) x64.ilSetString(mode, str); else x86.ilSetString(mode, str);
+            if (Common.IsWow64()) x64.ilSetString(mode, str); else x86.ilSetString(mode, str);
         }
 
         public unsafe static void SetWrite(
@@ -951,7 +951,7 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
             fTellWProc fTellWProcCb,
             fWriteProc fWriteProcCb)
         {
-            if (Common.Wow64())
+            if (Common.IsWow64())
                 x64.ilSetWrite(
                     fOpenWProcCb, fCloseWProcCb, fPutcProcCb,
                     fSeekWProcCb, fTellWProcCb, fWriteProcCb);
@@ -963,12 +963,12 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
 
         public unsafe static void ShutDown()
         {
-            if (Common.Wow64()) x64.ilShutDown(); else x86.ilShutDown();
+            if (Common.IsWow64()) x64.ilShutDown(); else x86.ilShutDown();
         }
 
         public unsafe static bool SurfaceToDxtcData(DxtcDefinition format)
         {
-            return Common.Wow64() ? x64.ilSurfaceToDxtcData(format) : x86.ilSurfaceToDxtcData(format);
+            return Common.IsWow64() ? x64.ilSurfaceToDxtcData(format) : x86.ilSurfaceToDxtcData(format);
         }
 
         public unsafe static bool TexImage(
@@ -976,7 +976,7 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
             byte numChannels, DataFormat dataFormat, DataType dataType,
             IntPtr dataPtr)
         {
-            return Common.Wow64()
+            return Common.IsWow64()
                 ? x64.ilTexImage(
                     width, height, depth,
                     numChannels, dataFormat, dataType,
@@ -989,24 +989,24 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
 
         public unsafe static bool TexImageDxtc(int w, int h, int d, DxtcDefinition dxtcFormat, byte* data)
         {
-            return Common.Wow64() ? x64.ilTexImageDxtc(w, h, d, dxtcFormat, data) : x86.ilTexImageDxtc(w, h, d, dxtcFormat, data);
+            return Common.IsWow64() ? x64.ilTexImageDxtc(w, h, d, dxtcFormat, data) : x86.ilTexImageDxtc(w, h, d, dxtcFormat, data);
         }
 
         public unsafe static ImageType TypeFromExt(string fileName)
         {
-            return Common.Wow64() ? x64.ilTypeFromExt(fileName) : x86.ilTypeFromExt(fileName);
+            return Common.IsWow64() ? x64.ilTypeFromExt(fileName) : x86.ilTypeFromExt(fileName);
         }
 
         public unsafe static bool TypeFunc(DataFormat mode)
         {
-            return Common.Wow64() ? x64.ilTypeFunc(mode) : x86.ilTypeFunc(mode);
+            return Common.IsWow64() ? x64.ilTypeFunc(mode) : x86.ilTypeFunc(mode);
         }
 
         public unsafe static bool LoadData(
             string fileName,
             uint width, uint height, uint depth, byte bpp)
         {
-            return Common.Wow64()
+            return Common.IsWow64()
                 ? x64.ilLoadData(fileName, width, height, depth, bpp)
                 : x86.ilLoadData(fileName, width, height, depth, bpp);
         }
@@ -1014,7 +1014,7 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
         public unsafe static bool LoadDataF(IntPtr fileHandle,
             uint width, uint height, uint depth, byte bpp)
         {
-            return Common.Wow64()
+            return Common.IsWow64()
                 ? x64.ilLoadDataF(fileHandle, width, height, depth, bpp)
                 : x86.ilLoadDataF(fileHandle, width, height, depth, bpp);
         }
@@ -1022,14 +1022,14 @@ namespace Left4DeadHelper.Bindings.DevILNative.Bindings
         public unsafe static bool LoadDataL(IntPtr lump,
             uint size, uint width, uint height, uint depth, byte bpp)
         {
-            return Common.Wow64()
+            return Common.IsWow64()
                 ? x64.ilLoadDataL(lump, size, width, height, depth, bpp)
                 : x86.ilLoadDataL(lump, size, width, height, depth, bpp);
         }
 
         public unsafe static bool SaveData(string fileName)
         {
-            return Common.Wow64() ? x64.ilSaveData(fileName) : x86.ilSaveData(fileName);
+            return Common.IsWow64() ? x64.ilSaveData(fileName) : x86.ilSaveData(fileName);
         }
 
         private static class x86
