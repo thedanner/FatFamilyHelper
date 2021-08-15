@@ -18,8 +18,9 @@ namespace Left4DeadHelper.Discord.Modules
     public class SprayModule : ModuleBase<SocketCommandContext>, ICommandModule
     {
         private const string CommandVtf = "sprayme";
-        private const string CommandVtfHi = "sprayme_hi";
-        private const string CommandTga = "sprayme_tga";
+        private const string CommandVtfHi = "sprayme1024";
+        private const string CommandVtfAlpha = "sprayme512";
+        private const string CommandTga = "spraymetga";
 
         private readonly ILogger<SprayModule> _logger;
         private readonly Settings _settings;
@@ -37,23 +38,30 @@ namespace Left4DeadHelper.Discord.Modules
         }
 
         [Command(CommandVtf)]
-        [Summary("Converts an image into a Source engine-compatible spray in VTF format.")]
+        [Summary("Converts an image into a Source engine-compatible spray in VTF format (1024x1020 or vice-versa; 1-bit alpha).")]
         public Task ConvertVtfAsync(string? arg1 = null, string? arg2 = null)
         {
-            var saveProfile = new VtfSaveProfile();
-            return HandleAsync(saveProfile, arg1, arg2);
+            return ConvertVtfHiAsync(arg1, arg2);
         }
 
         [Command(CommandVtfHi)]
-        [Summary("Converts an image into a Source engine-compatible spray in VTF format.")]
+        [Summary("Converts an image into a Source engine-compatible spray in VTF format (1024x1020 or vice-versa; 1-bit alpha).")]
         public Task ConvertVtfHiAsync(string? arg1 = null, string? arg2 = null)
         {
-            var saveProfile = new VtfHiResSaveProfile();
+            var saveProfile = new Vtf1024SaveProfile();
+            return HandleAsync(saveProfile, arg1, arg2);
+        }
+
+        [Command(CommandVtfAlpha)]
+        [Summary("Converts an image into a Source engine-compatible spray in VTF format (512x512 with 8-bit alpha).")]
+        public Task ConvertVtfAlphaAsync(string? arg1 = null, string? arg2 = null)
+        {
+            var saveProfile = new Vtf1024SaveProfile();
             return HandleAsync(saveProfile, arg1, arg2);
         }
 
         [Command(CommandTga)]
-        [Summary("Converts an image into a Source engine-compatible spray in TGA format.")]
+        [Summary("Converts an image into a Source engine-compatible spray in TGA format (256x256 with 8-bit alpha.")]
         public Task ConvertTgaAsync(string? arg1 = null, string? arg2 = null)
         {
             var saveProfile = new TgaSaveProfile();

@@ -9,13 +9,13 @@ using System.Threading.Tasks;
 
 namespace Left4DeadHelper.Sprays.SaveProfiles
 {
-    public class VtfHiResSaveProfile : BaseSaveProfile
+    public class Vtf1024SaveProfile : BaseSaveProfile
     {
         // With hi-res, the dimensions must be 1024x1020 or vice versa.
         public override int MaxWidth => 1024;
         public override int MaxHeight => 1024;
         private const int MaxSmallerDimension = 1020;
-        public override string Extension => ".hi.vtf";
+        public override string Extension => ".vtf";
 
         public override void Resize(Image<Rgba32> image)
         {
