@@ -41,8 +41,6 @@ namespace Left4DeadHelper.Sprays
 
             using var image = await Image.LoadAsync<Rgba32>(Configuration.Default, memoryStream, cancellationToken);
 
-            saveProfile.ClampDimensions(image);
-            
             await saveProfile.ConvertAsync(image, outputStream, cancellationToken);
 
             var result = new ConversionResult(saveProfile.Extension);

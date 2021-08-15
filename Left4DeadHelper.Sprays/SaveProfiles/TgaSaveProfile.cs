@@ -19,6 +19,8 @@ namespace Left4DeadHelper.Sprays.SaveProfiles
             if (image is null) throw new ArgumentNullException(nameof(image));
             if (outputStream is null) throw new ArgumentNullException(nameof(outputStream));
 
+            Resize(image);
+
             var encoder = new TgaEncoder
             {
                 BitsPerPixel = TgaBitsPerPixel.Pixel32,

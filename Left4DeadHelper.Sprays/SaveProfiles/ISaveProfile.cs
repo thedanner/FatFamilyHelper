@@ -10,7 +10,6 @@ namespace Left4DeadHelper.Sprays.SaveProfiles
     {
         string Extension { get; }
 
-        void ClampDimensions(Image<Rgba32> image);
         void Validate();
 
         Task ConvertAsync(Image<Rgba32> image, Stream outputStream, CancellationToken cancellationToken);
