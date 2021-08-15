@@ -11,18 +11,17 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
     {
         public void Encode<TPixel>(Image<TPixel> image, Stream stream) where TPixel : unmanaged, IPixel<TPixel>
         {
-            using var encoder = new VtfEncoderCore();
-            encoder.Encode(image, stream, default);
+            var encoder = new VtfEncoderCore();
+            if (!(image is Image<Rgba32> imageAsRgba32)) imageAsRgba32 = image.CloneAs<Rgba32>();
+            encoder.Encode(imageAsRgba32, stream, default);
         }
 
         public async Task EncodeAsync<TPixel>(Image<TPixel> image, Stream stream, CancellationToken cancellationToken)
             where TPixel : unmanaged, IPixel<TPixel>
         {
-            // The introduction of a local variable that refers to an object the implements
-            // IDisposable means you must use async/await, where the compiler generates the
-            // state machine and a continuation.
-            using var encoder = new VtfEncoderCore();
-            await encoder.EncodeAsync(image, stream, cancellationToken).ConfigureAwait(false);
+            var encoder = new VtfEncoderCore();
+            if (!(image is Image<Rgba32> imageAsRgba32)) imageAsRgba32 = image.CloneAs<Rgba32>();
+            await encoder.EncodeAsync(imageAsRgba32, stream, cancellationToken).ConfigureAwait(false);
         }
     }
 }

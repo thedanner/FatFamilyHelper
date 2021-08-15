@@ -16,7 +16,7 @@ namespace Left4DeadHelper.Tests.Unit.Sprays
             var sprayTools = new SprayTools();
 
             using var inputStream = new FileStream("memes.png", FileMode.Open, FileAccess.Read);
-            using var outputStream = new FileStream("memes-st-hq.vtf", FileMode.OpenOrCreate, FileAccess.Write);
+            using var outputStream = new FileStream("zzz-memes-st-hq.vtf", FileMode.OpenOrCreate, FileAccess.Write);
 
             await sprayTools.ConvertAsync(inputStream, outputStream, new VtfHiResSaveProfile(), CancellationToken.None);
         }

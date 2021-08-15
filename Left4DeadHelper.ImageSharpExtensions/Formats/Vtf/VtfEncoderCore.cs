@@ -12,9 +12,9 @@ using System.Threading.Tasks;
 
 namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 {
-    internal class VtfEncoderCore : IDisposable
-    {
-        public async Task EncodeAsync<TPixel>(Image<TPixel> image, Stream stream, CancellationToken cancellationToken) where TPixel : unmanaged, IPixel<TPixel>
+    internal class VtfEncoderCore
+	{
+		public async Task EncodeAsync(Image<Rgba32> image, Stream stream, CancellationToken cancellationToken)
         {
             Configuration configuration = image.GetConfiguration();
             if (stream.CanSeek)
@@ -48,7 +48,7 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
             }
         }
 
-        public void Encode<TPixel>(Image<TPixel> image, Stream stream, CancellationToken cancellationToken) where TPixel : unmanaged, IPixel<TPixel>
+        public void Encode(Image<Rgba32> image, Stream stream, CancellationToken cancellationToken)
         {
             if (image is null)
             {
@@ -60,24 +60,37 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
                 throw new ArgumentNullException(nameof(stream));
             }
 
-			//_vtfEncoderOptions.DxtFormat
+			for (int y = 0; y < image.Height; y++)
+			{
+				Span<Rgba32> pixelRowSpan = image.GetPixelRowSpan(y);
+				for (int x = 0; x < image.Width; x++)
+				{
+					pixelRowSpan[x].A = pixelRowSpan[x].A >= 32 ? byte.MaxValue : byte.MinValue;
+				}
+
+				if (cancellationToken.IsCancellationRequested) throw new TaskCanceledException();
+			}
 
 			int floatScratch;
 
+			// Now at address 0x00000000
+
 			// Write the file signature.
-            stream.Write(VtfConstants.HeaderBytes);
+			stream.Write(VtfConstants.HeaderBytes);
 
 			byte[] dataBuffer = new byte[sizeof(long)];
 
 			// Write the file version - currently using 7.2 specs.
 			BinaryPrimitives.WriteUInt32LittleEndian(dataBuffer, 7);
 			stream.Write(dataBuffer, 0, sizeof(uint));
-			BinaryPrimitives.WriteUInt32LittleEndian(dataBuffer, 2);
+			BinaryPrimitives.WriteUInt32LittleEndian(dataBuffer, 1);
 			stream.Write(dataBuffer, 0, sizeof(uint));
 
 			// Write the header size.
-			BinaryPrimitives.WriteUInt32LittleEndian(dataBuffer, 80);
+			BinaryPrimitives.WriteUInt32LittleEndian(dataBuffer, VtfConstants.HeaderSize);
             stream.Write(dataBuffer, 0, sizeof(uint));
+
+			// Now at address 0x00000010
 
 			// Now we write the width and height of the image.
 			BinaryPrimitives.WriteUInt16LittleEndian(dataBuffer, (ushort)image.Width);
@@ -86,11 +99,11 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 			BinaryPrimitives.WriteUInt16LittleEndian(dataBuffer, (ushort)image.Height);
 			stream.Write(dataBuffer, 0, sizeof(ushort));
 
-			//@TODO: This is supposed to be the flags used.  What should we use here?  Let users specify?
-			BinaryPrimitives.WriteUInt32LittleEndian(dataBuffer, 0);
+			// Flags
+			BinaryPrimitives.WriteUInt32LittleEndian(dataBuffer, VtfConstants.FlagsDxt1WithAlpha);
 			stream.Write(dataBuffer, 0, sizeof(uint));
 
-			// Number of frames in the animation. - @TODO: Change to use animations.
+			// Number of frames in the animation.
 			BinaryPrimitives.WriteUInt16LittleEndian(dataBuffer, 1);
 			stream.Write(dataBuffer, 0, sizeof(ushort));
 			// First frame in the animation
@@ -100,7 +113,9 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 			BinaryPrimitives.WriteUInt32LittleEndian(dataBuffer, 0);
 			stream.Write(dataBuffer, 0, sizeof(uint));
 
-			// Reflectivity (3 floats) - @TODO: Use what values?  User specified?
+			// Now at address 0x00000020 (reflectivity: 3 4-byte floats, plus 4 bytes padding
+
+			// Reflectivity (3 floats)
 			for (var i = 0; i < 3; i++)
 			{
 				floatScratch = BitConverter.SingleToInt32Bits(0.0f);
@@ -111,64 +126,61 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 			// Padding
 			BinaryPrimitives.WriteUInt32LittleEndian(dataBuffer, 0);
 			stream.Write(dataBuffer, 0, sizeof(uint));
+
+			// Now at address 0x00000030
+
 			// Bumpmap scale
 			floatScratch = BitConverter.SingleToInt32Bits(0.0f);
 			BinaryPrimitives.WriteInt32LittleEndian(dataBuffer, floatScratch);
 			stream.Write(dataBuffer, 0, sizeof(float));
 			// High resolution image format
-			// 15 = DXT5
-			BinaryPrimitives.WriteUInt32LittleEndian(dataBuffer, 15);
+			BinaryPrimitives.WriteUInt32LittleEndian(dataBuffer, VtfConstants.FormatDxt1);
 			stream.Write(dataBuffer, 0, sizeof(uint));
-			// Mipmap count - @TODO: Use mipmaps
+			// Mipmap count
 			dataBuffer[0] = 1;
-			stream.Write(dataBuffer, 0, sizeof(char));
-			// Low resolution image format - @TODO: Create low resolution image.
-			BinaryPrimitives.WriteUInt32LittleEndian(dataBuffer, 0xFFFFFFFF);
+			stream.Write(dataBuffer, 0, sizeof(byte));
+			// Low resolution image format; always DXT1
+			BinaryPrimitives.WriteUInt32LittleEndian(dataBuffer, VtfConstants.FormatDxt1);
 			stream.Write(dataBuffer, 0, sizeof(uint));
-			// Low resolution image width and height
+			// Low resolution image width, height.
 			dataBuffer[0] = 0;
-			stream.Write(dataBuffer, 0, sizeof(char));
+			stream.Write(dataBuffer, 0, sizeof(byte));
 			dataBuffer[0] = 0;
-			stream.Write(dataBuffer, 0, sizeof(char));
-			// Depth of the image - @TODO: Support for volumetric images.
-			BinaryPrimitives.WriteUInt16LittleEndian(dataBuffer, 1);
-			stream.Write(dataBuffer, 0, sizeof(ushort));
+			stream.Write(dataBuffer, 0, sizeof(byte));
+			// Depth of the low resolution image? Shouldn't be needed with 7.1 but it's not reading correctly without it.
+			dataBuffer[0] = 1;
+			stream.Write(dataBuffer, 0, sizeof(byte));
 
-			// Write final padding for the header (out to 80 bytes).
-			for (var i = 0; i < 15; i++)
-			{
-				dataBuffer[0] = 0;
-				stream.Write(dataBuffer, 0, sizeof(char));
-			}
 
-			// Do DXT compression here and write.
-			// We have to find out how much we are writing first.
-			var neededSize = CalculateSize(image.Width, image.Height);
+			var neededBytes = CalculateSizeInBytes(image.Width, image.Height);
 
             if (stream is MemoryStream memStream)
             {
-				memStream.Capacity = 80 + neededSize;
+				memStream.Capacity = (int) VtfConstants.HeaderSize + neededBytes;
             }
 
 			// DXT compress the data.
-			var dtxEncoder = new BcEncoder();
+			var dxtEncoder = new BcEncoder();
 
-			dtxEncoder.OutputOptions.GenerateMipMaps = false;
-			dtxEncoder.OutputOptions.Quality = CompressionQuality.BestQuality;
-			dtxEncoder.OutputOptions.Format = CompressionFormat.Bc3; // BX3 = (S3TC DXT5)
-			dtxEncoder.OutputOptions.FileFormat = OutputFileFormat.Dds; //Change to Dds for a dds file.
+			dxtEncoder.OutputOptions.MaxMipMapLevel = 1;
+			dxtEncoder.OutputOptions.GenerateMipMaps = false;
+			dxtEncoder.OutputOptions.Quality = CompressionQuality.BestQuality;
+			dxtEncoder.OutputOptions.Format = CompressionFormat.Bc1WithAlpha; // S3TC DXT1
+			dxtEncoder.OutputOptions.DdsBc1WriteAlphaFlag = true;
 
+			if (cancellationToken.IsCancellationRequested) throw new TaskCanceledException();
 
-			var imageAsRgba32 = image as Image<Rgba32>;
-			if (imageAsRgba32 == null)
+			var byteEncoding = dxtEncoder.EncodeToRawBytes(image);
+
+			if (cancellationToken.IsCancellationRequested) throw new TaskCanceledException();
+
+			foreach (var mipBytes in byteEncoding)
 			{
-				imageAsRgba32 = image.CloneAs<Rgba32>();
+				stream.Write(mipBytes, 0, mipBytes.Length);
 			}
-
-			dtxEncoder.EncodeToStream(imageAsRgba32, stream);
 		}
 
-        private int CalculateSize(int width, int height, int depth = 1)
+		private int CalculateSizeInBytes(int width, int height, int depth = 1)
 		{
 			if (width <= 0)
 			{
@@ -183,39 +195,13 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 				throw new ArgumentOutOfRangeException(nameof(depth), "Depth must be positive.");
 			}
 
-			// DXT5 is 16 bytes per block count.
 			var blockCount = ((width + 3) / 4) * ((height + 3) / 4) * depth;
-
-			var size = blockCount * 16;
+			
+			// DXT1 is 8 bytes per block count.
+			// DXT5 is 16 bytes per block count.
+			var size = blockCount * 8;
 
 			return size;
 		}
-
-		#region Dispose pattern
-
-		private bool _disposedValue;
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposedValue)
-            {
-                if (disposing)
-                {
-                    // TODO: dispose managed state (managed objects)
-                }
-
-                // TODO: set large fields to null
-                _disposedValue = true;
-            }
-        }
-
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-
-        #endregion
     }
 }

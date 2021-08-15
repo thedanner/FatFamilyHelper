@@ -1,4 +1,5 @@
 ﻿using Left4DeadHelper.ImageSharpExtensions.Formats.Vtf;
+using Left4DeadHelper.ImageSharpExtensions.Utilities;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
@@ -13,12 +14,10 @@ namespace Left4DeadHelper.Sprays.SaveProfiles
         // With hi-res, the dimensions must be 1024x1020 or vice versa.
         public override int MaxWidth => 1024;
         public override int MaxHeight => 1024;
-
         private const int MaxSmallerDimension = 1020;
-
         public override string Extension => ".hi.vtf";
 
-        public override void ClampDimensions(Image<Rgba32> image)
+        public override void Resize(Image<Rgba32> image)
         {
             var maxWidth = MaxWidth;
             var maxHeight = MaxHeight;
@@ -36,15 +35,15 @@ namespace Left4DeadHelper.Sprays.SaveProfiles
                 maxWidth = maxHeight = MaxSmallerDimension;
             }
 
-            ClampDimensions(image, maxWidth, maxHeight);
+            ResizeUtil.Resize(image, maxWidth, maxHeight);
         }
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public override async Task ConvertAsync(Image<Rgba32> image, Stream outputStream, CancellationToken cancellationToken)
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             if (image is null) throw new ArgumentNullException(nameof(image));
             if (outputStream is null) throw new ArgumentNullException(nameof(outputStream));
+
+            Resize(image);
 
             var encoder = new VtfEncoder();
 
