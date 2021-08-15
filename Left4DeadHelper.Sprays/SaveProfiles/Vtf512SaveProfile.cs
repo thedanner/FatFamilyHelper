@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Left4DeadHelper.Sprays.SaveProfiles
 {
-    public class VtfSaveProfile : BaseSaveProfile
+    public class Vtf512SaveProfile : BaseSaveProfile
     {
         public override int MaxWidth => 512;
         public override int MaxHeight => 512;

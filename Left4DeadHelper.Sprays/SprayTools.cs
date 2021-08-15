@@ -13,8 +13,7 @@ namespace Left4DeadHelper.Sprays
     public class SprayTools
     {
         // TODO: support animated sprays
-        // TODO: optionally support VTF format?
-        // TODO: support creating near/far sprays (requires VTF format support)
+        // TODO: support creating near/far sprays
 
         public async Task<ConversionResult> ConvertAsync(Stream inputStream, Stream outputStream, ISaveProfile saveProfile,
             CancellationToken cancellationToken)
