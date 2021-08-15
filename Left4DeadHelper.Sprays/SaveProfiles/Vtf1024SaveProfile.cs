@@ -1,5 +1,5 @@
 ﻿using Left4DeadHelper.ImageSharpExtensions.Formats.Vtf;
-using Left4DeadHelper.ImageSharpExtensions.Utilities;
+using Left4DeadHelper.Sprays.Utilities;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;

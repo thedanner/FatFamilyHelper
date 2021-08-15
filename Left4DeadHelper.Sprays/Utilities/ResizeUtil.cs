@@ -3,7 +3,7 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using System;
 
-namespace Left4DeadHelper.ImageSharpExtensions.Utilities
+namespace Left4DeadHelper.Sprays.Utilities
 {
     public static class ResizeUtil
     {
