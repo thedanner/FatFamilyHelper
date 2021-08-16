@@ -41,7 +41,8 @@ namespace Left4DeadHelper.Discord.Modules
 
         [Command(CommandVtf)]
         [Summary("Converts an image into a Source engine-compatible spray in VTF format (1024x1020 or vice-versa; 1-bit alpha).\n" +
-            "Use this version unless you have a specific need for a different one.")]
+            "Use this version unless you have a specific need for a different one.\n" +
+            "See the help for how to provide an image to convert.")]
         public Task ConvertVtfAsync(string? arg1 = null, string? arg2 = null)
         {
             return ConvertVtfHiAsync(arg1, arg2);
@@ -203,7 +204,7 @@ namespace Left4DeadHelper.Discord.Modules
             var c = helpContext.GenericCommandExample;
             var u = "https://placekitten.com/200/300";
 
-            var isVtf = helpContext.Command == CommandVtf || helpContext.Command == CommandVtfHi;
+            var isVtf = helpContext.Command != CommandTga;
 
             return
                 $"  - `{c} <string filenameOrSource>? <string sourceIfFilenameGiven>?`:\n" +
