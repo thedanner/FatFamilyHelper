@@ -220,9 +220,9 @@ namespace Left4DeadHelper.Discord.Modules
                 $"    `{c} KITTEN` or `{c} \"OMG A KITTEN\"` (must reply to an image-only message)\n" +
                 $"    5. Message starts with a filename and is a reply to a message with an attachement.\n" +
                 $"    `{c} KITTEN` or `{c} \"OMG A KITTEN\"` (must reply to a message with an attached image)\n" +
-                $"    6. Message is empty and has an attachment.\n" +
-                $"    7. Message is empty and is a reply to a message with only a URL as its content.\n" +
-                $"    8. Message is empty and is a reply to a message with an attachment.";
+                $"    6. Message is just the trigger and has an attachment.\n" +
+                $"    7. Message is just the trigger and is a reply to a message with only a URL as its content.\n" +
+                $"    8. Message is just the trigger and is a reply to a message with an attachment.";
         }
     }
 }
