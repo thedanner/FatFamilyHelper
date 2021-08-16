@@ -40,7 +40,8 @@ namespace Left4DeadHelper.Discord.Modules
         }
 
         [Command(CommandVtf)]
-        [Summary("Converts an image into a Source engine-compatible spray in VTF format (1024x1020 or vice-versa; 1-bit alpha).")]
+        [Summary("Converts an image into a Source engine-compatible spray in VTF format (1024x1020 or vice-versa; 1-bit alpha).\n" +
+            "Use this version unless you have a specific need for a different one.")]
         public Task ConvertVtfAsync(string? arg1 = null, string? arg2 = null)
         {
             return ConvertVtfHiAsync(arg1, arg2);
@@ -63,7 +64,8 @@ namespace Left4DeadHelper.Discord.Modules
         }
 
         [Command(CommandTga)]
-        [Summary("Converts an image into a Source engine-compatible spray in TGA format (256x256 with 8-bit alpha.")]
+        [Summary("Converts an image into a Source engine-compatible spray in TGA format (256x256 with 8-bit alpha).\n" +
+            "This is a legacy version that should only be used if you really need TGAs for a specific reason.")]
         public Task ConvertTgaAsync(string? arg1 = null, string? arg2 = null)
         {
             var saveProfile = new TgaSaveProfile();
