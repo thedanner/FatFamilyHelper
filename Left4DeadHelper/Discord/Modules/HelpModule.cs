@@ -58,7 +58,7 @@ namespace Left4DeadHelper.Discord.Modules
                 {
                     foreach (var helpContext in commandModule.Value)
                     {
-                        lines.Add($"- `{helpContext.CommandShortcutForHelp}`: {helpContext.CommandSummary ?? helpContext.GroupSummary}");
+                        lines.Add($"- `<trigger>{helpContext.CommandShortcutForHelp}`: {helpContext.CommandSummary ?? helpContext.GroupSummary}");
                     }
                 }
 
