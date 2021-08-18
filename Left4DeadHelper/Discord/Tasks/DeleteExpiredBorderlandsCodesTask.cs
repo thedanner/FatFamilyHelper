@@ -16,7 +16,7 @@ namespace Left4DeadHelper.Discord.Modules
     public class DeleteExpiredBorderlandsCodesTask : ITask
     {
         private static readonly Regex ExpiresRegex = new Regex(
-            @"Expires: (?<expires>(?<date>\d{1,2}) (?<month>[a-zA-Z]{3}) (?<time>(?<hours>\d{1,2}):(?<minutes>\d{2}))) (?<timezone>[a-zA-Z]{3})",
+            @"Expires: (?<expires>(?<date>(?<dayOfMonth>\d{1,2}) (?<month>[a-zA-Z]{3}) (?<year>\d{4})) (?<time>(?<hours>\d{1,2}):(?<minutes>\d{2}))) (?<timezone>[a-zA-Z]{3})",
             RegexOptions.Multiline|RegexOptions.Compiled);
 
         private const int BatchSize = 100;
@@ -112,7 +112,7 @@ namespace Left4DeadHelper.Discord.Modules
                         if (match.Success
                             && DateTimeOffset.TryParseExact(
                                     match.Groups["expires"].Value,
-                                    "d MMM H:mm",
+                                    "d MMM yyyy H:mm",
                                     CultureInfo.CurrentCulture,
                                     DateTimeStyles.AssumeUniversal,
                                     out var givenExpiry))
@@ -121,18 +121,6 @@ namespace Left4DeadHelper.Discord.Modules
                             {
                                 logger.LogWarning("Non-UTC expiration found for message with ID {messageId}.", message.Id);
                                 continue;
-                            }
-
-                            // Handles the case where the assumed year is incorrect.
-                            // E.g., a code is posted in December that expires in January. If the year is always
-                            // assumed to be current, that code will look invalid immediately.
-                            // To fix this, if the expiration is before the message post date, we just add a year.
-                            if (givenExpiry < message.Timestamp)
-                            {
-                                logger.LogInformation(
-                                    "Found one of those special cases where we have to add an expiration year in message with ID {messageId}.",
-                                    message.Id);
-                                givenExpiry = givenExpiry.AddYears(1).AddDays(1);
                             }
 
                             if (givenExpiry <= DateTimeOffset.Now)
