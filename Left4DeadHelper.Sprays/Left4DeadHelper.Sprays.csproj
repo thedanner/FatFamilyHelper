@@ -21,7 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Left4DeadHelper.Bindings.VtfLibNative\Left4DeadHelper.Bindings.VtfLibNative.csproj" />
     <ProjectReference Include="..\Left4DeadHelper.ImageSharpExtensions\Left4DeadHelper.ImageSharpExtensions.csproj" />
   </ItemGroup>
 

@@ -6,8 +6,10 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
     {
         public const uint HeaderSize = 0x40;
         
+        // Only used by the mini image, which we don't actually generate.
         public const uint FormatDxt1 = 0x0D; // 13
         public const uint FormatDxt5 = 0x0F; // 15
+        public const uint FormatDxt1OneBitAlpha = 0x14; // 20
 
         /*
         TEXTUREFLAGS_ONEBITALPHA   = 0x00001000  // for DXT1
@@ -19,8 +21,8 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
         TEXTUREFLAGS_CLAMPS        = 0x00000004,
         TEXTUREFLAGS_CLAMPT        = 0x00000008,
         */
-        public const int FlagsDxt1WithAlpha = 0x130C;
-        public const int FlagsDxt5 = 0x230C;
+        public const uint FlagsDxt1WithAlpha = 0x130C;
+        public const uint FlagsDxt5 = 0x230C;
 
 
         // https://web.archive.org/web/20210509104827/https://developer.valvesoftware.com/wiki/Valve_Texture_Format

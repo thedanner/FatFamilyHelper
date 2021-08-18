@@ -45,7 +45,7 @@ namespace Left4DeadHelper.Sprays.SaveProfiles
 
             Resize(image);
 
-            var encoder = new VtfEncoder();
+            var encoder = new VtfEncoder(DxtImageFormat.Dxt1WithAlpha);
 
             await image.SaveAsync(outputStream, encoder, cancellationToken);
         }

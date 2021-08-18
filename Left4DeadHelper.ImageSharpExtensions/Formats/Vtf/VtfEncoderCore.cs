@@ -14,7 +14,7 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 {
     internal class VtfEncoderCore
 	{
-		public async Task EncodeAsync(Image<Rgba32> image, Stream stream, CancellationToken cancellationToken)
+		public async Task EncodeAsync(DxtImageFormat format, Image<Rgba32> image, Stream stream, CancellationToken cancellationToken)
         {
             Configuration configuration = image.GetConfiguration();
             if (stream.CanSeek)
@@ -34,7 +34,7 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
             {
                 try
                 {
-                    Encode(image, innerStream, cancellationToken);
+                    Encode(format, image, innerStream, cancellationToken);
                     return Task.CompletedTask;
                 }
                 catch (OperationCanceledException)
@@ -48,7 +48,7 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
             }
         }
 
-        public void Encode(Image<Rgba32> image, Stream stream, CancellationToken cancellationToken)
+        public void Encode(DxtImageFormat format, Image<Rgba32> image, Stream stream, CancellationToken cancellationToken)
         {
             if (image is null)
             {
@@ -100,7 +100,8 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 			stream.Write(dataBuffer, 0, sizeof(ushort));
 
 			// Flags
-			BinaryPrimitives.WriteUInt32LittleEndian(dataBuffer, VtfConstants.FlagsDxt1WithAlpha);
+			var flags = format == DxtImageFormat.Dxt5 ? VtfConstants.FlagsDxt5 : VtfConstants.FlagsDxt1WithAlpha;
+			BinaryPrimitives.WriteUInt32LittleEndian(dataBuffer, flags);
 			stream.Write(dataBuffer, 0, sizeof(uint));
 
 			// Number of frames in the animation.
@@ -134,7 +135,8 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 			BinaryPrimitives.WriteInt32LittleEndian(dataBuffer, floatScratch);
 			stream.Write(dataBuffer, 0, sizeof(float));
 			// High resolution image format
-			BinaryPrimitives.WriteUInt32LittleEndian(dataBuffer, VtfConstants.FormatDxt1);
+			var formatValue = format == DxtImageFormat.Dxt5 ? VtfConstants.FormatDxt5 : VtfConstants.FormatDxt1OneBitAlpha;
+			BinaryPrimitives.WriteUInt32LittleEndian(dataBuffer, formatValue);
 			stream.Write(dataBuffer, 0, sizeof(uint));
 			// Mipmap count
 			dataBuffer[0] = 1;
@@ -152,7 +154,7 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 			stream.Write(dataBuffer, 0, sizeof(byte));
 
 
-			var neededBytes = CalculateSizeInBytes(image.Width, image.Height);
+			var neededBytes = CalculateSizeInBytes(format, image.Width, image.Height);
 
             if (stream is MemoryStream memStream)
             {
@@ -165,8 +167,10 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 			dxtEncoder.OutputOptions.MaxMipMapLevel = 1;
 			dxtEncoder.OutputOptions.GenerateMipMaps = false;
 			dxtEncoder.OutputOptions.Quality = CompressionQuality.BestQuality;
-			dxtEncoder.OutputOptions.Format = CompressionFormat.Bc1WithAlpha; // S3TC DXT1
-			dxtEncoder.OutputOptions.DdsBc1WriteAlphaFlag = true;
+			dxtEncoder.OutputOptions.Format = format == DxtImageFormat.Dxt5
+				? CompressionFormat.Bc5
+				: CompressionFormat.Bc1WithAlpha; // S3TC DXT1
+			dxtEncoder.OutputOptions.DdsBc1WriteAlphaFlag = format == DxtImageFormat.Dxt1WithAlpha;
 
 			if (cancellationToken.IsCancellationRequested) throw new TaskCanceledException();
 
@@ -180,7 +184,7 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 			}
 		}
 
-		private int CalculateSizeInBytes(int width, int height, int depth = 1)
+		private int CalculateSizeInBytes(DxtImageFormat format, int width, int height, int depth = 1)
 		{
 			if (width <= 0)
 			{
@@ -199,7 +203,7 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 			
 			// DXT1 is 8 bytes per block count.
 			// DXT5 is 16 bytes per block count.
-			var size = blockCount * 8;
+			var size = blockCount * (format == DxtImageFormat.Dxt5 ? 16 : 8);
 
 			return size;
 		}
