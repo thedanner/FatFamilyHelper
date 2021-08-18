@@ -1,4 +1,4 @@
-﻿using Left4DeadHelper.Bindings.VtfLibNative.VtfFormat;
+﻿using Left4DeadHelper.ImageSharpExtensions.Formats.Vtf;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
@@ -14,30 +14,16 @@ namespace Left4DeadHelper.Sprays.SaveProfiles
         public override int MaxHeight => 512;
         public override string Extension => ".vtf";
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public override async Task ConvertAsync(Image<Rgba32> image, Stream outputStream, CancellationToken cancellationToken)
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             if (image is null) throw new ArgumentNullException(nameof(image));
             if (outputStream is null) throw new ArgumentNullException(nameof(outputStream));
 
             Resize(image);
 
-            var saveToken = new VtfSaveConfigToken(VtfSaveConfigTemplate.VtfTemplateSprayWithAlpha);
+            var encoder = new VtfEncoder(DxtImageFormat.Dxt5);
 
-            var vtfFile = new VtfFile();
-
-            void createOptionsModifier(ref VtfLib.CreateOptions createOptions)
-            {
-                createOptions.uiResizeWidth =
-                    createOptions.uiResizeClampWidth =
-                    (uint)MaxWidth;
-
-                createOptions.uiResizeHeight =
-                    createOptions.uiResizeClampHeight =
-                    (uint)MaxHeight;
-            }
-            vtfFile.Save(image, outputStream, saveToken, createOptionsModifier);
+            await image.SaveAsync(outputStream, encoder, cancellationToken);
         }
     }
 }
