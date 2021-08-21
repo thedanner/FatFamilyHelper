@@ -5,6 +5,7 @@ using Left4DeadHelper.Services;
 using Left4DeadHelper.Wrappers.DiscordNet;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Quartz;
 using System;
 using System.Net.Http;
 using System.Security.Cryptography;
@@ -26,13 +27,15 @@ namespace Left4DeadHelper
         public Worker(
             ILogger<Worker> logger,
             IDiscordConnectionBootstrapper bootstrapper,
-            // Singleton IDisposables
-            DiscordSocketClient client, CommandAndEventHandler commandHandler, RNGCryptoServiceProvider random)
+            // Singleton IDisposables or objects that can be started and stopped.
+            DiscordSocketClient client,
+            CommandAndEventHandler commandHandler,
+            RNGCryptoServiceProvider random)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _bootstrapper = bootstrapper ?? throw new ArgumentNullException(nameof(bootstrapper));
 
-            // Singleton IDisposables
+            // Singleton IDisposables or objects that can be started and stopped.
             _client = client ?? throw new ArgumentNullException(nameof(client));
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
             _random = random ?? throw new ArgumentNullException(nameof(random));

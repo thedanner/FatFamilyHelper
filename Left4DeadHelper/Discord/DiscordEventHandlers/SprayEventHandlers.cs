@@ -4,7 +4,7 @@ using Discord.WebSocket;
 using Left4DeadHelper.Discord.Interfaces.Events;
 using Left4DeadHelper.Discord.Modules;
 using Left4DeadHelper.Helpers;
-using Left4DeadHelper.Models;
+using Left4DeadHelper.Models.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;

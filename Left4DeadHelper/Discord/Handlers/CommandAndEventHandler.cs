@@ -3,7 +3,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Left4DeadHelper.Discord.Interfaces.Events;
 using Left4DeadHelper.Discord.Modules;
-using Left4DeadHelper.Models;
+using Left4DeadHelper.Models.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
