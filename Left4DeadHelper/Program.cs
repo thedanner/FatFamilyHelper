@@ -269,6 +269,14 @@ namespace Left4DeadHelper
             var settings = config.Get<Settings>();
             var logger = serviceCollection.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
 
+            var tasksGroupedByName = settings.Tasks.GroupBy(t => t.Name);
+            var replicatedNamed = tasksGroupedByName.Where(g => g.Count() > 1);
+            if (replicatedNamed.Any())
+            {
+                throw new Exception("Multiple tasks were found with each of the following names: " +
+                    string.Join(", ", replicatedNamed.Select(n => $"\"{n.Key}\"")));
+            }
+
             serviceCollection.AddQuartz(q =>
             {
                 q.UseMicrosoftDependencyInjectionJobFactory();
