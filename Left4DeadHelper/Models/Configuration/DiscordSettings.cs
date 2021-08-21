@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Left4DeadHelper.Models
+namespace Left4DeadHelper.Models.Configuration
 {
     public class DiscordSettings
     {

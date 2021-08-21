@@ -15,11 +15,16 @@ namespace Left4DeadHelper.Discord.Modules
 {
     public class DeleteExpiredBorderlandsCodesTask : ITask
     {
+        private const string SettingsKeyGuildId = "guildId";
+        private const string SettingsKeyChannelId = "channelId";
+        private const string SettingsKeyReportToChannelId = "reportToChannelId";
+
+        private const int BatchSize = 100;
+
         private static readonly Regex ExpiresRegex = new Regex(
             @"Expires: (?<expires>(?<date>(?<dayOfMonth>\d{1,2}) (?<month>[a-zA-Z]{3}) (?<year>\d{4})) (?<time>(?<hours>\d{1,2}):(?<minutes>\d{2}))) (?<timezone>[a-zA-Z]{3})",
             RegexOptions.Multiline|RegexOptions.Compiled);
 
-        private const int BatchSize = 100;
 
         private readonly ILogger<DeleteExpiredBorderlandsCodesTask> _logger;
 
@@ -36,25 +41,38 @@ namespace Left4DeadHelper.Discord.Modules
 
             try
             {
-                var guildIdStr = (string) taskSettings["guildId"]
-                    ?? throw new Exception($"guildId missing from {nameof(DeleteExpiredBorderlandsCodesTask)} settings.");
+                var guildIdStr = (string) taskSettings[SettingsKeyGuildId]
+                    ?? throw new Exception(
+                        $"Setting with key \"{nameof(SettingsKeyGuildId)}\" missing from {nameof(DeleteExpiredBorderlandsCodesTask)} settings.");
                 var guildId = ulong.Parse(guildIdStr);
                 var guild = client.GetGuild(guildId);
 
-                var channelIdStr = (string) taskSettings["channelId"]
-                    ?? throw new Exception($"guildId missing from {nameof(DeleteExpiredBorderlandsCodesTask)} settings.");
+                var channelIdStr = (string)taskSettings[SettingsKeyChannelId]
+                    ?? throw new Exception(
+                        $"Setting with key \"{nameof(SettingsKeyChannelId)}\" missing from {nameof(DeleteExpiredBorderlandsCodesTask)} settings.");
                 var channelId = ulong.Parse(channelIdStr);
                 var channel = guild.GetTextChannel(channelId);
 
+                var reportToChannelIdStr = (string)taskSettings[SettingsKeyReportToChannelId];
+                SocketTextChannel? reportToChannel = null;
+
+                if (!string.IsNullOrEmpty(reportToChannelIdStr))
+                {
+                    var reportToChannelId = ulong.Parse(channelIdStr);
+                    reportToChannel = guild.GetTextChannel(channelId);
+                }
+
                 var messages = (await channel.GetMessagesAsync(BatchSize)
-                       .FlattenAsync())
-                       .ToList();
+                    .FlattenAsync())
+                    .ToList();
 
                 if (messages.Any())
                 {
                     var messagesToDelete = GetMessagesWithExpiredCodes(messages, _logger);
 
-                    _logger.LogInformation("Found {count} messages with expired codes to delete.", messagesToDelete.Count);
+                    var plural = messagesToDelete.Count == 1 ? "" : "s";
+                    _logger.LogInformation("Found {count} message(s) with expired codes to delete.",
+                        messagesToDelete.Count, plural);
 
                     // Only messages < 14 days old can be bulk deleted.
                     var bulkDeletableMessages = new List<IMessage>();
@@ -83,6 +101,12 @@ namespace Left4DeadHelper.Discord.Modules
                     foreach (var singleDeletableMessage in singleDeletableMessages)
                     {
                         await channel.DeleteMessageAsync(singleDeletableMessage);
+                        await Task.Delay(Constants.DelayAfterCommandMs);
+                    }
+
+                    if (messagesToDelete.Count > 0 && reportToChannel != null)
+                    {
+                        await reportToChannel.SendMessageAsync($"Deleted {messagesToDelete.Count} message{plural} in <#{channel.Id}>.");
                         await Task.Delay(Constants.DelayAfterCommandMs);
                     }
                 }

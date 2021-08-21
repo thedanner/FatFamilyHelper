@@ -1,6 +1,7 @@
 ﻿using Discord.Commands;
 using Left4DeadHelper.Discord.Interfaces;
 using Left4DeadHelper.Models;
+using Left4DeadHelper.Models.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;

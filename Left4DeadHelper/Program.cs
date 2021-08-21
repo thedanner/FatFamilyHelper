@@ -6,9 +6,9 @@ using Left4DeadHelper.Discord.Handlers;
 using Left4DeadHelper.Discord.Interfaces;
 using Left4DeadHelper.Discord.Interfaces.Events;
 using Left4DeadHelper.Helpers;
-using Left4DeadHelper.Models;
+using Left4DeadHelper.Models.Configuration;
+using Left4DeadHelper.Scheduling;
 using Left4DeadHelper.Services;
-using Left4DeadHelper.Wrappers.DiscordNet;
 using Left4DeadHelper.Wrappers.Rcon;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,6 +16,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.EventLog;
 using NLog.Extensions.Logging;
+using Quartz;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -25,8 +26,6 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Security.Cryptography;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Left4DeadHelper
 {
@@ -40,7 +39,7 @@ namespace Left4DeadHelper
             ErrorException = 30,
         }
 
-        public static async Task<int> Main(string[] args)
+        public static int Main(string[] args)
         {
             try
             {
@@ -53,22 +52,7 @@ namespace Left4DeadHelper
                     Environment.CurrentDirectory = exeDirectory;
                 }
 
-                if (args.Length >= 2
-                    && "--task".Equals(args[0], StringComparison.CurrentCultureIgnoreCase))
-                {
-                    var ctSource = new CancellationTokenSource();
-                    Console.CancelKeyPress += (sender, args) =>
-                    {
-                        ctSource.Cancel();
-                        args.Cancel = true;
-                    };
-
-                    await RunTaskAsync(args[1], ctSource.Token);
-                }
-                else
-                {
-                    CreateHostBuilder(args).Build().Run();
-                }
+                CreateHostBuilder(args).Build().Run();
             }
             catch (ObjectDisposedException ex) when (ex.ObjectName == "System.Net.Sockets.Socket") { }
             catch (Exception ex)
@@ -87,39 +71,6 @@ namespace Left4DeadHelper
             Environment.ExitCode = 0;
             Process.GetCurrentProcess().Kill();
             return 0;
-        }
-
-        private static async Task RunTaskAsync(string taskName, CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrWhiteSpace(taskName))
-            {
-                throw new ArgumentException($"'{nameof(taskName)}' cannot be null or whitespace.", nameof(taskName));
-            }
-
-            var config = CreateConfiguration();
-
-            var serviceCollection = new ServiceCollection();
-
-            ConfigureServices(serviceCollection, config);
-
-            var serviceProvider = serviceCollection.BuildServiceProvider();
-
-            var taskResolver = serviceProvider.GetRequiredService<Func<string, ITask>>();
-            var task = taskResolver(taskName);
-
-            // DiscordSocketClient is a singleton. Using 'using' is safe because we're stopping once this task is complete.
-            using var client = serviceProvider.GetRequiredService<DiscordSocketClient>();
-            var clientWrapper = new DiscordSocketClientWrapper(client);
-
-            var connectionBootstrapper = serviceProvider.GetRequiredService<IDiscordConnectionBootstrapper>();
-
-            await connectionBootstrapper.StartAsync(clientWrapper, cancellationToken);
-
-            var settings = serviceProvider.GetRequiredService<Settings>();
-
-            var taskSettings = settings.TaskSettings[taskName];
-
-            await task.RunTaskAsync(client, taskSettings, cancellationToken);
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args)
@@ -194,7 +145,7 @@ namespace Left4DeadHelper
                         | GatewayIntents.DirectMessageReactions
                 });
             });
-            
+
             serviceCollection.AddSingleton<CommandAndEventHandler>();
 
             var serverInfo = settings.Left4DeadSettings.ServerInfo;
@@ -213,6 +164,8 @@ namespace Left4DeadHelper
             BindTasks(allLoadedTypes, serviceCollection);
 
             BindModulesWithHelpSupport(allLoadedTypes, serviceCollection);
+
+            ConfigureScheduler(serviceCollection, config);
         }
 
         private static void BindEventHandlers(IReadOnlyList<Type> allLoadedTypes, IServiceCollection serviceCollection)
@@ -309,6 +262,61 @@ namespace Left4DeadHelper
             {
                 serviceCollection.AddTransient(typeof(ICommandModule), implmenetedHandlerInterface);
             }
+        }
+
+        private static void ConfigureScheduler(IServiceCollection serviceCollection, IConfiguration config)
+        {
+            var settings = config.Get<Settings>();
+            var logger = serviceCollection.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
+
+            serviceCollection.AddQuartz(q =>
+            {
+                q.UseMicrosoftDependencyInjectionJobFactory();
+
+                q.UseDefaultThreadPool(tp =>
+                {
+                    tp.MaxConcurrency = 1;
+                });
+
+                foreach (var taskSetting in settings.Tasks)
+                {
+                    if (string.IsNullOrEmpty(taskSetting.Name))
+                    {
+                        throw new Exception($"A task is missing a {nameof(taskSetting.Name)}.");
+                    }
+
+                    logger.LogInformation("Creating task in scheduler for \"{taskName}\".", taskSetting.Name);
+
+                    var jobKey = new JobKey("JobRunner");
+
+                    q.AddJob<JobRunner>(jobKey, j => j
+                        .WithDescription("Job runner")
+                    );
+
+                    if (string.IsNullOrEmpty(taskSetting.ClassName))
+                    {
+                        throw new Exception($"The task definition for the task \"{0}\" is missing {nameof(taskSetting.ClassName)}.");
+                    }
+
+                    var jobData = new JobDataMap();
+                    jobData.Put(JobRunner.KeyTaskName, taskSetting.Name);
+                    jobData.Put(JobRunner.KeyClassName, taskSetting.ClassName);
+
+                    q.AddTrigger(t => t
+                        .WithIdentity(taskSetting.Name)
+                        .WithCronSchedule(taskSetting.CronSchedule)
+                        .ForJob(jobKey)
+                        .UsingJobData(jobData)
+                    );
+                }
+            });
+            serviceCollection.AddTransient<JobRunner>();
+
+            serviceCollection.AddQuartzHostedService(options =>
+            {
+                // when shutting down we want jobs to complete gracefully
+                options.WaitForJobsToComplete = true;
+            });
         }
     }
 }

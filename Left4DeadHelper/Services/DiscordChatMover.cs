@@ -1,5 +1,5 @@
 using Discord;
-using Left4DeadHelper.Models;
+using Left4DeadHelper.Models.Configuration;
 using Left4DeadHelper.Rcon;
 using Left4DeadHelper.Wrappers.DiscordNet;
 using Left4DeadHelper.Wrappers.Rcon;

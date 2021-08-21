@@ -1,4 +1,4 @@
-﻿namespace Left4DeadHelper.Models
+﻿namespace Left4DeadHelper.Models.Configuration
 {
     public class UserMapping : IDiscordUser, ISteamUser
     {

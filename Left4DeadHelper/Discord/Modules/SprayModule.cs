@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using Left4DeadHelper.Discord.Interfaces;
 using Left4DeadHelper.Helpers;
 using Left4DeadHelper.Models;
+using Left4DeadHelper.Models.Configuration;
 using Left4DeadHelper.Sprays;
 using Left4DeadHelper.Sprays.Exceptions;
 using Left4DeadHelper.Sprays.SaveProfiles;

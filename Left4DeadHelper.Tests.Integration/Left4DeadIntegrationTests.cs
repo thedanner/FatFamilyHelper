@@ -1,5 +1,5 @@
 using CoreRCON;
-using Left4DeadHelper.Models;
+using Left4DeadHelper.Models.Configuration;
 using Left4DeadHelper.Rcon;
 using Microsoft.Extensions.Configuration;
 using NUnit.Framework;

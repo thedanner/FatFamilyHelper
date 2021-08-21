@@ -3,6 +3,7 @@ using Left4DeadHelper.Discord.Interfaces;
 using Left4DeadHelper.Helpers;
 using Left4DeadHelper.Helpers.Extensions;
 using Left4DeadHelper.Models;
+using Left4DeadHelper.Models.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;

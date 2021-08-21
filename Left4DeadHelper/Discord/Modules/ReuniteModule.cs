@@ -2,6 +2,7 @@
 using Discord.Commands;
 using Left4DeadHelper.Discord.Interfaces;
 using Left4DeadHelper.Models;
+using Left4DeadHelper.Models.Configuration;
 using Left4DeadHelper.Services;
 using Left4DeadHelper.Wrappers.DiscordNet;
 using Microsoft.Extensions.DependencyInjection;

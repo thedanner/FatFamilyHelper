@@ -1,15 +1,12 @@
 using Discord;
 using Discord.WebSocket;
-using Left4DeadHelper.Models;
+using Left4DeadHelper.Models.Configuration;
 using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Left4DeadHelper.Tests.Integration

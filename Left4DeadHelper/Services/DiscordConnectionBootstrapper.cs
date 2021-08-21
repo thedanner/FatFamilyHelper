@@ -1,6 +1,6 @@
 using Discord;
 using Left4DeadHelper.Helpers.Extensions;
-using Left4DeadHelper.Models;
+using Left4DeadHelper.Models.Configuration;
 using Left4DeadHelper.Wrappers.DiscordNet;
 using Microsoft.Extensions.Logging;
 using System;
