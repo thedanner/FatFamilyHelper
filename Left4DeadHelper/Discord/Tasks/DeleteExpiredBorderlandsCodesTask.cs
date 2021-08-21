@@ -123,34 +123,33 @@ namespace Left4DeadHelper.Discord.Modules
 
             foreach (var message in messages)
             {
+                var embed = message.Embeds.FirstOrDefault();
+
                 if (message.Author.IsBot
-                    && message.Embeds.Any())
+                    && embed != null
+                    && !string.IsNullOrEmpty(embed.Description))
                 {
-                    var embed = message.Embeds.First();
-                    if (!string.IsNullOrEmpty(embed.Description))
+                    // Look for:
+                    // Expires: 24 JUN 2021 15:00 UTC
+
+                    var match = ExpiresRegex.Match(embed.Description);
+                    if (match.Success
+                        && DateTimeOffset.TryParseExact(
+                            match.Groups["expires"].Value,
+                            "d MMM yyyy H:mm",
+                            CultureInfo.CurrentCulture,
+                            DateTimeStyles.AssumeUniversal,
+                            out var givenExpiry))
                     {
-                        // Look for:
-                        // Expires: 24 JUN 2021 15:00 UTC
-
-                        var match = ExpiresRegex.Match(embed.Description);
-                        if (match.Success
-                            && DateTimeOffset.TryParseExact(
-                                    match.Groups["expires"].Value,
-                                    "d MMM yyyy H:mm",
-                                    CultureInfo.CurrentCulture,
-                                    DateTimeStyles.AssumeUniversal,
-                                    out var givenExpiry))
+                        if (!"UTC".Equals(match.Groups["timezone"].Value, StringComparison.CurrentCultureIgnoreCase))
                         {
-                            if (!"UTC".Equals(match.Groups["timezone"].Value, StringComparison.CurrentCultureIgnoreCase))
-                            {
-                                logger.LogWarning("Non-UTC expiration found for message with ID {messageId}.", message.Id);
-                                continue;
-                            }
+                            logger.LogWarning("Non-UTC expiration found for message with ID {messageId}.", message.Id);
+                            continue;
+                        }
 
-                            if (givenExpiry <= DateTimeOffset.Now)
-                            {
-                                messagesToDelete.Add(message);
-                            }
+                        if (givenExpiry <= DateTimeOffset.Now)
+                        {
+                            messagesToDelete.Add(message);
                         }
                     }
                 }
