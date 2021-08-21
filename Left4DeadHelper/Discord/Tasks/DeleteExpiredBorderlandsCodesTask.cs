@@ -130,7 +130,7 @@ namespace Left4DeadHelper.Discord.Modules
                     if (!string.IsNullOrEmpty(embed.Description))
                     {
                         // Look for:
-                        // Expires: 24 JUN 15:00 UTC
+                        // Expires: 24 JUN 2021 15:00 UTC
 
                         var match = ExpiresRegex.Match(embed.Description);
                         if (match.Success
