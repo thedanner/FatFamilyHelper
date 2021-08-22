@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 
 namespace Left4DeadHelper.Sprays.SaveProfiles
 {
-    public abstract class BaseSaveProfile : ISaveProfile
+    public abstract class BaseSaveProfile<TImageConfiguration> : ISaveProfile<TImageConfiguration>
     {
         public abstract int MaxWidth { get; }
         public abstract int MaxHeight { get; }
         public abstract string Extension { get; }
 
-        public virtual void Resize(Image<Rgba32> image)
+        protected virtual void Resize(Image<Rgba32> image)
         {
             ResizeUtil.Resize(image, MaxWidth, MaxHeight);
         }
@@ -47,6 +47,6 @@ namespace Left4DeadHelper.Sprays.SaveProfiles
             }
         }
 
-        public abstract Task ConvertAsync(Image<Rgba32> image, Stream outputStream, CancellationToken cancellationToken);
+        public abstract Task ConvertAsync(TImageConfiguration imageConfiguration, Stream outputStream, CancellationToken cancellationToken);
     }
 }

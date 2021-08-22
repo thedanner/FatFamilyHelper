@@ -6,7 +6,9 @@ using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Buffers.Binary;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,9 +16,31 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 {
     internal class VtfEncoderCore
 	{
-		public async Task EncodeAsync(DxtImageFormat format, Image<Rgba32> image, Stream stream, CancellationToken cancellationToken)
+		public enum DxtImageFormat
+		{
+			Dxt1OneBitAlpha,
+			Dxt5,
+		}
+
+		private readonly VtfImageType _imageType;
+		
+        public VtfEncoderCore(VtfImageType imageType)
         {
-            Configuration configuration = image.GetConfiguration();
+			_imageType = imageType;
+        }
+
+		public Task EncodeAsync(Image<Rgba32> image, Stream stream, CancellationToken cancellationToken)
+        {
+			return EncodeAsync(new List<Image<Rgba32>> { image }, stream, cancellationToken);
+        }
+
+		public async Task EncodeAsync(IList<Image<Rgba32>> images, Stream stream, CancellationToken cancellationToken)
+		{
+			if (images is null) throw new ArgumentNullException(nameof(images));
+			if (images.Count == 0) throw new ArgumentNullException(nameof(stream));
+			if (stream is null) throw new ArgumentNullException(nameof(stream));
+
+			Configuration configuration = images[0].GetConfiguration();
             if (stream.CanSeek)
             {
                 await DoEncodeAsync(stream).ConfigureAwait(false);
@@ -34,7 +58,7 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
             {
                 try
                 {
-                    Encode(format, image, innerStream, cancellationToken);
+                    Encode(images, innerStream, cancellationToken);
                     return Task.CompletedTask;
                 }
                 catch (OperationCanceledException)
@@ -48,31 +72,28 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
             }
         }
 
-        public void Encode(DxtImageFormat format, Image<Rgba32> image, Stream stream, CancellationToken cancellationToken)
+		public void Encode(Image<Rgba32> image, Stream stream, CancellationToken cancellationToken)
         {
-            if (image is null)
-            {
-                throw new ArgumentNullException(nameof(image));
-            }
+			Encode(new List<Image<Rgba32>> { image }, stream, cancellationToken);
+        }
 
-            if (stream is null)
-            {
-                throw new ArgumentNullException(nameof(stream));
-            }
+		public void Encode(IList<Image<Rgba32>> images, Stream stream, CancellationToken cancellationToken)
+		{
+			if (images is null) throw new ArgumentNullException(nameof(images));
+			if (images.Count == 0) throw new ArgumentNullException(nameof(stream));
+			if (stream is null) throw new ArgumentNullException(nameof(stream));
 
-			if (format == DxtImageFormat.Dxt1OneBitAlpha)
-			{
-				for (int y = 0; y < image.Height; y++)
-				{
-					Span<Rgba32> pixelRowSpan = image.GetPixelRowSpan(y);
-					for (int x = 0; x < image.Width; x++)
-					{
-						pixelRowSpan[x].A = pixelRowSpan[x].A >= 32 ? byte.MaxValue : byte.MinValue;
-					}
+			var image = images.First();
 
-					if (cancellationToken.IsCancellationRequested) throw new TaskCanceledException();
-				}
-			}
+			var imageFormat = GetImageFormatFromImageType(_imageType);
+			FixAlphaIfNeeded(imageFormat, images, cancellationToken);
+
+			if (cancellationToken.IsCancellationRequested) throw new TaskCanceledException();
+
+			EnsureStreamCapacityIfPossible(stream, imageFormat, images);
+
+			if (cancellationToken.IsCancellationRequested) throw new TaskCanceledException();
+
 
 			int floatScratch;
 
@@ -83,7 +104,7 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 
 			byte[] dataBuffer = new byte[sizeof(long)];
 
-			// Write the file version - currently using 7.2 specs.
+			// Write the file version.
 			BinaryPrimitives.WriteUInt32LittleEndian(dataBuffer, 7);
 			stream.Write(dataBuffer, 0, sizeof(uint));
 			BinaryPrimitives.WriteUInt32LittleEndian(dataBuffer, 1);
@@ -91,7 +112,10 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 
 			// Write the header size.
 			BinaryPrimitives.WriteUInt32LittleEndian(dataBuffer, VtfConstants.HeaderSize);
-            stream.Write(dataBuffer, 0, sizeof(uint));
+			stream.Write(dataBuffer, 0, sizeof(uint));
+
+			if (cancellationToken.IsCancellationRequested) throw new TaskCanceledException();
+
 
 			// Now at address 0x00000010
 
@@ -103,8 +127,7 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 			stream.Write(dataBuffer, 0, sizeof(ushort));
 
 			// Flags
-			var flags = format == DxtImageFormat.Dxt5 ? VtfConstants.FlagsDxt5 : VtfConstants.FlagsDxt1WithAlpha;
-			BinaryPrimitives.WriteUInt32LittleEndian(dataBuffer, flags);
+			BinaryPrimitives.WriteUInt32LittleEndian(dataBuffer, GetVtfFlags(_imageType));
 			stream.Write(dataBuffer, 0, sizeof(uint));
 
 			// Number of frames in the animation.
@@ -116,6 +139,9 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 			// Padding
 			BinaryPrimitives.WriteUInt32LittleEndian(dataBuffer, 0);
 			stream.Write(dataBuffer, 0, sizeof(uint));
+
+			if (cancellationToken.IsCancellationRequested) throw new TaskCanceledException();
+
 
 			// Now at address 0x00000020 (reflectivity: 3 4-byte floats, plus 4 bytes padding
 
@@ -131,6 +157,9 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 			BinaryPrimitives.WriteUInt32LittleEndian(dataBuffer, 0);
 			stream.Write(dataBuffer, 0, sizeof(uint));
 
+			if (cancellationToken.IsCancellationRequested) throw new TaskCanceledException();
+
+
 			// Now at address 0x00000030
 
 			// Bumpmap scale
@@ -138,12 +167,7 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 			BinaryPrimitives.WriteInt32LittleEndian(dataBuffer, floatScratch);
 			stream.Write(dataBuffer, 0, sizeof(float));
 			// High resolution image format
-			// If we use FormatDxt1OneBitAlpha, game engines will not interperate the image correctly.
-			// Just use Dxt1 without the alpha flag.
-			var formatValue = format == DxtImageFormat.Dxt5
-				? VtfConstants.FormatDxt5
-				: VtfConstants.FormatDxt1;
-			BinaryPrimitives.WriteUInt32LittleEndian(dataBuffer, formatValue);
+			BinaryPrimitives.WriteUInt32LittleEndian(dataBuffer, GetVtfHighResFormatValue(imageFormat));
 			stream.Write(dataBuffer, 0, sizeof(uint));
 			// Mipmap count
 			dataBuffer[0] = 1;
@@ -160,11 +184,8 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 			dataBuffer[0] = 1;
 			stream.Write(dataBuffer, 0, sizeof(byte));
 
-            if (stream is MemoryStream memStream)
-            {
-				var neededBytes = CalculateSizeInBytes(format, image.Width, image.Height);
-				memStream.Capacity = (int) VtfConstants.HeaderSize + neededBytes;
-            }
+			if (cancellationToken.IsCancellationRequested) throw new TaskCanceledException();
+
 
 			// DXT compress the data.
 			var dxtEncoder = new BcEncoder();
@@ -172,24 +193,136 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 			dxtEncoder.OutputOptions.MaxMipMapLevel = 1;
 			dxtEncoder.OutputOptions.GenerateMipMaps = false;
 			dxtEncoder.OutputOptions.Quality = CompressionQuality.BestQuality;
-			dxtEncoder.OutputOptions.Format = format == DxtImageFormat.Dxt5
-				? CompressionFormat.Bc3 // S3TC DXT5
-				: CompressionFormat.Bc1WithAlpha; // S3TC DXT1
-			dxtEncoder.OutputOptions.DdsBc1WriteAlphaFlag = format == DxtImageFormat.Dxt1OneBitAlpha;
+			dxtEncoder.OutputOptions.Format = GetCompressionEncoderFormat(imageFormat);
+			// Probably not needed since we're getting raw bytes and not writing a DDS file.
+			dxtEncoder.OutputOptions.DdsBc1WriteAlphaFlag = imageFormat == DxtImageFormat.Dxt1OneBitAlpha;
 
-			if (cancellationToken.IsCancellationRequested) throw new TaskCanceledException();
-
-			var byteEncoding = dxtEncoder.EncodeToRawBytes(image);
-
-			if (cancellationToken.IsCancellationRequested) throw new TaskCanceledException();
-
-			foreach (var mipBytes in byteEncoding)
+			foreach (var currentImage in images)
 			{
-				stream.Write(mipBytes, 0, mipBytes.Length);
+				var byteEncoding = dxtEncoder.EncodeToRawBytes(currentImage);
+
+				if (cancellationToken.IsCancellationRequested) throw new TaskCanceledException();
+
+				foreach (var mipBytes in byteEncoding)
+				{
+					stream.Write(mipBytes, 0, mipBytes.Length);
+				}
 			}
 		}
 
-		private int CalculateSizeInBytes(DxtImageFormat format, int width, int height, int depth = 1)
+        private static void EnsureStreamCapacityIfPossible(Stream stream, DxtImageFormat imageFormat, ICollection<Image<Rgba32>> images)
+        {
+			var neededBytes = (int)VtfConstants.HeaderSize + CalculateSizeInBytes(imageFormat, images);
+			if (stream is MemoryStream memStream)
+			{
+				memStream.Capacity = neededBytes;
+			}
+			else if (stream is FileStream fileStream)
+			{
+				fileStream.SetLength(neededBytes);
+			}
+		}
+
+        private static DxtImageFormat GetImageFormatFromImageType(VtfImageType imageType)
+        {
+            switch (imageType)
+            {
+				case VtfImageType.Single1024:
+					return DxtImageFormat.Dxt1OneBitAlpha;
+				case VtfImageType.Single512:
+				case VtfImageType.Fading:
+					return DxtImageFormat.Dxt5;
+				default:
+					throw new NotImplementedException($"No case added for {nameof(VtfImageType)}.{imageType}.");
+            }
+        }
+
+        private static uint GetVtfHighResFormatValue(DxtImageFormat imageFormat)
+        {
+            // If we use FormatDxt1OneBitAlpha, game engines will not interperate the image correctly.
+            // Just use Dxt1 without the alpha flag.
+            return imageFormat switch
+            {
+                DxtImageFormat.Dxt5 => VtfConstants.FormatDxt5,
+                DxtImageFormat.Dxt1OneBitAlpha => VtfConstants.FormatDxt1,
+                _ => throw new NotImplementedException($"No case added for {nameof(DxtImageFormat)}.{imageFormat}."),
+            };
+        }
+
+        private static CompressionFormat GetCompressionEncoderFormat(DxtImageFormat imageFormat)
+		{
+            // If we use FormatDxt1OneBitAlpha, game engines will not interperate the image correctly.
+            // Just use Dxt1 without the alpha flag.
+            return imageFormat switch
+            {
+                DxtImageFormat.Dxt5 => CompressionFormat.Bc3,
+                DxtImageFormat.Dxt1OneBitAlpha => CompressionFormat.Bc1WithAlpha,
+                _ => throw new NotImplementedException($"No case added for {nameof(DxtImageFormat)}.{imageFormat}."),
+            };
+        }
+
+        private static uint GetVtfFlags(VtfImageType imageType)
+        {
+			VtfConstants.VtfFlags flags = VtfConstants.VtfFlags.NoLevelOfDetail;
+
+			switch (imageType)
+			{
+				case VtfImageType.Single1024:
+				case VtfImageType.Single512:
+					flags |= VtfConstants.VtfFlags.ClampS | VtfConstants.VtfFlags.ClampT | VtfConstants.VtfFlags.NoMipmaps;
+					break;
+				case VtfImageType.Fading:
+					break;
+				default:
+					throw new NotImplementedException($"No case added for {nameof(VtfImageType)}.{imageType}.");
+			}
+
+			var imageFormat = GetImageFormatFromImageType(imageType);
+
+            flags |= imageFormat switch
+            {
+                DxtImageFormat.Dxt5 => VtfConstants.VtfFlags.EightBitAlpha,
+                DxtImageFormat.Dxt1OneBitAlpha => VtfConstants.VtfFlags.OneBitAlpha,
+                _ => throw new NotImplementedException($"No case added for {nameof(DxtImageFormat)}.{imageFormat}."),
+            };
+            return (uint) flags;
+		}
+
+        private static void FixAlphaIfNeeded(DxtImageFormat imageFormat,
+			ICollection<Image<Rgba32>> images, CancellationToken cancellationToken)
+        {
+			if (imageFormat == DxtImageFormat.Dxt1OneBitAlpha)
+			{
+				foreach (var image in images)
+				{
+					for (int y = 0; y < image.Height; y++)
+					{
+						Span<Rgba32> pixelRowSpan = image.GetPixelRowSpan(y);
+						for (int x = 0; x < image.Width; x++)
+						{
+							pixelRowSpan[x].A = pixelRowSpan[x].A >= 32 ? byte.MaxValue : byte.MinValue;
+						}
+
+						if (cancellationToken.IsCancellationRequested) throw new TaskCanceledException();
+					}
+				}
+			}
+		}
+
+		private static int CalculateSizeInBytes(DxtImageFormat imageFormat, Image<Rgba32> image)
+        {
+			return CalculateSizeInBytes(imageFormat, image.Width, image.Height, 1);
+		}
+
+		private static int CalculateSizeInBytes(DxtImageFormat imageFormat, ICollection<Image<Rgba32>> images)
+        {
+			var size = images.Aggregate(0,
+				(acc, next) => acc + CalculateSizeInBytes(imageFormat, next.Width, next.Height, 1));
+			return size;
+		}
+
+
+		private static int CalculateSizeInBytes(DxtImageFormat imageFormat, int width, int height, int depth = 1)
 		{
 			if (width <= 0)
 			{
@@ -205,10 +338,13 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 			}
 
 			var blockCount = ((width + 3) / 4) * ((height + 3) / 4) * depth;
-			
-			// DXT1 is 8 bytes per block count.
-			// DXT5 is 16 bytes per block count.
-			var size = blockCount * (format == DxtImageFormat.Dxt5 ? 16 : 8);
+			var bytesPerBlock = imageFormat switch
+            {
+                DxtImageFormat.Dxt5 => 16,
+                DxtImageFormat.Dxt1OneBitAlpha => 8,
+                _ => throw new NotImplementedException($"No case added for {nameof(DxtImageFormat)}.{imageFormat}."),
+            };
+            var size = blockCount * bytesPerBlock;
 
 			return size;
 		}
