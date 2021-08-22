@@ -60,15 +60,18 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
                 throw new ArgumentNullException(nameof(stream));
             }
 
-			for (int y = 0; y < image.Height; y++)
+			if (format == DxtImageFormat.Dxt1OneBitAlpha)
 			{
-				Span<Rgba32> pixelRowSpan = image.GetPixelRowSpan(y);
-				for (int x = 0; x < image.Width; x++)
+				for (int y = 0; y < image.Height; y++)
 				{
-					pixelRowSpan[x].A = pixelRowSpan[x].A >= 32 ? byte.MaxValue : byte.MinValue;
-				}
+					Span<Rgba32> pixelRowSpan = image.GetPixelRowSpan(y);
+					for (int x = 0; x < image.Width; x++)
+					{
+						pixelRowSpan[x].A = pixelRowSpan[x].A >= 32 ? byte.MaxValue : byte.MinValue;
+					}
 
-				if (cancellationToken.IsCancellationRequested) throw new TaskCanceledException();
+					if (cancellationToken.IsCancellationRequested) throw new TaskCanceledException();
+				}
 			}
 
 			int floatScratch;
@@ -135,7 +138,11 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 			BinaryPrimitives.WriteInt32LittleEndian(dataBuffer, floatScratch);
 			stream.Write(dataBuffer, 0, sizeof(float));
 			// High resolution image format
-			var formatValue = format == DxtImageFormat.Dxt5 ? VtfConstants.FormatDxt5 : VtfConstants.FormatDxt1OneBitAlpha;
+			// If we use FormatDxt1OneBitAlpha, game engines will not interperate the image correctly.
+			// Just use Dxt1 without the alpha flag.
+			var formatValue = format == DxtImageFormat.Dxt5
+				? VtfConstants.FormatDxt5
+				: VtfConstants.FormatDxt1;
 			BinaryPrimitives.WriteUInt32LittleEndian(dataBuffer, formatValue);
 			stream.Write(dataBuffer, 0, sizeof(uint));
 			// Mipmap count
@@ -153,11 +160,9 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 			dataBuffer[0] = 1;
 			stream.Write(dataBuffer, 0, sizeof(byte));
 
-
-			var neededBytes = CalculateSizeInBytes(format, image.Width, image.Height);
-
             if (stream is MemoryStream memStream)
             {
+				var neededBytes = CalculateSizeInBytes(format, image.Width, image.Height);
 				memStream.Capacity = (int) VtfConstants.HeaderSize + neededBytes;
             }
 
@@ -168,9 +173,9 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 			dxtEncoder.OutputOptions.GenerateMipMaps = false;
 			dxtEncoder.OutputOptions.Quality = CompressionQuality.BestQuality;
 			dxtEncoder.OutputOptions.Format = format == DxtImageFormat.Dxt5
-				? CompressionFormat.Bc5
+				? CompressionFormat.Bc3 // S3TC DXT5
 				: CompressionFormat.Bc1WithAlpha; // S3TC DXT1
-			dxtEncoder.OutputOptions.DdsBc1WriteAlphaFlag = format == DxtImageFormat.Dxt1WithAlpha;
+			dxtEncoder.OutputOptions.DdsBc1WriteAlphaFlag = format == DxtImageFormat.Dxt1OneBitAlpha;
 
 			if (cancellationToken.IsCancellationRequested) throw new TaskCanceledException();
 

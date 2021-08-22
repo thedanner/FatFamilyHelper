@@ -2,7 +2,7 @@
 {
     public enum DxtImageFormat
     {
-        Dxt1WithAlpha,
+        Dxt1OneBitAlpha,
         Dxt5,
     }
 }
