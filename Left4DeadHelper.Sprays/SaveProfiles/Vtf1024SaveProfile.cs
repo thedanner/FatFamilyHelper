@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Left4DeadHelper.Sprays.SaveProfiles
 {
-    public class Vtf1024SaveProfile : BaseSaveProfile
+    public class Vtf1024SaveProfile : BaseSaveProfile<SingleImageConfiguration>
     {
         // With hi-res, the dimensions must be 1024x1020 or vice versa.
         public override int MaxWidth => 1024;
@@ -17,7 +17,7 @@ namespace Left4DeadHelper.Sprays.SaveProfiles
         private const int MaxSmallerDimension = 1020;
         public override string Extension => ".vtf";
 
-        public override void Resize(Image<Rgba32> image)
+        protected override void Resize(Image<Rgba32> image)
         {
             var maxWidth = MaxWidth;
             var maxHeight = MaxHeight;
@@ -38,14 +38,17 @@ namespace Left4DeadHelper.Sprays.SaveProfiles
             ResizeUtil.Resize(image, maxWidth, maxHeight);
         }
 
-        public override async Task ConvertAsync(Image<Rgba32> image, Stream outputStream, CancellationToken cancellationToken)
+        public override async Task ConvertAsync(SingleImageConfiguration imageConfiguration,
+            Stream outputStream, CancellationToken cancellationToken)
         {
-            if (image is null) throw new ArgumentNullException(nameof(image));
+            if (imageConfiguration is null) throw new ArgumentNullException(nameof(imageConfiguration));
             if (outputStream is null) throw new ArgumentNullException(nameof(outputStream));
+
+            var image = imageConfiguration.Image;
 
             Resize(image);
 
-            var encoder = new VtfEncoder(DxtImageFormat.Dxt1OneBitAlpha);
+            var encoder = new VtfEncoder(VtfImageType.Single1024);
 
             await image.SaveAsync(outputStream, encoder, cancellationToken);
         }

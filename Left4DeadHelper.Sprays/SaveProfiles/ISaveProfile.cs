@@ -1,17 +1,15 @@
-﻿using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using System.IO;
+﻿using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Left4DeadHelper.Sprays.SaveProfiles
 {
-    public interface ISaveProfile
+    public interface ISaveProfile<TImageConfiguration>
     {
         string Extension { get; }
 
         void Validate();
 
-        Task ConvertAsync(Image<Rgba32> image, Stream outputStream, CancellationToken cancellationToken);
+        Task ConvertAsync(TImageConfiguration imageConfiguration, Stream outputStream, CancellationToken cancellationToken);
     }
 }

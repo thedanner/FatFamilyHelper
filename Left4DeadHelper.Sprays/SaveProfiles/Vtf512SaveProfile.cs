@@ -1,6 +1,4 @@
 ﻿using Left4DeadHelper.ImageSharpExtensions.Formats.Vtf;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.IO;
 using System.Threading;
@@ -8,20 +6,22 @@ using System.Threading.Tasks;
 
 namespace Left4DeadHelper.Sprays.SaveProfiles
 {
-    public class Vtf512SaveProfile : BaseSaveProfile
+    public class Vtf512SaveProfile : BaseSaveProfile<SingleImageConfiguration>
     {
         public override int MaxWidth => 512;
         public override int MaxHeight => 512;
         public override string Extension => ".vtf";
 
-        public override async Task ConvertAsync(Image<Rgba32> image, Stream outputStream, CancellationToken cancellationToken)
+        public override async Task ConvertAsync(SingleImageConfiguration imageConfiguration, Stream outputStream, CancellationToken cancellationToken)
         {
-            if (image is null) throw new ArgumentNullException(nameof(image));
+            if (imageConfiguration is null) throw new ArgumentNullException(nameof(imageConfiguration));
             if (outputStream is null) throw new ArgumentNullException(nameof(outputStream));
+
+            var image = imageConfiguration.Image;
 
             Resize(image);
 
-            var encoder = new VtfEncoder(DxtImageFormat.Dxt5);
+            var encoder = new VtfEncoder(VtfImageType.Single512);
 
             await image.SaveAsync(outputStream, encoder, cancellationToken);
         }
