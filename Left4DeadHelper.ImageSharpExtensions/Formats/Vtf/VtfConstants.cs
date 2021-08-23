@@ -47,22 +47,6 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
             Border                               = 0x20000000, // Clamp to border colour on all texture coordinates
         }
 
-        /*
-        TEXTUREFLAGS_ONEBITALPHA   = 0x00001000  // for DXT1
-        TEXTUREFLAGS_EIGHTBITALPHA = 0x00002000, // for DXT5
-
-        TEXTUREFLAGS_NOMIP         = 0x00000100,
-        TEXTUREFLAGS_NOLOD         = 0x00000200,
-
-        TEXTUREFLAGS_CLAMPS        = 0x00000004,
-        TEXTUREFLAGS_CLAMPT        = 0x00000008,
-        */
-        //public const uint FlagsDxt1WithAlpha = 0x130C;
-        //public const uint FlagsDxt5 = 0x230C;
-
-        
-
-
         // https://web.archive.org/web/20210509104827/https://developer.valvesoftware.com/wiki/Valve_Texture_Format
         public static ReadOnlySpan<byte> HeaderBytes => new byte[]
         {
