@@ -138,7 +138,6 @@ namespace Left4DeadHelper.Discord.Modules
                     string.Join(", ", (dmChannel as IPrivateChannel).Recipients.Select(r => $"{r.Username}#{r.Discriminator} ({r.Id})")));
             }
 
-            var client = new WebClient();
             var replyToMessageRef = new MessageReference(Context.Message.Id, Context.Channel.Id, Context.Guild?.Id);
 
             _logger.LogInformation("Triggered by message with ID {0}.", Context.Message.Id);
@@ -150,7 +149,11 @@ namespace Left4DeadHelper.Discord.Modules
                 var tempMessage = await ReplyAsync("Working on it...", messageReference: replyToMessageRef);
                 await Task.Delay(Constants.DelayAfterCommandMs);
 
-                var sourceStreamTasks = imageUris.Select(async s => await client.OpenReadTaskAsync(s));
+                var sourceStreamTasks = imageUris.Select(async s =>
+                {
+                    var client = new WebClient();
+                    return await client.OpenReadTaskAsync(s);
+                });
                 sourceStreams = await Task.WhenAll(sourceStreamTasks);
 
                 var sprayTools = new SprayTools();
