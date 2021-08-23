@@ -90,7 +90,7 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 			}
 			if (stream is null) throw new ArgumentNullException(nameof(stream));
 
-			var image = images.First();
+			var image = images[0];
 
 			var imageFormat = GetImageFormatFromImageType(_imageType);
 			FixAlphaIfNeeded(imageFormat, images, cancellationToken);

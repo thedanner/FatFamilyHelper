@@ -4,7 +4,6 @@ using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -23,7 +22,7 @@ namespace Left4DeadHelper.Sprays.SaveProfiles
             if (images.Count != 1) throw new ArgumentException("Only one image is permitted for this format.", nameof(images));
             if (outputStream is null) throw new ArgumentNullException(nameof(outputStream));
 
-            var image = images.First();
+            var image = images[0];
 
             Resize(image);
 
