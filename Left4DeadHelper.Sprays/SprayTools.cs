@@ -3,6 +3,7 @@ using Left4DeadHelper.Sprays.SaveProfiles;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -12,35 +13,45 @@ namespace Left4DeadHelper.Sprays
 {
     public class SprayTools
     {
-        // TODO: support animated sprays
-        // TODO: support creating near/far sprays
-
-        public async Task<ConversionResult> ConvertAsync(Stream inputStream, Stream outputStream, ISaveProfile saveProfile,
-            CancellationToken cancellationToken)
+        public async Task<ConversionResult> ConvertAsync(IList<Stream> inputStreams, Stream outputStream,
+            ISaveProfile saveProfile, CancellationToken cancellationToken)
         {
-            if (inputStream == null) throw new ArgumentNullException(nameof(inputStream));
+            if (inputStreams is null) throw new ArgumentNullException(nameof(inputStreams));
+            if (inputStreams.Count == 0)
+            {
+                throw new ArgumentException("The collection of input streams must not be empty.", nameof(inputStreams));
+            }
             if (outputStream is null) throw new ArgumentNullException(nameof(outputStream));
             if (saveProfile is null) throw new ArgumentNullException(nameof(saveProfile));
 
             saveProfile.Validate();
 
-            var memoryStream = new MemoryStream();
-            await inputStream.CopyToAsync(memoryStream);
-            memoryStream.Position = 0;
-
-            var inputFormat = Image.DetectFormat(memoryStream);
-            memoryStream.Position = 0;
-            var inputMimeTypes = inputFormat.MimeTypes.ToList();
-            var allowedMimeTypes = new[] { "image/jpeg", "image/png", "image/x-tga", "image/x-targa" };
-
-            if (!allowedMimeTypes.Intersect(inputMimeTypes).Any())
+            var memoryStreamTasks = inputStreams.Select(async i =>
             {
-                throw new UnsupportedImageFormatException(inputMimeTypes);
-            }
+                var memoryStream = new MemoryStream();
+                await i.CopyToAsync(memoryStream);
+                memoryStream.Position = 0;
 
-            using var image = await Image.LoadAsync<Rgba32>(Configuration.Default, memoryStream, cancellationToken);
+                var inputFormat = Image.DetectFormat(memoryStream);
+                memoryStream.Position = 0;
+                var inputMimeTypes = inputFormat.MimeTypes.ToList();
+                var allowedMimeTypes = new[] { "image/jpeg", "image/png", "image/x-tga", "image/x-targa" };
 
-            await saveProfile.ConvertAsync(image, outputStream, cancellationToken);
+                if (!allowedMimeTypes.Intersect(inputMimeTypes).Any())
+                {
+                    throw new UnsupportedImageFormatException(inputMimeTypes);
+                }
+
+                return memoryStream;
+            });
+
+            var memoryStreams = await Task.WhenAll(memoryStreamTasks);
+
+            var imageTasks = memoryStreams.Select(ms => Image.LoadAsync<Rgba32>(Configuration.Default, ms, cancellationToken));
+
+            var images = await Task.WhenAll(imageTasks);
+
+            await saveProfile.ConvertAsync(images, outputStream, cancellationToken);
 
             var result = new ConversionResult(saveProfile.Extension);
 

@@ -10,6 +10,7 @@ using Left4DeadHelper.Sprays.Exceptions;
 using Left4DeadHelper.Sprays.SaveProfiles;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -112,7 +113,13 @@ namespace Left4DeadHelper.Discord.Modules
                 var tempMessage = await ReplyAsync("Working on it...", messageReference: replyToMessageRef);
                 await Task.Delay(Constants.DelayAfterCommandMs);
 
+                // TODO multiple source streams
                 using var sourceStream = await client.OpenReadTaskAsync(result.SourceImageUri);
+
+                var sourceStreams = new List<Stream>
+                {
+                    sourceStream
+                };
 
                 var sprayTools = new SprayTools();
 
@@ -121,7 +128,7 @@ namespace Left4DeadHelper.Discord.Modules
                     var outputStream = new MemoryStream();
 
                     var conversionResult = await sprayTools.ConvertAsync(
-                        sourceStream, outputStream,
+                        sourceStreams, outputStream,
                         saveProfile, CancellationToken.None);
 
                     outputStream.Position = 0;

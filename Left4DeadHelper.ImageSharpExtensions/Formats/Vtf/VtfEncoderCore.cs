@@ -37,7 +37,10 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 		public async Task EncodeAsync(IList<Image<Rgba32>> images, Stream stream, CancellationToken cancellationToken)
 		{
 			if (images is null) throw new ArgumentNullException(nameof(images));
-			if (images.Count == 0) throw new ArgumentNullException(nameof(stream));
+			if (images.Count == 0)
+			{
+				throw new ArgumentException("The collection of images must not be empty.", nameof(images));
+			}
 			if (stream is null) throw new ArgumentNullException(nameof(stream));
 
 			Configuration configuration = images[0].GetConfiguration();
@@ -80,7 +83,11 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 		public void Encode(IList<Image<Rgba32>> images, Stream stream, CancellationToken cancellationToken)
 		{
 			if (images is null) throw new ArgumentNullException(nameof(images));
-			if (images.Count == 0) throw new ArgumentNullException(nameof(stream));
+			if (images.Count == 0) throw new ArgumentException("At least one image is required.", nameof(images));
+			if (images.Count > byte.MaxValue)
+			{
+				throw new ArgumentException($"At least most {byte.MaxValue} images are permitted.", nameof(images));
+			}
 			if (stream is null) throw new ArgumentNullException(nameof(stream));
 
 			var image = images.First();
@@ -170,7 +177,7 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 			BinaryPrimitives.WriteUInt32LittleEndian(dataBuffer, GetVtfHighResFormatValue(imageFormat));
 			stream.Write(dataBuffer, 0, sizeof(uint));
 			// Mipmap count
-			dataBuffer[0] = 1;
+			dataBuffer[0] = (byte) images.Count;
 			stream.Write(dataBuffer, 0, sizeof(byte));
 			// Low resolution image format; always DXT1
 			BinaryPrimitives.WriteUInt32LittleEndian(dataBuffer, VtfConstants.FormatDxt1);
@@ -197,7 +204,17 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 			// Probably not needed since we're getting raw bytes and not writing a DDS file.
 			dxtEncoder.OutputOptions.DdsBc1WriteAlphaFlag = imageFormat == DxtImageFormat.Dxt1OneBitAlpha;
 
-			foreach (var currentImage in images)
+			// 7.2 VTF layout:
+			// VTF Header (done)
+			// VTF Low Resolution Image Data (0x0 so not used)
+			// For Each Mipmap(Smallest to Largest)
+			//   For Each Frame(First to Last)
+			//     For Each Face(First to Last)
+			//       For Each Z Slice(Min to Max; Varies with Mipmap)
+			//         VTF High Resolution Image Data
+			// So for us, we just reverse these images since they come in at the highest res and get smaller.
+
+			foreach (var currentImage in images.Reverse())
 			{
 				var byteEncoding = dxtEncoder.EncodeToRawBytes(currentImage);
 
