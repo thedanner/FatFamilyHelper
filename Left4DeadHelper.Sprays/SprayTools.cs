@@ -32,7 +32,7 @@ namespace Left4DeadHelper.Sprays
                 await i.CopyToAsync(memoryStream);
                 memoryStream.Position = 0;
 
-                var inputFormat = Image.DetectFormat(memoryStream);
+                var inputFormat = await Image.DetectFormatAsync(memoryStream);
                 memoryStream.Position = 0;
                 var inputMimeTypes = inputFormat.MimeTypes.ToList();
                 var allowedMimeTypes = new[] { "image/jpeg", "image/png", "image/x-tga", "image/x-targa" };
@@ -51,9 +51,21 @@ namespace Left4DeadHelper.Sprays
 
             var images = await Task.WhenAll(imageTasks);
 
+            if (images.Length > 1)
+            {
+                foreach (var extraImage in images.Skip(1))
+                {
+                    if (images[0].Width != extraImage.Width
+                        || images[0].Height != extraImage.Height)
+                    {
+                        return ConversionResult.Fail("all images must have the same dimensions");
+                    }
+                }
+            }
+
             await saveProfile.ConvertAsync(images, outputStream, cancellationToken);
 
-            var result = new ConversionResult(saveProfile.Extension);
+            var result = ConversionResult.Pass(saveProfile.Extension);
 
             return result;
         }

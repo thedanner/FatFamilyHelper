@@ -166,53 +166,68 @@ namespace Left4DeadHelper.Discord.Modules
                         sourceStreams, outputStream,
                         saveProfile, CancellationToken.None);
 
-                    outputStream.Position = 0;
-
-                    if (string.IsNullOrEmpty(fileName))
+                    if (conversionResult.IsSuccessful)
                     {
-                        fileName = imageUris[0].LocalPath;
-
-                        if (fileName.Contains('/'))
-                        {
-                            fileName = fileName[(fileName.LastIndexOf('/') + 1)..];
-                            if (string.IsNullOrEmpty(fileName)
-                                || string.Equals(fileName, conversionResult.FileExtension))
-                            {
-                                fileName = $"spray{conversionResult.FileExtension}";
-                            }
-                            else
-                            {
-                                fileName = Path.ChangeExtension(fileName, conversionResult.FileExtension);
-                            }
-                        }
+                        outputStream.Position = 0;
 
                         if (string.IsNullOrEmpty(fileName))
                         {
-                            fileName = $"spray{conversionResult.FileExtension}";
+                            fileName = imageUris[0].LocalPath;
+
+                            if (fileName.Contains('/'))
+                            {
+                                fileName = fileName[(fileName.LastIndexOf('/') + 1)..];
+                                if (string.IsNullOrEmpty(fileName)
+                                    || string.Equals(fileName, conversionResult.FileExtension))
+                                {
+                                    fileName = $"spray{conversionResult.FileExtension}";
+                                }
+                                else
+                                {
+                                    fileName = Path.ChangeExtension(fileName, conversionResult.FileExtension);
+                                }
+                            }
+
+                            if (string.IsNullOrEmpty(fileName))
+                            {
+                                fileName = $"spray{conversionResult.FileExtension}";
+                            }
                         }
+
+                        fileName = StringHelpers.SanitizeFileNameForDiscordAttachment(fileName);
+
+                        if (!fileName.EndsWith(conversionResult.FileExtension!, StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            fileName += conversionResult.FileExtension;
+                        }
+
+                        if (string.Equals(fileName, conversionResult.FileExtension))
+                        {
+                            fileName = "spray" + conversionResult.FileExtension;
+                        }
+
+                        var sprayMessage = await Context.Channel.SendFileAsync(
+                            outputStream, fileName,
+                            $"Here ya go!\n\n(If you requested this, react with {DeleteEmojiString} to delete this message." +
+                            $"{(dmChannel != null ? "\nSince this is a DM, you may need to send me any other message first; it doesn't have to be a command." : "")})",
+                            messageReference: replyToMessageRef);
+                        await Task.Delay(Constants.DelayAfterCommandMs);
+
+                        await sprayMessage.AddReactionAsync(DeleteEmote);
+                        await Task.Delay(Constants.DelayAfterCommandMs);
                     }
-
-                    fileName = StringHelpers.SanitizeFileNameForDiscordAttachment(fileName);
-
-                    if (!fileName.EndsWith(conversionResult.FileExtension, StringComparison.CurrentCultureIgnoreCase))
+                    else
                     {
-                        fileName += conversionResult.FileExtension;
+                        var sprayMessage = await Context.Channel.SendMessageAsync(
+                            $"The conversion failed: {conversionResult.Message}.\n\n" +
+                            $"(If you requested this, react with {DeleteEmojiString} to delete this message." +
+                            $"{(dmChannel != null ? "\nSince this is a DM, you may need to send me any other message first; it doesn't have to be a command." : "")})",
+                            messageReference: replyToMessageRef);
+                        await Task.Delay(Constants.DelayAfterCommandMs);
+
+                        await sprayMessage.AddReactionAsync(DeleteEmote);
+                        await Task.Delay(Constants.DelayAfterCommandMs);
                     }
-
-                    if (string.Equals(fileName, conversionResult.FileExtension))
-                    {
-                        fileName = "spray" + conversionResult.FileExtension;
-                    }
-
-                    var sprayMessage = await Context.Channel.SendFileAsync(
-                        outputStream, fileName,
-                        $"Here ya go!\n\n(If you requested the conversion, react with {DeleteEmojiString} to delete this message." +
-                        $"{(dmChannel != null ? "\nSince this is a DM, you may need to send me any other message first; it doesn't have to be a command." : "")})",
-                        messageReference: replyToMessageRef);
-                    await Task.Delay(Constants.DelayAfterCommandMs);
-
-                    await sprayMessage.AddReactionAsync(DeleteEmote);
-                    await Task.Delay(Constants.DelayAfterCommandMs);
                 }
                 catch (UnsupportedImageFormatException e)
                 {
