@@ -25,6 +25,7 @@ namespace Left4DeadHelper.Discord.Modules
         private const string CommandVtfHi = "sprayme1024";
         private const string CommandVtfAlpha = "sprayme512";
         private const string CommandTga = "spraymetga";
+        private const string CommandFading = "sprayme-nearfar";
 
         private readonly ILogger<SprayModule> _logger;
         private readonly Settings _settings;
@@ -52,33 +53,83 @@ namespace Left4DeadHelper.Discord.Modules
 
         [Command(CommandVtfHi)]
         [Summary("Converts an image into a Source engine-compatible spray in VTF format (1024x1020 or vice-versa; 1-bit alpha).")]
-        public Task ConvertVtfHiAsync(string? arg1 = null, string? arg2 = null)
+        public async Task ConvertVtfHiAsync(string? arg1 = null, string? arg2 = null)
         {
+            if (TryResolveArgs(arg1, arg2, out var result)) return;
+
             var saveProfile = new Vtf1024SaveProfile();
-            return HandleAsync(saveProfile, arg1, arg2);
+            await HandleAsync(saveProfile, result!.FileName, result!.SourceImageUri);
         }
 
         [Command(CommandVtfAlpha)]
         [Summary("Converts an image into a Source engine-compatible spray in VTF format (512x512 with 8-bit alpha).")]
-        public Task ConvertVtfAlphaAsync(string? arg1 = null, string? arg2 = null)
+        public async Task ConvertVtfAlphaAsync(string? arg1 = null, string? arg2 = null)
         {
+            if (!TryResolveArgs(arg1, arg2, out var result)) return;
+
             var saveProfile = new Vtf512SaveProfile();
-            return HandleAsync(saveProfile, arg1, arg2);
+            await HandleAsync(saveProfile, result!.FileName, result!.SourceImageUri);
         }
 
         [Command(CommandTga)]
         [Summary("Converts an image into a Source engine-compatible spray in TGA format (256x256 with 8-bit alpha).\n" +
             "This is a legacy version that should only be used if you really need TGAs for a specific reason.")]
-        public Task ConvertTgaAsync(string? arg1 = null, string? arg2 = null)
+        public async Task ConvertTgaAsync(string? arg1 = null, string? arg2 = null)
         {
+            if (!TryResolveArgs(arg1, arg2, out var result)) return;
+
             var saveProfile = new TgaSaveProfile();
-            return HandleAsync(saveProfile, arg1, arg2);
+            await HandleAsync(saveProfile, result!.FileName, result!.SourceImageUri);
         }
 
-        private async Task HandleAsync(ISaveProfile saveProfile, string? arg1 = null, string? arg2 = null)
+        [Command(CommandFading)]
+        [Summary("Converts *two* images a fading Source engine-compatible spray. Both images should be the same size.\n" +
+            "Args are `[filename optional] <near image URL> <far image URL>`")]
+        public Task ConvertFadingAsync(string arg1, string arg2, string? arg3 = null)
         {
-            var dmChannel = Context.Channel as SocketDMChannel;
+            string? fileName, nearImageUrl, farImageUrl;
 
+            if (!string.IsNullOrEmpty(arg3))
+            {
+                fileName = arg1;
+                nearImageUrl = arg2;
+                farImageUrl = arg3!;
+            }
+            else
+            {
+                fileName = null;
+                nearImageUrl = arg1;
+                farImageUrl = arg2;
+            }
+
+            var nearImageUri = new Uri(nearImageUrl, UriKind.Absolute);
+            var farImageUri = new Uri(farImageUrl, UriKind.Absolute);
+
+            var saveProfile = new VtfFadingSaveProfile();
+            return HandleAsync(saveProfile, fileName, nearImageUri, farImageUri);
+        }
+
+        private bool TryResolveArgs(string? arg1, string? arg2, out SprayModuleParseResult? result)
+        {
+            result = _resolver.Resolve(arg1, arg2, Context.Message);
+
+            // No source found
+            if (result == null)
+            {
+                _logger.LogInformation("Couldn't resolve an image; nothing to convert.");
+                return false;
+            }
+
+            return true;
+        }
+
+        private async Task HandleAsync(ISaveProfile saveProfile, string? fileName, params Uri[] imageUris)
+        {
+            if (saveProfile is null) throw new ArgumentNullException(nameof(saveProfile));
+            if (imageUris is null) throw new ArgumentNullException(nameof(imageUris));
+            if (imageUris.Length == 0) throw new ArgumentException("At least one image URI is required.", nameof(imageUris));
+
+            var dmChannel = Context.Channel as SocketDMChannel;
             if (dmChannel != null)
             {
                 _logger.LogInformation(
@@ -92,40 +143,21 @@ namespace Left4DeadHelper.Discord.Modules
 
             _logger.LogInformation("Triggered by message with ID {0}.", Context.Message.Id);
 
-            // Accepted values: "filename url ..."
-            // Accepted values: "url ..."
-
-            // If the message is a reply:
-            // Accepted values: "filename ..."
-            // Accepted values: ""
-
-            var result = _resolver.Resolve(arg1, arg2, Context.Message);
-
-            // No source found
-            if (result == null)
-            {
-                _logger.LogInformation("Couldn't resolve an image; nothing to convert.");
-                return;
-            }
+            var sourceStreams = new Stream[0];
 
             try
             {
                 var tempMessage = await ReplyAsync("Working on it...", messageReference: replyToMessageRef);
                 await Task.Delay(Constants.DelayAfterCommandMs);
 
-                // TODO multiple source streams
-                using var sourceStream = await client.OpenReadTaskAsync(result.SourceImageUri);
-
-                var sourceStreams = new List<Stream>
-                {
-                    sourceStream
-                };
+                var sourceStreamTasks = imageUris.Select(async s => await client.OpenReadTaskAsync(s));
+                sourceStreams = await Task.WhenAll(sourceStreamTasks);
 
                 var sprayTools = new SprayTools();
 
                 try
                 {
-                    var outputStream = new MemoryStream();
+                    using var outputStream = new MemoryStream();
 
                     var conversionResult = await sprayTools.ConvertAsync(
                         sourceStreams, outputStream,
@@ -133,15 +165,9 @@ namespace Left4DeadHelper.Discord.Modules
 
                     outputStream.Position = 0;
 
-                    string fileName;
-
-                    if (!string.IsNullOrEmpty(result.FileName))
+                    if (string.IsNullOrEmpty(fileName))
                     {
-                        fileName = result.FileName;
-                    }
-                    else
-                    {
-                        fileName = result.SourceImageUri.LocalPath;
+                        fileName = imageUris[0].LocalPath;
 
                         if (fileName.Contains('/'))
                         {
@@ -204,6 +230,13 @@ namespace Left4DeadHelper.Discord.Modules
             catch (Exception e)
             {
                 _logger.LogError(e, "Got an error converting image to a spray :(");
+            }
+            finally
+            {
+                foreach (var sourceStream in sourceStreams)
+                {
+                    sourceStream.Dispose();
+                }
             }
         }
 
