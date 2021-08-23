@@ -2,13 +2,14 @@
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Left4DeadHelper.Sprays.SaveProfiles
 {
-    public abstract class BaseSaveProfile<TImageConfiguration> : ISaveProfile<TImageConfiguration>
+    public abstract class BaseSaveProfile : ISaveProfile
     {
         public abstract int MaxWidth { get; }
         public abstract int MaxHeight { get; }
@@ -47,6 +48,6 @@ namespace Left4DeadHelper.Sprays.SaveProfiles
             }
         }
 
-        public abstract Task ConvertAsync(TImageConfiguration imageConfiguration, Stream outputStream, CancellationToken cancellationToken);
+        public abstract Task ConvertAsync(IList<Image<Rgba32>> images, Stream outputStream, CancellationToken cancellationToken);
     }
 }

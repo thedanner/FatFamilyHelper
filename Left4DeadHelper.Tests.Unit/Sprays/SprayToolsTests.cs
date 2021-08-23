@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,8 +13,8 @@ namespace Left4DeadHelper.Tests.Unit.Sprays
     public class SprayToolsTests
     {
         [Test]
-        [TestCase("memes.png", "zzz-memes.tga")]
-        [TestCase("alphatest.png", "zzz-alphatest.tga")]
+        [TestCase(@"test_images\aaa-memes.png", "zzz-memes.tga")]
+        [TestCase(@"test_images\aaa-alphatest.png", "zzz-alphatest.tga")]
         public async Task ConvertAsync_TgaWithValidImage_GeneratesValidImage(string inputFileName, string outputFileName)
         {
             ValidateArgs(inputFileName, outputFileName);
@@ -23,12 +24,14 @@ namespace Left4DeadHelper.Tests.Unit.Sprays
             using var inputStream = new FileStream(inputFileName, FileMode.Open, FileAccess.Read);
             using var outputStream = new FileStream(outputFileName, FileMode.OpenOrCreate, FileAccess.Write);
 
-            await sprayTools.ConvertAsync(inputStream, outputStream, new TgaSaveProfile(), CancellationToken.None);
+            var inputStreams = new List<Stream> { inputStream };
+
+            await sprayTools.ConvertAsync(inputStreams, outputStream, new TgaSaveProfile(), CancellationToken.None);
         }
 
         [Test]
-        [TestCase("memes.png", "zzz-memes-512.vtf")]
-        [TestCase("alphatest.png", "zzz-alphatest-512.vtf")]
+        [TestCase(@"test_images\aaa-memes.png", "zzz-memes-512.vtf")]
+        [TestCase(@"test_images\aaa-alphatest.png", "zzz-alphatest-512.vtf")]
         public async Task ConvertAsync_Vtf512WithValidImage_GeneratesValidImage(string inputFileName, string outputFileName)
         {
             var sprayTools = new SprayTools();
@@ -36,12 +39,14 @@ namespace Left4DeadHelper.Tests.Unit.Sprays
             using var inputStream = new FileStream(inputFileName, FileMode.Open, FileAccess.Read);
             using var outputStream = new FileStream(outputFileName, FileMode.OpenOrCreate, FileAccess.Write);
 
-            await sprayTools.ConvertAsync(inputStream, outputStream, new Vtf512SaveProfile(), CancellationToken.None);
+            var inputStreams = new List<Stream> { inputStream };
+
+            await sprayTools.ConvertAsync(inputStreams, outputStream, new Vtf512SaveProfile(), CancellationToken.None);
         }
 
         [Test]
-        [TestCase("memes.png", "zzz-memes-1024.vtf")]
-        [TestCase("alphatest.png", "zzz-alphatest-1024.vtf")]
+        [TestCase(@"test_images\aaa-memes.png", "zzz-memes-1024.vtf")]
+        [TestCase(@"test_images\aaa-alphatest.png", "zzz-alphatest-1024.vtf")]
         public async Task ConvertAsync_Vtf1024WithValidImage_GeneratesValidImage(string inputFileName, string outputFileName)
         {
             var sprayTools = new SprayTools();
@@ -49,7 +54,23 @@ namespace Left4DeadHelper.Tests.Unit.Sprays
             using var inputStream = new FileStream(inputFileName, FileMode.Open, FileAccess.Read);
             using var outputStream = new FileStream(outputFileName, FileMode.OpenOrCreate, FileAccess.Write);
 
-            await sprayTools.ConvertAsync(inputStream, outputStream, new Vtf1024SaveProfile(), CancellationToken.None);
+            var inputStreams = new List<Stream> { inputStream };
+
+            await sprayTools.ConvertAsync(inputStreams, outputStream, new Vtf1024SaveProfile(), CancellationToken.None);
+        }
+
+        [Test]
+        public async Task ConvertAsync_FadingWithValidImages_GeneratesValidImage()
+        {
+            var sprayTools = new SprayTools();
+
+            using var nearInputStream = new FileStream(@"test_images\aaa-fade-cookie-scary.png", FileMode.Open, FileAccess.Read);
+            using var farInputStream = new FileStream(@"test_images\aaa-fade-cookie-normal.png", FileMode.Open, FileAccess.Read);
+            using var outputStream = new FileStream("zzz-fade-test.vtf", FileMode.OpenOrCreate, FileAccess.Write);
+
+            var inputStreams = new List<Stream> { nearInputStream, farInputStream };
+
+            await sprayTools.ConvertAsync(inputStreams, outputStream, new VtfFadingSaveProfile(), CancellationToken.None);
         }
 
 
