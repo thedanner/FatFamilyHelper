@@ -99,7 +99,7 @@ namespace Left4DeadHelper.Discord.DiscordEventHandlers
                     )
                 )
                 // and same channel
-                && message.Reference.ChannelId == message.Channel.Id)
+                && message.Channel != null && message.Reference.ChannelId == message.Channel.Id)
             {
                 var referencedIMessage = await simpleChannel.GetMessageAsync(message.Reference.MessageId.Value);
 

@@ -10,7 +10,6 @@ using Left4DeadHelper.Sprays.Exceptions;
 using Left4DeadHelper.Sprays.SaveProfiles;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -55,7 +54,7 @@ namespace Left4DeadHelper.Discord.Modules
         [Summary("Converts an image into a Source engine-compatible spray in VTF format (1024x1020 or vice-versa; 1-bit alpha).")]
         public async Task ConvertVtfHiAsync(string? arg1 = null, string? arg2 = null)
         {
-            if (TryResolveArgs(arg1, arg2, out var result)) return;
+            if (!TryResolveArgs(arg1, arg2, out var result)) return;
 
             var saveProfile = new Vtf1024SaveProfile();
             await HandleAsync(saveProfile, result!.FileName, result!.SourceImageUri);
