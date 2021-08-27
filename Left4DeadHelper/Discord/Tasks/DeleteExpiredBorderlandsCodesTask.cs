@@ -58,8 +58,8 @@ namespace Left4DeadHelper.Discord.Modules
 
                 if (!string.IsNullOrEmpty(reportToChannelIdStr))
                 {
-                    var reportToChannelId = ulong.Parse(channelIdStr);
-                    reportToChannel = guild.GetTextChannel(channelId);
+                    var reportToChannelId = ulong.Parse(reportToChannelIdStr);
+                    reportToChannel = guild.GetTextChannel(reportToChannelId);
                 }
 
                 var messages = (await channel.GetMessagesAsync(BatchSize)
