@@ -76,27 +76,35 @@ namespace Left4DeadHelper
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
             var hostBuilder = Host.CreateDefaultBuilder(args)
-                .ConfigureServices((hostContext, services) =>
-                {
-                    var config = CreateConfiguration();
-                    ConfigureServices(services, config);
-                }).UseWindowsService();
+                .ConfigureAppConfiguration((hostingContext, config) => ConfigureAppConfiguration(hostingContext, config, args))
+                .ConfigureServices(ConfigureServices)
+                .UseWindowsService();
 
             return hostBuilder;
         }
 
-        private static IConfigurationRoot CreateConfiguration()
+        private static void ConfigureAppConfiguration(HostBuilderContext hostContext, IConfigurationBuilder config, string[] args)
         {
-            var config = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory()) //From NuGet Package Microsoft.Extensions.Configuration.Json
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .Build();
+            // https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/?view=aspnetcore-5.0#file-configuration-provider
+            config.Sources.Clear();
 
-            return config;
+            var env = hostContext.HostingEnvironment;
+
+            config.SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+            
+            config.AddEnvironmentVariables();
+
+            if (args != null)
+            {
+                config.AddCommandLine(args);
+            }
         }
 
-        private static void ConfigureServices(IServiceCollection serviceCollection, IConfiguration config)
+        private static void ConfigureServices(HostBuilderContext hostContext, IServiceCollection serviceCollection)
         {
+            var config = hostContext.Configuration;
             var settings = config.Get<Settings>();
 
             if (settings.DiscordSettings.Prefixes.Length == 0)
