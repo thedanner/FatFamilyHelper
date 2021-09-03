@@ -135,7 +135,7 @@ namespace Left4DeadHelper.Discord.Modules
 
                     if (messagesToDelete.Count > 0)
                     {
-                        await ReplyAsync($"Deleted {messagesToDelete.Count} message{plural} in <#{channel.Id}>.");
+                        await ReplyAsync($"Deleted {messagesToDelete.Count} expired code{plural} in <#{channel.Id}>.");
                         await Task.Delay(Constants.DelayAfterCommandMs);
                     }
                     else
