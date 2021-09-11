@@ -13,5 +13,7 @@
         public ulong DiscordId { get; set; }
 
         public string SteamId { get; set; }
+
+        public override string ToString() => $"{Name} [SteamId:{SteamId}, DiscordId:{DiscordId}]";
     }
 }
