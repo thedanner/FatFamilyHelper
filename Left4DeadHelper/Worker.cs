@@ -1,12 +1,14 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using Left4DeadHelper.Discord.Handlers;
+using Left4DeadHelper.Models.Configuration;
 using Left4DeadHelper.Services;
 using Left4DeadHelper.Wrappers.DiscordNet;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Quartz;
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading;
@@ -18,6 +20,7 @@ namespace Left4DeadHelper
     {
         private readonly ILogger<Worker> _logger;
         private readonly IDiscordConnectionBootstrapper _bootstrapper;
+        private readonly Settings _settings;
 
         // Singleton IDisposables
         private readonly DiscordSocketClient _client;
@@ -27,6 +30,7 @@ namespace Left4DeadHelper
         public Worker(
             ILogger<Worker> logger,
             IDiscordConnectionBootstrapper bootstrapper,
+            Settings settings,
             // Singleton IDisposables or objects that can be started and stopped.
             DiscordSocketClient client,
             CommandAndEventHandler commandHandler,
@@ -34,6 +38,7 @@ namespace Left4DeadHelper
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _bootstrapper = bootstrapper ?? throw new ArgumentNullException(nameof(bootstrapper));
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
 
             // Singleton IDisposables or objects that can be started and stopped.
             _client = client ?? throw new ArgumentNullException(nameof(client));
@@ -45,6 +50,8 @@ namespace Left4DeadHelper
         {
             try
             {
+                _logger.LogDebug("Last user mapping entry: {lastUserMapping}", _settings.UserMappings.Last());
+
                 await _commandHandler.InstallCommandsAsync();
 
                 // Try every 15 seconds (4 times a minute) for 15 minutes.
