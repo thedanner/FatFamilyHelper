@@ -92,14 +92,9 @@ namespace Left4DeadHelper
 
             config.SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-            
-            config.AddEnvironmentVariables();
-
-            if (args != null)
-            {
-                config.AddCommandLine(args);
-            }
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables(prefix: "LEFT4DEADHELPER_")
+                .AddCommandLine(args);
         }
 
         private static void ConfigureServices(HostBuilderContext hostContext, IServiceCollection serviceCollection)

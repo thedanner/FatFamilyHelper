@@ -51,6 +51,9 @@
   </ItemGroup>
   
   <ItemGroup>
+    <None Update="appSettings.Production.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="appSettings.Template.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
