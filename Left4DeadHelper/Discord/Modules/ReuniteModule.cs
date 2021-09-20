@@ -18,6 +18,7 @@ namespace Left4DeadHelper.Discord.Modules
     {
         private const string Command = "reunite";
         private const string CommandAlias = "remarry";
+        private const string CommandAlias2 = "undivorce";
 
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<ReuniteModule> _logger;
@@ -29,7 +30,7 @@ namespace Left4DeadHelper.Discord.Modules
         }
 
         [Command(Command)]
-        [Alias(CommandAlias)]
+        [Alias(CommandAlias, CommandAlias2)]
         [Summary("Moves users from the configured secondary channel into the primary channel.")]
         [RequireUserPermission(GuildPermission.MoveMembers)]
         public async Task HandleVoiceChatAsync()
