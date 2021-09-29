@@ -3,12 +3,11 @@ using Discord.WebSocket;
 using Left4DeadHelper.Discord.Interfaces;
 using Left4DeadHelper.Helpers;
 using Left4DeadHelper.Helpers.DiscordExtensions;
+using Left4DeadHelper.Support.ExpiredCodes;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,10 +20,6 @@ namespace Left4DeadHelper.Discord.Modules
         private const string SettingsKeyReportToChannelId = "reportToChannelId";
 
         private const int BatchSize = 100;
-
-        private static readonly Regex ExpiresRegex = new Regex(
-            @"Expires: (?<expires>(?<date>(?<dayOfMonth>\d{1,2}) (?<month>[a-zA-Z]{3}) (?<year>\d{4})) (?<time>(?<hours>\d{1,2}):(?<minutes>\d{2}))) (?<timezone>[a-zA-Z]{3})",
-            RegexOptions.Multiline|RegexOptions.Compiled);
 
 
         private readonly ILogger<DeleteExpiredBorderlandsCodesTask> _logger;
@@ -69,7 +64,7 @@ namespace Left4DeadHelper.Discord.Modules
 
                 if (messages.Any())
                 {
-                    var messagesToDelete = GetMessagesWithExpiredCodes(messages, _logger);
+                    var messagesToDelete = ExpiredCodesHelpers.GetMessagesWithExpiredCodes(messages, _logger);
 
                     var plural = messagesToDelete.Count == 1 ? "" : "s";
                     _logger.LogInformation("Found {count} message(s) with expired codes to delete.",
@@ -116,47 +111,6 @@ namespace Left4DeadHelper.Discord.Modules
             {
                 _logger.LogError(e, "Error trying to prune expired messages :(");
             }
-        }
-        
-        public static List<IMessage> GetMessagesWithExpiredCodes(List<IMessage> messages, ILogger logger)
-        {
-            var messagesToDelete = new List<IMessage>();
-
-            foreach (var message in messages)
-            {
-                var embed = message.Embeds.FirstOrDefault();
-
-                if (message.Author.IsBot
-                    && embed != null
-                    && !string.IsNullOrEmpty(embed.Description))
-                {
-                    // Look for:
-                    // Expires: 24 JUN 2021 15:00 UTC
-
-                    var match = ExpiresRegex.Match(embed.Description);
-                    if (match.Success
-                        && DateTimeOffset.TryParseExact(
-                            match.Groups["expires"].Value,
-                            "d MMM yyyy H:mm",
-                            CultureInfo.CurrentCulture,
-                            DateTimeStyles.AssumeUniversal,
-                            out var givenExpiry))
-                    {
-                        if (!"UTC".Equals(match.Groups["timezone"].Value, StringComparison.CurrentCultureIgnoreCase))
-                        {
-                            logger.LogWarning("Non-UTC expiration found for message with ID {messageId}.", message.Id);
-                            continue;
-                        }
-
-                        if (givenExpiry <= DateTimeOffset.Now)
-                        {
-                            messagesToDelete.Add(message);
-                        }
-                    }
-                }
-            }
-
-            return messagesToDelete;
         }
     }
 }

@@ -21,7 +21,8 @@ namespace Left4DeadHelper.Discord.Handlers
         private bool _disposedValue;
 
         // Retrieve client and CommandService instance via ctor
-        public CommandAndEventHandler(DiscordSocketClient client, CommandService commandService, Settings settings, IServiceProvider serviceProvider)
+        public CommandAndEventHandler(DiscordSocketClient client, CommandService commandService, Settings settings,
+             IServiceProvider serviceProvider)
         {
             _client = client ?? throw new ArgumentNullException(nameof(client));
             _commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
@@ -33,6 +34,7 @@ namespace Left4DeadHelper.Discord.Handlers
         {
             _client.MessageReceived += HandleCommandAsync;
 
+            _client.MessageReceived += HandleMessageReceivedAsync;
             _client.ReactionAdded += HandleReactionAddedAsync;
 
             // Here we discover all of the command modules in the entry 
@@ -78,6 +80,13 @@ namespace Left4DeadHelper.Discord.Handlers
                 services: _serviceProvider);
         }
 
+        private async Task HandleMessageReceivedAsync(SocketMessage message)
+        {
+            var implementingServices = _serviceProvider.GetServices<IHandleMessageReceivedAsync>();
+
+            await Task.WhenAll(implementingServices.Select(s => s.HandleMessageReceivedAsync(message)));
+        }
+
         private async Task HandleReactionAddedAsync(Cacheable<IUserMessage, ulong> maybeCachedMessage, ISocketMessageChannel channel, SocketReaction reaction)
         {
             var implementingServices = _serviceProvider.GetServices<IHandleReactionAddedAsync>();
@@ -92,6 +101,7 @@ namespace Left4DeadHelper.Discord.Handlers
                 if (disposing)
                 {
                     _client.MessageReceived -= HandleCommandAsync;
+                    _client.MessageReceived -= HandleMessageReceivedAsync;
                     _client.ReactionAdded -= HandleReactionAddedAsync;
                 }
 
