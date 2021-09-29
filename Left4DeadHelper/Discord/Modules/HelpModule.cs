@@ -1,5 +1,6 @@
 ﻿using Discord.Commands;
 using Left4DeadHelper.Discord.Interfaces;
+using Left4DeadHelper.Helpers.DiscordExtensions;
 using Left4DeadHelper.Models;
 using Left4DeadHelper.Models.Configuration;
 using Microsoft.Extensions.Logging;
@@ -41,11 +42,11 @@ namespace Left4DeadHelper.Discord.Modules
                 prefixesStr = $"`{string.Join("`, `", prefixes)}`, and ";
             }
 
-            var triggers = $"{prefixesStr}\"<@{Context.Client.CurrentUser.Id}> \"";
+            var triggers = $"{prefixesStr}\"{Context.Client.CurrentUser.ToMessageRef()} \"";
 
             if (string.IsNullOrWhiteSpace(subcommand))
             {
-                lines.Add($"Welcome to my help message! I'm <@{Context.Client.CurrentUser.Id}>.");
+                lines.Add($"Welcome to my help message! I'm {Context.Client.CurrentUser.ToMessageRef()}.");
                 lines.Add("");
                 lines.Add($"I listen to the following triggers (message prefixes):");
 
@@ -114,7 +115,7 @@ namespace Left4DeadHelper.Discord.Modules
 
                     var prefixes = new List<string>(_settings.DiscordSettings.Prefixes.Select(p => p.ToString()))
                     {
-                        "<@{Context.Client.CurrentUser.Id}> " // tag the bot
+                        Context.Client.CurrentUser.ToMessageRef()
                     };
 
                     foreach (var commandModule in _commandModules)

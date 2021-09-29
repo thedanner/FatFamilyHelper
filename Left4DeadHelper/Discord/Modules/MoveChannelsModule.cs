@@ -79,7 +79,7 @@ namespace Left4DeadHelper.Discord.Modules
                     string whoShouldFix;
                     if (guildSettings != null && guildSettings.ConfigMaintainers.Any())
                     {
-                        whoShouldFix = string.Join(", ", guildSettings.ConfigMaintainers.Select(m => $"<@{m.DiscordId}>"));
+                        whoShouldFix = string.Join(", ", guildSettings.ConfigMaintainers.Select(ToMessageRef));
                     }
                     else
                     {
@@ -97,6 +97,11 @@ namespace Left4DeadHelper.Discord.Modules
             {
                 _logger.LogError(e, "Got an error trying to move players :(");
             }
+        }
+
+        private object ToMessageRef(object arg1, int arg2)
+        {
+            throw new NotImplementedException();
         }
 
         public string GetGeneralHelpMessage(HelpContext helpContext) =>
