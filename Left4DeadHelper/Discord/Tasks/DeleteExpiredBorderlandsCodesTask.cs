@@ -2,6 +2,7 @@
 using Discord.WebSocket;
 using Left4DeadHelper.Discord.Interfaces;
 using Left4DeadHelper.Helpers;
+using Left4DeadHelper.Helpers.DiscordExtensions;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -106,7 +107,7 @@ namespace Left4DeadHelper.Discord.Modules
 
                     if (messagesToDelete.Count > 0 && reportToChannel != null)
                     {
-                        await reportToChannel.SendMessageAsync($"Deleted {messagesToDelete.Count} expired code{plural} in <#{channel.Id}>.");
+                        await reportToChannel.SendMessageAsync($"Deleted {messagesToDelete.Count} expired code{plural} in {channel.ToMessageRef()}.");
                         await Task.Delay(Constants.DelayAfterCommandMs);
                     }
                 }
