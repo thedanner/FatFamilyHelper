@@ -5,6 +5,7 @@ using Left4DeadHelper.Discord.Interfaces;
 using Left4DeadHelper.Helpers;
 using Left4DeadHelper.Helpers.DiscordExtensions;
 using Left4DeadHelper.Models;
+using Left4DeadHelper.Support.ExpiredCodes;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -98,7 +99,7 @@ namespace Left4DeadHelper.Discord.Modules
 
                 if (messages.Any())
                 {
-                    var messagesToDelete = DeleteExpiredBorderlandsCodesTask.GetMessagesWithExpiredCodes(messages, _logger);
+                    var messagesToDelete = ExpiredCodesHelpers.GetMessagesWithExpiredCodes(messages, _logger);
 
                     var plural = messagesToDelete.Count == 1 ? "" : "s";
                     _logger.LogInformation("Found {count} message(s) with expired codes to delete.",
