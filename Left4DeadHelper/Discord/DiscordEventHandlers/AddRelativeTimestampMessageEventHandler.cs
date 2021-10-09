@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using Left4DeadHelper.Discord.Interfaces.Events;
-using Left4DeadHelper.Helpers;
 using Left4DeadHelper.Helpers.DiscordExtensions;
 using Left4DeadHelper.Models.Configuration;
 using Left4DeadHelper.Support.ExpiredCodes;
@@ -27,7 +26,10 @@ namespace Left4DeadHelper.Discord.DiscordEventHandlers
 
         public async Task HandleMessageReceivedAsync(SocketMessage message)
         {
-            if (message.Author.IsBot
+            if (_settings.ShiftCodes.ReplyWithRelativeTimestampMessage
+                && message.Author.IsBot
+                && (_settings.ShiftCodes.ChannelId.HasValue
+                    && _settings.ShiftCodes.ChannelId.Value == message.Channel.Id)
                 && ExpiredCodesHelpers.TryGetExpirationDateFromMessage(message, _logger, out var expiry))
             {
                 var guild = (message.Channel as SocketGuildChannel)?.Guild;
@@ -36,7 +38,6 @@ namespace Left4DeadHelper.Discord.DiscordEventHandlers
                 await message.Channel.SendMessageAsync(
                     "Expires " + expiry.ToMessageTs(TimestampFormat.RelativeTime) + ".",
                     messageReference: replyToMessageRef);
-                await Task.Delay(Constants.DelayAfterCommandMs);
             }
         }
     }
