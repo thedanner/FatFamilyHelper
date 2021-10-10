@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace Left4DeadHelper.Discord.Modules
 {
-    public class DeleteExpiredBorderlandsCodesModule : ModuleBase<SocketCommandContext>, ICommandModule
+    public class DeleteExpiredShiftCodesModule : ModuleBase<SocketCommandContext>, ICommandModule
     {
         private const string Command = "prune";
 
@@ -24,18 +24,18 @@ namespace Left4DeadHelper.Discord.Modules
 
         private static readonly Regex ChannelIdRefRegex = new Regex(@"<#(?<id>\d+)>", RegexOptions.Compiled);
 
-        private readonly ILogger<DeleteExpiredBorderlandsCodesModule> _logger;
+        private readonly ILogger<DeleteExpiredShiftCodesModule> _logger;
 
-        public DeleteExpiredBorderlandsCodesModule(ILogger<DeleteExpiredBorderlandsCodesModule> logger)
+        public DeleteExpiredShiftCodesModule(ILogger<DeleteExpiredShiftCodesModule> logger)
             : base()
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         [Command(Command)]
-        [Summary("Deletes expired Borderlands codes.")]
+        [Summary("Deletes expired SHiFT codes.")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
-        public async Task DeleteExpiredBorderlandsCodesAsync(string channelToken)
+        public async Task DeleteExpiredShiftCodesAsync(string channelToken)
         {
             if (Context.Message == null) return;
             if (Context.Guild == null) return;

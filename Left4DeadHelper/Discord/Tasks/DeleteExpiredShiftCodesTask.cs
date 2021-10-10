@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Left4DeadHelper.Discord.Modules
 {
-    public class DeleteExpiredBorderlandsCodesTask : ITask
+    public class DeleteExpiredShiftCodesTask : ITask
     {
         private const string SettingsKeyGuildId = "guildId";
         private const string SettingsKeyChannelId = "channelId";
@@ -22,9 +22,9 @@ namespace Left4DeadHelper.Discord.Modules
         private const int BatchSize = 100;
 
 
-        private readonly ILogger<DeleteExpiredBorderlandsCodesTask> _logger;
+        private readonly ILogger<DeleteExpiredShiftCodesTask> _logger;
 
-        public DeleteExpiredBorderlandsCodesTask(ILogger<DeleteExpiredBorderlandsCodesTask> logger)
+        public DeleteExpiredShiftCodesTask(ILogger<DeleteExpiredShiftCodesTask> logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -39,13 +39,13 @@ namespace Left4DeadHelper.Discord.Modules
             {
                 var guildIdStr = (string) taskSettings[SettingsKeyGuildId]
                     ?? throw new Exception(
-                        $"Setting with key \"{nameof(SettingsKeyGuildId)}\" missing from {nameof(DeleteExpiredBorderlandsCodesTask)} settings.");
+                        $"Setting with key \"{nameof(SettingsKeyGuildId)}\" missing from {nameof(DeleteExpiredShiftCodesTask)} settings.");
                 var guildId = ulong.Parse(guildIdStr);
                 var guild = client.GetGuild(guildId);
 
                 var channelIdStr = (string)taskSettings[SettingsKeyChannelId]
                     ?? throw new Exception(
-                        $"Setting with key \"{nameof(SettingsKeyChannelId)}\" missing from {nameof(DeleteExpiredBorderlandsCodesTask)} settings.");
+                        $"Setting with key \"{nameof(SettingsKeyChannelId)}\" missing from {nameof(DeleteExpiredShiftCodesTask)} settings.");
                 var channelId = ulong.Parse(channelIdStr);
                 var channel = guild.GetTextChannel(channelId);
 
