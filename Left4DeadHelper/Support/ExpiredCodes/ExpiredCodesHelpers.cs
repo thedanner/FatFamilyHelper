@@ -27,12 +27,20 @@ namespace Left4DeadHelper.Support.ExpiredCodes
                     messagesToDelete.Add(message);
                     messageIdsToDelete.Add(message.Id);
                 }
-                else if (message.Reference != null
-                    && message.Reference.MessageId.IsSpecified
-                    && messageIdsToDelete.Contains(message.Reference.MessageId.Value))
+            }
+
+            var messageIdsWithCodesToDelete = messageIdsToDelete.ToList();
+            if (messageIdsWithCodesToDelete.Any())
+            {
+                foreach (var message in messages)
                 {
-                    messagesToDelete.Add(message);
-                    messageIdsToDelete.Add(message.Id);
+                    if (message.Reference != null
+                        && message.Reference.MessageId.IsSpecified
+                        && messageIdsToDelete.Contains(message.Reference.MessageId.Value))
+                    {
+                        messagesToDelete.Add(message);
+                        messageIdsToDelete.Add(message.Id);
+                    }
                 }
             }
 
