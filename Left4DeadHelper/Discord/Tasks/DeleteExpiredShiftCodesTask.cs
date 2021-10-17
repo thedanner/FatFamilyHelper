@@ -49,9 +49,10 @@ namespace Left4DeadHelper.Discord.Modules
                 var channelId = ulong.Parse(channelIdStr);
                 var channel = guild.GetTextChannel(channelId);
 
-                var reportToChannelIdStr = (string)taskSettings[SettingsKeyReportToChannelId];
-                SocketTextChannel? reportToChannel = null;
+                taskSettings.TryGetValue(SettingsKeyReportToChannelId, out var reportToChannelIdVal);
 
+                var reportToChannelIdStr = reportToChannelIdVal as string;
+                SocketTextChannel? reportToChannel = null;
                 if (!string.IsNullOrEmpty(reportToChannelIdStr))
                 {
                     var reportToChannelId = ulong.Parse(reportToChannelIdStr);
