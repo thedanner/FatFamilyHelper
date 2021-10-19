@@ -132,14 +132,14 @@ namespace Left4DeadHelper.Discord.Modules
             if (dmChannel != null)
             {
                 _logger.LogInformation(
-                    "Spray requested from DM conversation {convoId} with recipients {recipients}.",
+                    "Spray requested from DM conversation {dmChannelId} with recipients {recipients}.",
                     dmChannel.Id,
                     string.Join(", ", (dmChannel as IPrivateChannel).Recipients.Select(r => $"{r.Username}#{r.Discriminator} ({r.Id})")));
             }
 
             var replyToMessageRef = new MessageReference(Context.Message.Id, Context.Channel.Id, Context.Guild?.Id);
 
-            _logger.LogInformation("Triggered by message with ID {0}.", Context.Message.Id);
+            _logger.LogInformation("Triggered by message with ID {messageId}.", Context.Message.Id);
 
             var sourceStreams = new Stream[0];
 

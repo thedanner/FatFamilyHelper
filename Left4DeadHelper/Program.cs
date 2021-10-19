@@ -138,6 +138,7 @@ namespace Left4DeadHelper
             {
                 return new DiscordSocketClient(new DiscordSocketConfig
                 {
+                    ExclusiveBulkDelete = true,
                     GatewayIntents = GatewayIntents.Guilds
                         | GatewayIntents.GuildIntegrations
                         | GatewayIntents.GuildVoiceStates

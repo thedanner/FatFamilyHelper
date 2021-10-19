@@ -49,7 +49,7 @@ namespace Left4DeadHelper.Discord.Modules
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Error in {0}.{1}().", nameof(RconModule), nameof(HandleCommandAsync));
+                _logger.LogError(e, "Error in {className}.{methodName}().", nameof(RconModule), nameof(HandleCommandAsync));
 
                 await ReplyAsync($"Test FAILED. Check bot logs for details.");
             }
