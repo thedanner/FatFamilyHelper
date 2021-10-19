@@ -31,6 +31,12 @@ namespace Left4DeadHelper.Services
             async Task initalReadyAsync() => await ReadyHandlerWithSignalAsync(readyComplete);
             client.Ready += initalReadyAsync;
 
+            // NOTE: the client configuration will likely have ExclusiveBulkDelete set to true, which means that
+            // for messages bulk-deleted with that specific API call, only the MessagesBulkDeleted event will be fired,
+            // and not individual MessageDeleted events for the messages that are bulk-deleted.
+            // This can be changed in DiscoredSocketConfig when the DiscordSocketClient is created.
+            // See https://github.com/discord-net/Discord.Net/releases/tag/2.1.0
+
             client.Disconnected += async (ex) => _logger.LogError(ex, "Discord client event: Disconnected");
             client.GuildAvailable += async (guild) => _logger.LogInformation("Discord client event: GuildAvailable");
             client.GuildMembersDownloaded += async (guild) => _logger.LogInformation("Discord client event: GuildMembersDownloaded");
@@ -41,7 +47,7 @@ namespace Left4DeadHelper.Services
                 _logger.Log(
                     level,
                     logMessage.Exception,
-                    "Discord client event: Log: (Source: {0}): {1}",
+                    "Discord client event: Log: (Source: {source}): {message}",
                     logMessage.Source, logMessage.Message);
             };
             client.LoggedIn += async () => _logger.LogInformation("Discord client event: LoggedIn");

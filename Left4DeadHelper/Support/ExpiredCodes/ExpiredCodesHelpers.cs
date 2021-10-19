@@ -34,7 +34,8 @@ namespace Left4DeadHelper.Support.ExpiredCodes
             {
                 foreach (var message in messages)
                 {
-                    if (message.Reference != null
+                    if (message.Author.IsBot
+                        && message.Reference != null
                         && message.Reference.MessageId.IsSpecified
                         && messageIdsToDelete.Contains(message.Reference.MessageId.Value))
                     {

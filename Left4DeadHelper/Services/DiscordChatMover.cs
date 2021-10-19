@@ -76,10 +76,10 @@ namespace Left4DeadHelper.Services
             var usersInPrimaryChannel = getPrimaryChannelUsersTask.Result.ToList();
             var usersInSecondaryChannel = getSecondaryChannelUsersTask.Result.ToList();
 
-            _logger.LogDebug("Current players per PrintInfo results ({0}):", currentPlayersOnServer.Count);
+            _logger.LogDebug("Current players per PrintInfo results ({playerCount}):", currentPlayersOnServer.Count);
             for (var i = 0; i < currentPlayersOnServer.Count; i++)
             {
-                _logger.LogDebug("  {0}: {1} - {2}", i, currentPlayersOnServer[i].SteamId, currentPlayersOnServer[i].Name);
+                _logger.LogDebug("  {index}: {steamId} - {name}", i, currentPlayersOnServer[i].SteamId, currentPlayersOnServer[i].Name);
             }
 
             var discordUsersToMove = new List<(ISocketGuildUserWrapper user, ISocketVoiceChannelWrapper intendedChannel)>();
@@ -92,11 +92,11 @@ namespace Left4DeadHelper.Services
                 .Where(d => currentlyPlayingSteamIds.Contains(d.SteamId, StringComparer.CurrentCultureIgnoreCase))
                 .ToList();
 
-            _logger.LogDebug("Current players found in mapping data ({0}):", currentPlayerMappings.Count);
+            _logger.LogDebug("Current players found in mapping data ({playerCount}):", currentPlayerMappings.Count);
             for (var i = 0; i < currentPlayerMappings.Count; i++)
             {
-                _logger.LogDebug("  {0}: {1} - {2} - {3}", i,
-                    currentPlayerMappings[i].SteamId, currentPlayerMappings[i].DiscordId, currentPlayerMappings[i].Name);
+                _logger.LogDebug("  {index}: {steamId} - {discordId} - {name}",
+                    i, currentPlayerMappings[i].SteamId, currentPlayerMappings[i].DiscordId, currentPlayerMappings[i].Name);
             }
 
             var allSteamIdsFromUserMappings = _settings.UserMappings.Select(um => um.SteamId).ToList();
@@ -112,18 +112,11 @@ namespace Left4DeadHelper.Services
                 .Where(u => currentPlayerDiscordSnowflakes.Contains(u.Id))
                 .ToList();
 
-            _logger.LogDebug("Discord accounts found from mappings ({0}):", discordAccountsForCurrentPlayers.Count);
+            _logger.LogDebug("Discord accounts found from mappings ({matchCount}):", discordAccountsForCurrentPlayers.Count);
             for (var i = 0; i < discordAccountsForCurrentPlayers.Count; i++)
             {
-                _logger.LogDebug("  {0}: {1} - {2}", i,
-                    discordAccountsForCurrentPlayers[i].Id, discordAccountsForCurrentPlayers[i].Username);
-            }
-
-            _logger.LogDebug("Discord accounts found from mappings ({0}):", discordAccountsForCurrentPlayers.Count);
-            for (var i = 0; i < discordAccountsForCurrentPlayers.Count; i++)
-            {
-                _logger.LogDebug("  {0}: {1} - {2}", i,
-                    discordAccountsForCurrentPlayers[i].Id, discordAccountsForCurrentPlayers[i].Username);
+                _logger.LogDebug("  {index}: {discordId} - {username}",
+                    i, discordAccountsForCurrentPlayers[i].Id, discordAccountsForCurrentPlayers[i].Username);
             }
 
             var discordSnowflakesInVoice = usersInPrimaryChannel.Select(u => u.Id)
@@ -136,20 +129,20 @@ namespace Left4DeadHelper.Services
 
             if (missingSteamMappings.Any())
             {
-                _logger.LogDebug("Current Steam users MISSING from mapping ({0}):", missingSteamMappings.Count);
+                _logger.LogDebug("Current Steam users MISSING from mapping ({missingUserCount}):", missingSteamMappings.Count);
                 for (var i = 0; i < missingSteamMappings.Count; i++)
                 {
                     result.UnmappedSteamUsers.Add(new UnmappedSteamUser(missingSteamMappings[i].Name, missingSteamMappings[i].SteamId));
-                    _logger.LogDebug("  {0}: {1} - {2}", i, missingSteamMappings[i].SteamId, missingSteamMappings[i].Name);
+                    _logger.LogDebug("  {index}: {steamId} - {name}", i, missingSteamMappings[i].SteamId, missingSteamMappings[i].Name);
                 }
             }
 
             if (missingDiscordMappings.Any())
             {
-                _logger.LogDebug("Current Discord users MISSING from mapping ({0}):", missingDiscordMappings.Count);
+                _logger.LogDebug("Current Discord users MISSING from mapping ({missingUserCount}):", missingDiscordMappings.Count);
                 for (var i = 0; i < missingDiscordMappings.Count; i++)
                 {
-                    _logger.LogDebug("  {0}: {1} - \"{2}\" (\"{3}\")",
+                    _logger.LogDebug("  {index}: {id} - \"{nickname}\" (\"{username}\")",
                         i,
                         missingDiscordMappings[i].Id,
                         missingDiscordMappings[i].Nickname,
@@ -165,24 +158,24 @@ namespace Left4DeadHelper.Services
                 {
                     currentVoiceChannel = primaryVoiceChannel;
 
-                    _logger.LogDebug("{0} ({1}) found in primary channel.", discordAccount.Username, discordAccount.Id);
+                    _logger.LogDebug("{username} ({id}) found in primary channel.", discordAccount.Username, discordAccount.Id);
                 }
                 else if (usersInSecondaryChannel != null && usersInSecondaryChannel.Any(u => u.Id == discordAccount.Id))
                 {
                     currentVoiceChannel = secondaryVoiceChannel;
 
-                    _logger.LogDebug("{0} ({1}) found in secondary channel.", discordAccount.Username, discordAccount.Id);
+                    _logger.LogDebug("{username} ({id}) found in secondary channel.", discordAccount.Username, discordAccount.Id);
                 }
                 else
                 {
-                    _logger.LogDebug("Skipping {0} ({1}): not in voice chat.",
+                    _logger.LogDebug("Skipping {username} ({id}): not in voice chat.",
                         discordAccount.Username, discordAccount.Id);
                     continue;
                 }
 
                 if (primaryVoiceChannel.Id != currentVoiceChannel.Id && secondaryVoiceChannel.Id != currentVoiceChannel.Id)
                 {
-                    _logger.LogDebug("Skipping {0} ({1}): not in a designated voice channel.",
+                    _logger.LogDebug("Skipping {username} ({id}): not in a designated voice channel.",
                         discordAccount.Username, discordAccount.Id);
                     continue;
                 }
@@ -190,7 +183,7 @@ namespace Left4DeadHelper.Services
                 var userMapping = _settings.UserMappings.FirstOrDefault(um => um.DiscordId == discordAccount.Id);
                 if (userMapping == null)
                 {
-                    _logger.LogDebug("Skipping {0} ({1}): Couldn't find user mapping.",
+                    _logger.LogDebug("Skipping {username} ({id}): Couldn't find user mapping.",
                         discordAccount.Username, discordAccount.Id);
                     continue;
                 }
@@ -199,7 +192,7 @@ namespace Left4DeadHelper.Services
                     userMapping.SteamId.Equals(pi.SteamId, StringComparison.CurrentCultureIgnoreCase));
                 if (usersPrintInfo == null)
                 {
-                    _logger.LogDebug("Skipping {0} ({1}): Couldn't find user's Steam ID in PrintInfo results.",
+                    _logger.LogDebug("Skipping {username} ({id}): Couldn't find user's Steam ID in PrintInfo results.",
                         discordAccount.Username, discordAccount.Id);
                     continue;
                 }
@@ -241,7 +234,7 @@ namespace Left4DeadHelper.Services
 
                 if (currentVoiceChannel.Id != intendedChannel.Id)
                 {
-                    _logger.LogDebug("Moving {0} ({1}) to other voice channel (from {2} to {3}).",
+                    _logger.LogDebug("Moving {username} ({id}) to other voice channel (from {fromChannelName} to {toChannelName}).",
                         user.Username, user.Id,
                         currentVoiceChannel.Name, intendedChannel.Name);
 
