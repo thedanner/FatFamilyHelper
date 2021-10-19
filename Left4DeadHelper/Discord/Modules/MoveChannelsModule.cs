@@ -2,6 +2,7 @@
 using Discord.Commands;
 using Left4DeadHelper.Discord.Interfaces;
 using Left4DeadHelper.Helpers;
+using Left4DeadHelper.Helpers.DiscordExtensions;
 using Left4DeadHelper.Models;
 using Left4DeadHelper.Models.Configuration;
 using Left4DeadHelper.Services;
@@ -79,7 +80,8 @@ namespace Left4DeadHelper.Discord.Modules
                     string whoShouldFix;
                     if (guildSettings != null && guildSettings.ConfigMaintainers.Any())
                     {
-                        whoShouldFix = string.Join(", ", guildSettings.ConfigMaintainers.Select(ToMessageRef));
+                        whoShouldFix = string.Join(", ", guildSettings.ConfigMaintainers.Select(u =>
+                            DiscordMessageExtensions.ToDiscordUserIdMessageRef(u.DiscordId)));
                     }
                     else
                     {
@@ -97,11 +99,6 @@ namespace Left4DeadHelper.Discord.Modules
             {
                 _logger.LogError(e, "Got an error trying to move players :(");
             }
-        }
-
-        private object ToMessageRef(object arg1, int arg2)
-        {
-            throw new NotImplementedException();
         }
 
         public string GetGeneralHelpMessage(HelpContext helpContext) =>
