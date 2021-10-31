@@ -21,7 +21,7 @@ namespace Left4DeadHelper.Helpers.DiscordExtensions
         R: Relative Time (e.g. 2 months ago, in an hour)
         */
 
-        public static string ToMessageTs(this DateTimeOffset when, TimestampFormat format = TimestampFormat.ShortDateTime)
+        public static string ToDiscordMessageTs(this DateTimeOffset when, TimestampFormat format = TimestampFormat.ShortDateTime)
             => $"<t:{when.ToUnixTimeSeconds()}:{format.ToDiscordFormatStringValue()}>";
 
         public static string ToDiscordFormatStringValue(this TimestampFormat format) => new string(new[] { (char)format });
