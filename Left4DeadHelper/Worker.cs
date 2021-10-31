@@ -6,7 +6,6 @@ using Left4DeadHelper.Services;
 using Left4DeadHelper.Wrappers.DiscordNet;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Quartz;
 using System;
 using System.Linq;
 using System.Net.Http;

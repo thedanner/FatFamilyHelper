@@ -50,36 +50,46 @@ namespace Left4DeadHelper.Support.ExpiredCodes
 
         public static bool TryGetExpirationDateFromMessage(IMessage message, ILogger logger, out DateTimeOffset expiration)
         {
-            var embed = message.Embeds.FirstOrDefault();
+            return TryGetExpirationDateFromMessage(message, logger, out _, out expiration);
+        }
 
-            if (message.Author.IsBot
-                && embed != null
-                && !string.IsNullOrEmpty(embed.Description))
+        public static bool TryGetExpirationDateFromMessage(IMessage message, ILogger logger,
+            out Embed? relevantEmbed, out DateTimeOffset expiration)
+        {
+            if (message.Author.IsBot)
             {
-                // Look for:
-                // Expires: 24 JUN 2021 15:00 UTC
-
-                var match = ExpiresRegex.Match(embed.Description);
-                if (match.Success
-                    && DateTimeOffset.TryParseExact(
-                        match.Groups["expires"].Value,
-                        "d MMM yyyy H:mm",
-                        CultureInfo.CurrentCulture,
-                        DateTimeStyles.AssumeUniversal,
-                        out var givenExpiry))
+                foreach (var embed in message.Embeds)
                 {
-                    if (!"UTC".Equals(match.Groups["timezone"].Value, StringComparison.CurrentCultureIgnoreCase))
-                    {
-                        logger.LogWarning("Non-UTC expiration found for message with ID {messageId}.", message.Id);
-                        expiration = default;
-                        return false;
-                    }
+                    if (embed == null || string.IsNullOrEmpty(embed.Description)) continue;
 
-                    expiration = givenExpiry;
-                    return true;
+                    // Look for:
+                    // Expires: 24 JUN 2021 15:00 UTC
+
+                    var match = ExpiresRegex.Match(embed.Description);
+                    if (match.Success
+                        && DateTimeOffset.TryParseExact(
+                            match.Groups["expires"].Value,
+                            "d MMM yyyy H:mm",
+                            CultureInfo.CurrentCulture,
+                            DateTimeStyles.AssumeUniversal,
+                            out var givenExpiry))
+                    {
+                        if (!"UTC".Equals(match.Groups["timezone"].Value, StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            logger.LogWarning("Non-UTC expiration found for message with ID {messageId}.", message.Id);
+                            relevantEmbed = null;
+                            expiration = default;
+                            return false;
+                        }
+
+                        relevantEmbed = null;
+                        expiration = givenExpiry;
+                        return true;
+                    }
                 }
             }
 
+            relevantEmbed = null;
             expiration = default;
             return false;
         }

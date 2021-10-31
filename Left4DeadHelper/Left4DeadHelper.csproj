@@ -11,12 +11,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Exceptions\**" />
-    <EmbeddedResource Remove="Exceptions\**" />
-    <None Remove="Exceptions\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <InternalsVisibleTo Include="Left4DeadHelper.Tests.Unit" />
   </ItemGroup>
   

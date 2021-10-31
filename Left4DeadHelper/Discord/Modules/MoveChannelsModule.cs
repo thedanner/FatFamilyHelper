@@ -18,12 +18,14 @@ using System.Threading.Tasks;
 namespace Left4DeadHelper.Discord.Modules
 {
     [Group(Constants.GroupL4d)]
-    [Alias(Constants.GroupL4d2, Constants.GroupLfd, Constants.GroupLfd2, GroupDivorce)]
+    [Alias(Constants.GroupL4d2, Constants.GroupLfd, Constants.GroupLfd2,
+        GroupDivorce, GroupDontMarriage)]
     public class MoveChannelsModule : ModuleBase<SocketCommandContext>, ICommandModule
     {
         private const string Command = "vc";
         
         public const string GroupDivorce = "divorce";
+        public const string GroupDontMarriage = "dontmarriage";
 
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<MoveChannelsModule> _logger;
