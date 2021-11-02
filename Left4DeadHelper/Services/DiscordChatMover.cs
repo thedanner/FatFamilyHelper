@@ -180,20 +180,21 @@ namespace Left4DeadHelper.Services
                     continue;
                 }
 
-                var userMapping = _settings.UserMappings.FirstOrDefault(um => um.DiscordId == discordAccount.Id);
-                if (userMapping == null)
+                var userMappingsFromDiscordId = _settings.UserMappings.Where(um => um.DiscordId == discordAccount.Id).ToList();
+                if (!userMappingsFromDiscordId.Any())
                 {
                     _logger.LogDebug("Skipping {username} ({id}): Couldn't find user mapping.",
                         discordAccount.Username, discordAccount.Id);
                     continue;
                 }
 
+                var allSteamIdsFromDiscordId = userMappingsFromDiscordId.Select(s => s.SteamId);
                 var usersPrintInfo = printInfo.Players.FirstOrDefault(pi =>
-                    userMapping.SteamId.Equals(pi.SteamId, StringComparison.CurrentCultureIgnoreCase));
+                    allSteamIdsFromDiscordId.Any(sid => sid.Equals(pi.SteamId, StringComparison.CurrentCultureIgnoreCase)));
                 if (usersPrintInfo == null)
                 {
-                    _logger.LogDebug("Skipping {username} ({id}): Couldn't find user's Steam ID in PrintInfo results.",
-                        discordAccount.Username, discordAccount.Id);
+                    _logger.LogDebug("Skipping {username} ({id}): Couldn't find user's Steam ID ({userMappingSteamIds}) in PrintInfo results.",
+                        discordAccount.Username, discordAccount.Id, string.Join(", ", allSteamIdsFromDiscordId));
                     continue;
                 }
 

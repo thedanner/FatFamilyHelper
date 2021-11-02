@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 namespace Left4DeadHelper.Tests.Unit
 {
     [TestFixture]
-    public class DiscordHelperTests
+    public class DiscordChatMoverTests
     {
         private ServiceProvider _serviceProvider;
 
@@ -293,6 +293,146 @@ namespace Left4DeadHelper.Tests.Unit
             A.CallTo(() => socketGuildUser1.ModifyAsync(A<Action<GuildUserProperties>>._, null))
                 .MustHaveHappened(1, Times.Exactly);
             A.CallTo(() => socketGuildUser2.ModifyAsync(A<Action<GuildUserProperties>>._, null))
+                .MustHaveHappened(1, Times.Exactly);
+        }
+
+        [Test]
+        public async Task MovePlayersToCorrectChannelsAsync_DuplicateEntires_CorrectMovesHappened()
+        {
+            // Arrange
+            var rcon = A.Fake<RCONWrapper>();
+            var client = A.Fake<DiscordSocketClientWrapper>();
+            var tcs = new TaskCompletionSource<bool>();
+            var ctSource = new CancellationTokenSource();
+            var settings = new Settings
+            {
+                DiscordSettings = new DiscordSettings
+                {
+                    BotToken = "THE_BOT_TOKEN",
+                    Prefixes = new char[] { '!', '.' },
+                    GuildSettings = new GuildSettings[]
+                    {
+                        new GuildSettings
+                        {
+                        Id = 42,
+                        Channels = new DiscordVoiceChannels
+                        {
+                            Primary = new DiscordEntity
+                            {
+                                Id = 10,
+                                Name = "Channel 1",
+                            },
+                            Secondary = new DiscordEntity
+                            {
+                                Id = 20,
+                                Name = "Channel 2",
+                            }
+                        }
+                        }
+                    }
+                },
+                UserMappings = new UserMapping[]
+                {
+                    // Same Discord ID, different SteamIDs
+                    // (e.g., lookup sites return the 1st steamid, 'rcon sm_printinfo' shows the 2nd steamid)
+                    new UserMapping
+                    {
+                        Name = "Player 100",
+                        SteamId = "STEAM_0:0_100",
+                        DiscordId = 100,
+                    },
+                    new UserMapping
+                    {
+                        Name = "Player 100 #2",
+                        SteamId = "STEAM_1:0_100",
+                        DiscordId = 100,
+                    },
+                },
+            };
+            var guildSettings = settings.DiscordSettings.GuildSettings.First();
+
+            var guild = A.Fake<ISocketGuildWrapper>();
+
+            A.CallTo(() => guild.Id)
+                .Returns(guildSettings.Id);
+
+            A.CallTo(() => client.GetGuild(guildSettings.Id))
+                .Returns(guild);
+            A.CallTo(() => rcon.SendCommandAsync<SmCvar>("sm_cvar mp_gamemode"))
+                .Returns(new SmCvar
+                {
+                    Name = "mp_gamemode",
+                    Value = "versus"
+                });
+            A.CallTo(() => rcon.SendCommandAsync<PrintInfo>("sm_printinfo"))
+                .Returns(new PrintInfo
+                {
+                    Players = new List<PrintInfoPlayer>
+                    {
+                        new PrintInfoPlayer
+                        {
+                            Name = settings.UserMappings[1].Name,
+                            ClientIndex = 2,
+                            SteamId = settings.UserMappings[1].SteamId,
+                            TeamIndex = 3,
+                            TeamName = "Infected",
+                        },
+                    }
+                });
+
+            // General / Survivor voice channel
+            var primaryChannelId = guildSettings.Channels.Primary.Id;
+            var primaryVoiceChannel = A.Fake<ISocketVoiceChannelWrapper>(ob => ob.Named("Primary (General\\Survivor)"));
+            var primaryRawVoiceChannel = A.Fake<IVoiceChannel>();
+            var primaryVoiceChannelUsers =
+            A.CallTo(() => primaryVoiceChannel.Id).Returns(primaryChannelId);
+            A.CallTo(() => guild.GetVoiceChannel(primaryChannelId))
+                .Returns(primaryVoiceChannel);
+            A.CallTo(() => guild.GetVoiceChannelAsync(primaryChannelId, A<CacheMode>._, A<RequestOptions>._))
+                .Returns(Task.FromResult(primaryRawVoiceChannel));
+
+            // Infected voice channel
+            var secondaryChannelId = guildSettings.Channels.Secondary.Id;
+            var secondaryVoiceChannel = A.Fake<ISocketVoiceChannelWrapper>(ob => ob.Named("Secondary (Infected)"));
+            var secondaryRawVoiceChannel = A.Fake<IVoiceChannel>();
+            A.CallTo(() => secondaryVoiceChannel.Id).Returns(secondaryChannelId);
+            A.CallTo(() => guild.GetVoiceChannel(secondaryChannelId))
+                .Returns(secondaryVoiceChannel);
+            A.CallTo(() => guild.GetVoiceChannelAsync(secondaryChannelId, A<CacheMode>._, A<RequestOptions>._))
+                .Returns(Task.FromResult(secondaryRawVoiceChannel));
+
+            // Users is on the Infected team, but in the Survivor (primary) voice channel.
+            var socketGuildUser = A.Fake<ISocketGuildUserWrapper>(ob => ob.Named("User (on Survivor team)"));
+            A.CallTo(() => socketGuildUser.Id)
+                .Returns(settings.UserMappings[0].DiscordId);
+            A.CallTo(() => socketGuildUser.VoiceChannel)
+                .Returns(primaryVoiceChannel);
+
+            A.CallTo(() => guild.Users)
+                .Returns(new List<ISocketGuildUserWrapper>
+                {
+                    socketGuildUser,
+                }.AsReadOnly());
+
+            // Set up the raw call results.
+            var primaryChannelRawUser = A.Fake<IGuildUser>();
+            A.CallTo(() => primaryChannelRawUser.Id)
+                .Returns(socketGuildUser.Id);
+            A.CallTo(() => primaryRawVoiceChannel.GetUsersAsync(A<CacheMode>._, A<RequestOptions>._))
+                .Returns(AsReadOnlyAsyncEnumerable(primaryChannelRawUser));
+
+            A.CallTo(() => secondaryRawVoiceChannel.GetUsersAsync(A<CacheMode>._, A<RequestOptions>._))
+                .Returns(AsReadOnlyAsyncEnumerable<IGuildUser>());
+
+            var _mover = new DiscordChatMover(
+                _serviceProvider.GetRequiredService<ILogger<DiscordChatMover>>(),
+                settings);
+
+            // Act
+            await _mover.MovePlayersToCorrectChannelsAsync(rcon, client, guild, CancellationToken.None);
+
+            // Assert
+            A.CallTo(() => socketGuildUser.ModifyAsync(A<Action<GuildUserProperties>>._, null))
                 .MustHaveHappened(1, Times.Exactly);
         }
 
