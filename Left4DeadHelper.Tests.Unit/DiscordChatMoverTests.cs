@@ -297,13 +297,44 @@ namespace Left4DeadHelper.Tests.Unit
         }
 
         [Test]
-        public async Task MovePlayersToCorrectChannelsAsync_DuplicateEntires_CorrectMovesHappened()
+        [TestCase(false)]
+        [TestCase(true)]
+        public async Task MovePlayersToCorrectChannelsAsync_DuplicateEntires_CorrectMovesHappened(bool multipleEntires)
         {
             // Arrange
             var rcon = A.Fake<RCONWrapper>();
             var client = A.Fake<DiscordSocketClientWrapper>();
             var tcs = new TaskCompletionSource<bool>();
             var ctSource = new CancellationTokenSource();
+
+            // Same Discord ID, different SteamIDs
+            // (e.g., lookup sites return the 1st steamid, 'rcon sm_printinfo' shows the 2nd steamid)
+            var userMappings = new List<UserMapping>
+            {
+                new UserMapping
+                {
+                    Name = "Player 100",
+                    SteamId = "STEAM_0:0_100",
+                    DiscordId = 100,
+                }
+            };
+
+            const string altSteamId = "STEAM_1:0_100";
+            if (multipleEntires)
+            {
+                userMappings.Add(new UserMapping
+                {
+                    Name = "Player 100 #2",
+                    SteamId = altSteamId,
+                    DiscordId = 100,
+                });
+            }
+            else
+            {
+                userMappings[0].SteamIds.Add(altSteamId);
+            }
+
+
             var settings = new Settings
             {
                 DiscordSettings = new DiscordSettings
@@ -331,23 +362,7 @@ namespace Left4DeadHelper.Tests.Unit
                         }
                     }
                 },
-                UserMappings = new UserMapping[]
-                {
-                    // Same Discord ID, different SteamIDs
-                    // (e.g., lookup sites return the 1st steamid, 'rcon sm_printinfo' shows the 2nd steamid)
-                    new UserMapping
-                    {
-                        Name = "Player 100",
-                        SteamId = "STEAM_0:0_100",
-                        DiscordId = 100,
-                    },
-                    new UserMapping
-                    {
-                        Name = "Player 100 #2",
-                        SteamId = "STEAM_1:0_100",
-                        DiscordId = 100,
-                    },
-                },
+                UserMappings = userMappings.ToArray(),
             };
             var guildSettings = settings.DiscordSettings.GuildSettings.First();
 
