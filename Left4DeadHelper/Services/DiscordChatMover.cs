@@ -89,17 +89,17 @@ namespace Left4DeadHelper.Services
             .ToList();
 
             var currentPlayerMappings = _settings.UserMappings
-                .Where(d => currentlyPlayingSteamIds.Contains(d.SteamId, StringComparer.CurrentCultureIgnoreCase))
+                .Where(d => currentlyPlayingSteamIds.Intersect(d.SteamIds, StringComparer.CurrentCultureIgnoreCase).Any())
                 .ToList();
 
             _logger.LogDebug("Current players found in mapping data ({playerCount}):", currentPlayerMappings.Count);
             for (var i = 0; i < currentPlayerMappings.Count; i++)
             {
-                _logger.LogDebug("  {index}: {steamId} - {discordId} - {name}",
-                    i, currentPlayerMappings[i].SteamId, currentPlayerMappings[i].DiscordId, currentPlayerMappings[i].Name);
+                _logger.LogDebug("  {index}: {steamIds} - {discordId} - {name}",
+                    i, string.Join(",", currentPlayerMappings[i].SteamIds), currentPlayerMappings[i].DiscordId, currentPlayerMappings[i].Name);
             }
 
-            var allSteamIdsFromUserMappings = _settings.UserMappings.Select(um => um.SteamId).ToList();
+            var allSteamIdsFromUserMappings = _settings.UserMappings.SelectMany(um => um.SteamIds).ToList();
             var missingSteamMappings = currentPlayersOnServer
                 .Where(p => !allSteamIdsFromUserMappings.Contains(p.SteamId, StringComparer.CurrentCultureIgnoreCase))
                 .ToList();
@@ -188,7 +188,7 @@ namespace Left4DeadHelper.Services
                     continue;
                 }
 
-                var allSteamIdsFromDiscordId = userMappingsFromDiscordId.Select(s => s.SteamId);
+                var allSteamIdsFromDiscordId = userMappingsFromDiscordId.SelectMany(s => s.SteamIds);
                 var usersPrintInfo = printInfo.Players.FirstOrDefault(pi =>
                     allSteamIdsFromDiscordId.Any(sid => sid.Equals(pi.SteamId, StringComparison.CurrentCultureIgnoreCase)));
                 if (usersPrintInfo == null)
