@@ -57,8 +57,8 @@ namespace Left4DeadHelper.Discord.DiscordEventHandlers
                 if (hasExpiry)
                 {
                     content += 
-                        $"\nThis code xpires {expiry.ToDiscordMessageTs(TimestampFormat.LongDateTime)} " +
-                        $"({expiry.ToDiscordMessageTs(TimestampFormat.LongDateTime)}).";
+                        $"\nThis code expires {expiry.ToDiscordMessageTs(TimestampFormat.LongDateTime)} " +
+                        $"({expiry.ToDiscordMessageTs(TimestampFormat.RelativeTime)}).";
                 }
                 
                 await destinationChannel.SendMessageAsync(content, embed: embed);
