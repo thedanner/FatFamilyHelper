@@ -162,7 +162,7 @@ namespace Left4DeadHelper.Tests.Unit
                         {
                             Name = settings.UserMappings[0].Name,
                             ClientIndex = 1,
-                            SteamId = settings.UserMappings[0].SteamId,
+                            SteamId = settings.UserMappings[0].SteamIds.First(),
                             TeamIndex = 2,
                             TeamName = "Survivor",
                         },
@@ -170,7 +170,7 @@ namespace Left4DeadHelper.Tests.Unit
                         {
                             Name = settings.UserMappings[1].Name,
                             ClientIndex = 2,
-                            SteamId = settings.UserMappings[1].SteamId,
+                            SteamId = settings.UserMappings[1].SteamIds.First(),
                             TeamIndex = 2,
                             TeamName = "Survivor",
                         },
@@ -178,7 +178,7 @@ namespace Left4DeadHelper.Tests.Unit
                         {
                             Name = settings.UserMappings[2].Name,
                             ClientIndex = 3,
-                            SteamId = settings.UserMappings[2].SteamId,
+                            SteamId = settings.UserMappings[2].SteamIds.First(),
                             TeamIndex = 2,
                             TeamName = "Survivor",
                         },
@@ -186,7 +186,7 @@ namespace Left4DeadHelper.Tests.Unit
                         {
                             Name = settings.UserMappings[3].Name,
                             ClientIndex = 4,
-                            SteamId = settings.UserMappings[3].SteamId,
+                            SteamId = settings.UserMappings[3].SteamIds.First(),
                             TeamIndex = 2,
                             TeamName = "Survivor",
                         },
@@ -196,7 +196,7 @@ namespace Left4DeadHelper.Tests.Unit
                         {
                             Name = settings.UserMappings[4].Name,
                             ClientIndex = 5,
-                            SteamId = settings.UserMappings[4].SteamId,
+                            SteamId = settings.UserMappings[4].SteamIds.First(),
                             TeamIndex = 3,
                             TeamName = "Infected",
                         },
@@ -204,7 +204,7 @@ namespace Left4DeadHelper.Tests.Unit
                         {
                             Name = settings.UserMappings[5].Name,
                             ClientIndex = 6,
-                            SteamId = settings.UserMappings[5].SteamId,
+                            SteamId = settings.UserMappings[5].SteamIds.First(),
                             TeamIndex = 3,
                             TeamName = "Infected",
                         },
@@ -212,7 +212,7 @@ namespace Left4DeadHelper.Tests.Unit
                         {
                             Name = settings.UserMappings[6].Name,
                             ClientIndex = 7,
-                            SteamId = settings.UserMappings[6].SteamId,
+                            SteamId = settings.UserMappings[6].SteamIds.First(),
                             TeamIndex = 3,
                             TeamName = "Infected",
                         },
@@ -220,7 +220,7 @@ namespace Left4DeadHelper.Tests.Unit
                         {
                             Name = settings.UserMappings[7].Name,
                             ClientIndex = 8,
-                            SteamId = settings.UserMappings[7].SteamId,
+                            SteamId = settings.UserMappings[7].SteamIds.First(),
                             TeamIndex = 3,
                             TeamName = "Infected",
                         },
@@ -373,7 +373,7 @@ namespace Left4DeadHelper.Tests.Unit
                         {
                             Name = settings.UserMappings[1].Name,
                             ClientIndex = 2,
-                            SteamId = settings.UserMappings[1].SteamId,
+                            SteamId = settings.UserMappings[1].SteamIds.First(),
                             TeamIndex = 3,
                             TeamName = "Infected",
                         },
