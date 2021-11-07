@@ -219,11 +219,11 @@ namespace Left4DeadHelper.Services
             {
                 ISocketVoiceChannelWrapper currentVoiceChannel;
 
-                if (usersInPrimaryChannel != null && usersInPrimaryChannel.Any(u => u.Id == user.Id))
+                if (usersInPrimaryChannel.Any(u => u.Id == user.Id))
                 {
                     currentVoiceChannel = primaryVoiceChannel;
                 }
-                else if (usersInSecondaryChannel != null && usersInSecondaryChannel.Any(u => u.Id == user.Id))
+                else if (usersInSecondaryChannel.Any(u => u.Id == user.Id))
                 {
                     currentVoiceChannel = secondaryVoiceChannel;
                 }

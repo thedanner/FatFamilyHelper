@@ -386,9 +386,9 @@ namespace Left4DeadHelper.Tests.Unit
                     {
                         new PrintInfoPlayer
                         {
-                            Name = settings.UserMappings[1].Name,
+                            Name = settings.UserMappings[0].Name,
                             ClientIndex = 2,
-                            SteamId = settings.UserMappings[1].SteamIds.First(),
+                            SteamId = settings.UserMappings[0].SteamIds.First(),
                             TeamIndex = 3,
                             TeamName = "Infected",
                         },
