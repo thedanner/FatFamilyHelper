@@ -85,8 +85,8 @@ namespace Left4DeadHelper.Services
             var discordUsersToMove = new List<(ISocketGuildUserWrapper user, ISocketVoiceChannelWrapper intendedChannel)>();
 
             var currentlyPlayingSteamIds = currentPlayersOnServer
-            .Select(p => p.SteamId)
-            .ToList();
+                .Select(p => p.SteamId)
+                .ToList();
 
             var currentPlayerMappings = _settings.UserMappings
                 .Where(d => currentlyPlayingSteamIds.Intersect(d.SteamIds, StringComparer.CurrentCultureIgnoreCase).Any())

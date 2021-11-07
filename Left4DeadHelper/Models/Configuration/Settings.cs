@@ -10,13 +10,13 @@ namespace Left4DeadHelper.Models.Configuration
             ShiftCodes = new ShiftCodeSettings();
             Left4DeadSettings = new Left4DeadSettings();
             Tasks = new List<TaskDefinition>();
-            UserMappings = new UserMapping[0];
+            UserMappings = new List<UserMapping>();
         }
 
         public DiscordSettings DiscordSettings { get; set; }
         public ShiftCodeSettings ShiftCodes { get; set; }
         public Left4DeadSettings Left4DeadSettings { get; set;}
         public List<TaskDefinition> Tasks { get; set; }
-        public UserMapping[] UserMappings { get; set; }
+        public List<UserMapping> UserMappings { get; set; }
     }
 }

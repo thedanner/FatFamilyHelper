@@ -85,7 +85,7 @@ namespace Left4DeadHelper.Tests.Unit
                         }
                     }
                 },
-                UserMappings = new UserMapping[]
+                UserMappings = new List<UserMapping>
                 {
                     new UserMapping
                     {
@@ -362,7 +362,7 @@ namespace Left4DeadHelper.Tests.Unit
                         }
                     }
                 },
-                UserMappings = userMappings.ToArray(),
+                UserMappings = userMappings.ToList(),
             };
             var guildSettings = settings.DiscordSettings.GuildSettings.First();
 

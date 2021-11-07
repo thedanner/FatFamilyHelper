@@ -1,14 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Left4DeadHelper.Models.Configuration
 {
     public class UserMapping
     {
+        private readonly List<string> _steamIds;
+
         public UserMapping()
         {
             Name = "";
-            SteamIds = new List<string>();
+
+            _steamIds = new List<string>();
         }
 
         public string Name { get; set; }
@@ -17,11 +21,18 @@ namespace Left4DeadHelper.Models.Configuration
 
         public string SteamId
         {
-            private get => SteamIds.First() ?? "";
-            set => SteamIds.Add(value);
+            // This needs to be a public accessor because the settings framework skips it if it's not.
+            [Obsolete("Use the SteamIds property.", true)]
+            get => _steamIds.FirstOrDefault() ?? "<none>";
+            set => _steamIds.Add(value);
         }
-        public IList<string> SteamIds { get; set; }
 
-        public override string ToString() => $"{Name} [SteamId:{SteamId}, DiscordId:{DiscordId}]";
+        public List<string> SteamIds
+        {
+            get => _steamIds.ToList(); // Copy so the underlying list isn't accidentally corrupted.
+            set => _steamIds.AddRange(value);
+        }
+
+        public override string ToString() => $"{Name} [SteamIds:{string.Join(",", SteamIds)}, DiscordId:{DiscordId}]";
     }
 }
