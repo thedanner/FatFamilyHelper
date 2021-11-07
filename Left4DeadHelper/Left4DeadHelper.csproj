@@ -7,7 +7,8 @@
     <Nullable>enable</Nullable>
     <WarningsAsErrors>CS8600;CS8602;CS8603</WarningsAsErrors>
     <RootNamespace>Left4DeadHelper</RootNamespace>
-    <AssemblyName>Left4DeadHelper</AssemblyName>  
+    <AssemblyName>Left4DeadHelper</AssemblyName>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>  
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,6 +30,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="5.0.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.11.1" />
     <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.22000.194" />
     <PackageReference Include="NLog" Version="4.7.11" />
     <PackageReference Include="NLog.Extensions.Logging" Version="1.7.4" />

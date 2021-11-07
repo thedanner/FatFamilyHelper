@@ -20,7 +20,7 @@ namespace Left4DeadHelper.Tests.Integration
         {
             var config = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory()) //From NuGet Package Microsoft.Extensions.Configuration.Json
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile("appSettings.json", optional: false, reloadOnChange: true)
                 .Build();
 
             _settings = config.Get<Settings>();

@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using Left4DeadHelper.Rcon;
 using NUnit.Framework;
+using System;
 
 namespace Left4DeadHelper.Tests.Unit
 {
@@ -32,12 +33,13 @@ namespace Left4DeadHelper.Tests.Unit
             // Arrange
             
             // Act
-            var result = new PrintInfoParser().Parse(@"[PI] BEGIN
-[PI] Da Danner<2><STEAM_1:0:1234567><><2><Survivor>
-[PI] Louis<3><BOT><><2><Survivor>
-[PI] Zoey<4><BOT><><2><Survivor>
-[PI] Bill<5><BOT><><2><Survivor>
-[PI] END");
+            var result = new PrintInfoParser().Parse(
+                $"[PI] BEGIN{Environment.NewLine}" +
+                $"[PI] Da Danner<2><STEAM_1:0:1234567><><2><Survivor>{Environment.NewLine}" +
+                $"[PI] Louis<3><BOT><><2><Survivor>{Environment.NewLine}" +
+                $"[PI] Zoey<4><BOT><><2><Survivor>{Environment.NewLine}" +
+                $"[PI] Bill<5><BOT><><2><Survivor>{Environment.NewLine}" +
+                "[PI] END");
 
             // Assert
             result.Should().NotBeNull();
@@ -76,13 +78,14 @@ namespace Left4DeadHelper.Tests.Unit
         public void PrintInfoParse_ActualVersusString_ReturnsCorrectResult()
         {
             // Act
-            var result = new PrintInfoParser().Parse(@"[PI] BEGIN
-[PI] Da Danner<2><STEAM_1:0:1234567><><3><Infected>
-[PI] Louis<3><BOT><><2><Survivor>
-[PI] Zoey<4><BOT><><2><Survivor>
-[PI] Bill<5><BOT><><2><Survivor>
-[PI] Francis<6><BOT><><2><Survivor>
-[PI] END");
+            var result = new PrintInfoParser().Parse(
+                $"[PI] BEGIN{Environment.NewLine}" +
+                $"[PI] Da Danner<2><STEAM_1:0:1234567><><3><Infected>{Environment.NewLine}" +
+                $"[PI] Louis<3><BOT><><2><Survivor>{Environment.NewLine}" +
+                $"[PI] Zoey<4><BOT><><2><Survivor>{Environment.NewLine}" +
+                $"[PI] Bill<5><BOT><><2><Survivor>{Environment.NewLine}" +
+                $"[PI] Francis<6><BOT><><2><Survivor>{Environment.NewLine}" +
+                "[PI] END");
 
             // Assert
             result.Should().NotBeNull();
@@ -128,16 +131,17 @@ namespace Left4DeadHelper.Tests.Unit
         public void PrintInfoParse_ActualVersusStringForFullGame_ReturnsCorrectResult()
         {
             // Act
-            var result = new PrintInfoParser().Parse(@"[PI] BEGIN
-[PI] (F?T) Nushaa<2><STEAM_1:1:27058429><><2><Survivor>
-[PI] (F?T) Da Danner<3><STEAM_1:0:4662915><><2><Survivor>
-[PI] (F?T) Yoyo<4><STEAM_1:1:17115154><><2><Survivor>
-[PI] (F?T) The President<5><STEAM_1:0:18975559><><2><Survivor>
-[PI] QuasiImp<6><STEAM_1:0:113054019><><3><Infected>
-[PI] Filthy Causal<7><STEAM_1:1:6063400><><3><Infected>
-[PI] Jackball<8><STEAM_1:1:15762437><><3><Infected>
-[PI] (F?T) Steel Talon<9><STEAM_1:1:3730409><><3><Infected>
-[PI] END");
+            var result = new PrintInfoParser().Parse(
+                $"[PI] BEGIN{Environment.NewLine}" +
+                $"[PI] (F?T) Nushaa<2><STEAM_1:1:27058429><><2><Survivor>{Environment.NewLine}" +
+                $"[PI] (F?T) Da Danner<3><STEAM_1:0:4662915><><2><Survivor>{Environment.NewLine}" +
+                $"[PI] (F?T) Yoyo<4><STEAM_1:1:17115154><><2><Survivor>{Environment.NewLine}" +
+                $"[PI] (F?T) The President<5><STEAM_1:0:18975559><><2><Survivor>{Environment.NewLine}" +
+                $"[PI] QuasiImp<6><STEAM_1:0:113054019><><3><Infected>{Environment.NewLine}" +
+                $"[PI] Filthy Causal<7><STEAM_1:1:6063400><><3><Infected>{Environment.NewLine}" +
+                $"[PI] Jackball<8><STEAM_1:1:15762437><><3><Infected>{Environment.NewLine}" +
+                $"[PI] (F?T) Steel Talon<9><STEAM_1:1:3730409><><3><Infected>{Environment.NewLine}" +
+                "[PI] END");
 
             // Assert
             result.Should().NotBeNull();
