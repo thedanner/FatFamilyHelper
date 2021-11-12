@@ -13,6 +13,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -29,16 +30,18 @@ namespace Left4DeadHelper.Discord.Modules
         private readonly ILogger<SprayModule> _logger;
         private readonly Settings _settings;
         private readonly ISprayModuleCommandResolver _resolver;
+        private readonly HttpClient _httpClient;
 
         // CROSS MARK emoji https://www.fileformat.info/info/emoji/x/index.htm
         private const string DeleteEmojiString = "\u274C";
         public static Emoji DeleteEmote => new Emoji(DeleteEmojiString);
 
-        public SprayModule(ILogger<SprayModule> logger, Settings settings, ISprayModuleCommandResolver resolver)
+        public SprayModule(ILogger<SprayModule> logger, Settings settings, ISprayModuleCommandResolver resolver, HttpClient httpClient)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _resolver = resolver ?? throw new ArgumentNullException(nameof(resolver));
+            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         }
 
         [Command(CommandVtf)]
@@ -128,6 +131,8 @@ namespace Left4DeadHelper.Discord.Modules
             if (imageUris is null) throw new ArgumentNullException(nameof(imageUris));
             if (imageUris.Length == 0) throw new ArgumentException("At least one image URI is required.", nameof(imageUris));
 
+            var cancellationToken = CancellationToken.None;
+
             var dmChannel = Context.Channel as SocketDMChannel;
             if (dmChannel != null)
             {
@@ -141,7 +146,7 @@ namespace Left4DeadHelper.Discord.Modules
 
             _logger.LogInformation("Triggered by message with ID {messageId}.", Context.Message.Id);
 
-            var sourceStreams = new Stream[0];
+            var sourceStreams = Array.Empty<Stream>();
 
             try
             {
@@ -150,8 +155,7 @@ namespace Left4DeadHelper.Discord.Modules
 
                 var sourceStreamTasks = imageUris.Select(async s =>
                 {
-                    var client = new WebClient();
-                    return await client.OpenReadTaskAsync(s);
+                    return await _httpClient.GetStreamAsync(s, cancellationToken);
                 });
                 sourceStreams = await Task.WhenAll(sourceStreamTasks);
 
@@ -163,7 +167,7 @@ namespace Left4DeadHelper.Discord.Modules
 
                     var conversionResult = await sprayTools.ConvertAsync(
                         sourceStreams, outputStream,
-                        saveProfile, CancellationToken.None);
+                        saveProfile, cancellationToken);
 
                     if (conversionResult.IsSuccessful)
                     {

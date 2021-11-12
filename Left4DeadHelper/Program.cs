@@ -24,8 +24,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Reflection;
-using System.Security.Cryptography;
 
 namespace Left4DeadHelper
 {
@@ -107,6 +107,8 @@ namespace Left4DeadHelper
                 throw new Exception("At least one prefix must be set in DiscordSettings.Prefixes.");
             }
 
+            serviceCollection.AddSingleton(new HttpClient());
+
             serviceCollection.AddSingleton(settings);
 
             serviceCollection.AddLogging(loggerBuilder =>
@@ -122,9 +124,6 @@ namespace Left4DeadHelper
                     config.LogName = "Left4DeadHelper";
                     config.SourceName = "Left4DeadHelper - Discord Bot";
                 });
-
-            // This type is thread-safe per MSDN.
-            serviceCollection.AddSingleton<RNGCryptoServiceProvider>();
 
             serviceCollection.AddTransient<IDiscordConnectionBootstrapper, DiscordConnectionBootstrapper>();
 

@@ -6,6 +6,7 @@
     <!-- Nullable settings described in https://stackoverflow.com/a/55492438 -->
     <Nullable>enable</Nullable>
     <WarningsAsErrors>CS8600;CS8602;CS8603</WarningsAsErrors>
+	<IsPackable>true</IsPackable>
     <RootNamespace>Left4DeadHelper</RootNamespace>
     <AssemblyName>Left4DeadHelper</AssemblyName>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>  
@@ -31,7 +32,6 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.11.1" />
-    <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.22000.196" />
     <PackageReference Include="NLog" Version="4.7.12" />
     <PackageReference Include="NLog.Extensions.Logging" Version="1.7.4" />
     <PackageReference Include="NLog.Schema" Version="4.7.12" />

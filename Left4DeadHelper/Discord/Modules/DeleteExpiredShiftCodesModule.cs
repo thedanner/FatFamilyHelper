@@ -102,7 +102,7 @@ namespace Left4DeadHelper.Discord.Modules
                     var messagesToDelete = ExpiredCodesHelpers.GetMessagesWithExpiredCodes(messages, _logger);
 
                     var plural = messagesToDelete.Count == 1 ? "" : "s";
-                    _logger.LogInformation("Found {count} message(s) with expired codes to delete.",
+                    _logger.LogInformation("Found {count} message{s} with expired codes to delete.",
                         messagesToDelete.Count, plural);
 
                     // Only messages < 14 days old can be bulk deleted.

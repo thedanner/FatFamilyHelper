@@ -108,7 +108,7 @@ namespace Left4DeadHelper.Services
                 .Select(p => p.DiscordId)
                 .ToList();
 
-            var discordAccountsForCurrentPlayers = guild.Users
+            var discordAccountsForCurrentPlayers = (guild.Users ?? Array.Empty<ISocketGuildUserWrapper>())
                 .Where(u => currentPlayerDiscordSnowflakes.Contains(u.Id))
                 .ToList();
 

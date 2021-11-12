@@ -24,13 +24,11 @@ namespace Left4DeadHelper.Discord.Modules
 
         private readonly ILogger<PickMapModule> _logger;
         private readonly Settings _settings;
-        private readonly RNGCryptoServiceProvider _random;
-
-        public PickMapModule(ILogger<PickMapModule> logger, Settings settings, RNGCryptoServiceProvider random)
+        
+        public PickMapModule(ILogger<PickMapModule> logger, Settings settings)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
-            _random = random ?? throw new ArgumentNullException(nameof(random));
         }
 
         [Command(Command)]
@@ -73,7 +71,7 @@ namespace Left4DeadHelper.Discord.Modules
             if (ArgsAny.Contains(firstArg, StringComparer.CurrentCultureIgnoreCase))
             {
                 var allMaps = maps.Categories.Values.SelectMany(m => m).ToList();
-                var map = _random.PickRandom(allMaps);
+                var map = RandomHelper.PickSecureRandom(allMaps);
 
                 await ReplyAsync($"You should play **{map}**! (from all maps)");
 
@@ -83,7 +81,7 @@ namespace Left4DeadHelper.Discord.Modules
             // Pick a map!
             if (maps.Categories.TryGetValue(firstArg, out var categoryMaps))
             {
-                var map = _random.PickRandom(categoryMaps);
+                var map = RandomHelper.PickSecureRandom(categoryMaps);
 
                 await ReplyAsync($"You should play **{map}**! (from the\"{firstArg}\" list)");
                 

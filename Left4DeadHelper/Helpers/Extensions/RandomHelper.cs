@@ -4,26 +4,27 @@ using System.Security.Cryptography;
 
 namespace Left4DeadHelper.Helpers.Extensions
 {
-    public static class RngExtensions
+    public static class RandomHelper
     {
         // Methods from
         // https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.rngcryptoserviceprovider?redirectedfrom=MSDN&view=netcore-3.1#Anchor_3
 
-        public static T PickRandom<T>(this RNGCryptoServiceProvider rngCsp, IList<T> list)
+        private static readonly RandomNumberGenerator Rng = RandomNumberGenerator.Create();
+
+        public static T PickSecureRandom<T>(IList<T> list)
         {
-            return PickRandom(rngCsp, list, out var _);
+            return PickSecureRandom(list, out var _);
         }
 
-        public static T PickRandom<T>(this RNGCryptoServiceProvider rngCsp, IList<T> list, out byte index)
+        public static T PickSecureRandom<T>(IList<T> list, out byte index)
         {
-            if (rngCsp is null) throw new ArgumentNullException(nameof(rngCsp));
             if (list is null) throw new ArgumentNullException(nameof(list));
             if (list.Count >= byte.MaxValue)
             {
-                throw new ArgumentException(nameof(list), $"The list can't have more than {byte.MaxValue} sides.");
+                throw new ArgumentException($"The list can't have more than {byte.MaxValue} sides.", nameof(list));
             }
 
-            index = RollDice(rngCsp, (byte) list.Count);
+            index = SecureRollDice((byte) list.Count);
             var item = list[index - 1];
             return item;
         }
@@ -35,9 +36,8 @@ namespace Left4DeadHelper.Helpers.Extensions
         /// <param name="rngCsp">The RNG provider to use.</param>
         /// <param name="numberSides">The number of sides on the die to roll.</param>
         /// <returns>The number from a random dice roll, between 1 and <paramref name="numberSides" /> inclusive.</returns>
-        public static byte RollDice(this RNGCryptoServiceProvider rngCsp, byte numberSides)
+        public static byte SecureRollDice(byte numberSides)
         {
-            if (rngCsp is null) throw new ArgumentNullException(nameof(rngCsp));
             if (numberSides <= 1) throw new ArgumentOutOfRangeException(nameof(numberSides), "Value must be >= 2.");
 
             // Create a byte array to hold the random value.
@@ -45,7 +45,7 @@ namespace Left4DeadHelper.Helpers.Extensions
             do
             {
                 // Fill the array with a random value.
-                rngCsp.GetBytes(randomNumber);
+                Rng.GetBytes(randomNumber);
             }
             while (!IsFairRoll(randomNumber[0], numberSides));
             // Return the random number mod the number

@@ -24,7 +24,6 @@ namespace Left4DeadHelper
         // Singleton IDisposables
         private readonly DiscordSocketClient _client;
         private readonly CommandAndEventHandler _commandHandler;
-        private readonly RNGCryptoServiceProvider _random;
 
         public Worker(
             ILogger<Worker> logger,
@@ -32,8 +31,7 @@ namespace Left4DeadHelper
             Settings settings,
             // Singleton IDisposables or objects that can be started and stopped.
             DiscordSocketClient client,
-            CommandAndEventHandler commandHandler,
-            RNGCryptoServiceProvider random)
+            CommandAndEventHandler commandHandler)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _bootstrapper = bootstrapper ?? throw new ArgumentNullException(nameof(bootstrapper));
@@ -42,7 +40,6 @@ namespace Left4DeadHelper
             // Singleton IDisposables or objects that can be started and stopped.
             _client = client ?? throw new ArgumentNullException(nameof(client));
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
-            _random = random ?? throw new ArgumentNullException(nameof(random));
         }
 
         public override async Task StartAsync(CancellationToken cancellationToken)
@@ -110,7 +107,6 @@ namespace Left4DeadHelper
             // Clean up Singleton IDisposables.
             _commandHandler.Dispose();
             _client.Dispose();
-            _random.Dispose();
 
             await base.StopAsync(cancellationToken);
         }

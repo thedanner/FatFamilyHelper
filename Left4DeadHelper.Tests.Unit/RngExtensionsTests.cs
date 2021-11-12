@@ -1,21 +1,12 @@
 ﻿using Left4DeadHelper.Helpers.Extensions;
 using NUnit.Framework;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 
 namespace Left4DeadHelper.Tests.Unit
 {
     [TestFixture]
     public class RngExtensionsTests
     {
-        private RNGCryptoServiceProvider _random;
-
-        [OneTimeSetUp]
-        public void OneTimeSetUp()
-        {
-            _random = new RNGCryptoServiceProvider();
-        }
-
         [Test]
         [Timeout(10000)] // Don't wait longer than 10 seconds.
         [TestCaseSource(nameof(GetByteIndexRange))]
@@ -29,7 +20,7 @@ namespace Left4DeadHelper.Tests.Unit
             }
 
             // Act
-            _random.PickRandom(list);
+            RandomHelper.PickSecureRandom(list);
 
             // Assert
             // The [Timeout] will stop the test if gets stuck in a loop.

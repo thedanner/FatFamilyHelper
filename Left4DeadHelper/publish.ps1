@@ -1,9 +1,16 @@
 # This script stops and starts a Windows service.
 
-$Runtime = 'win10-x64'
+Set-Location $PSScriptRoot
+
+$Runtime = 'win-x64'
+$Framework = 'net6.0'
 $Configuration = 'Release'
 $ServiceName = "Left4DeadHelper"
 $ServiceDescription = "Left 4 Dead Helper bot service"
+
+$TestProjectDirs = @(
+    "..\Left4DeadHelper.Tests.Unit\"
+)
 
 
 $CurrentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
@@ -11,7 +18,7 @@ $IsAdmin = $CurrentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::A
 
 $Service = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
 
-if ($Service -eq $null)
+if ($null -eq $Service)
 {
     if (-not $IsAdmin)
     {
@@ -23,9 +30,21 @@ if ($Service -eq $null)
 }
 
 
-dotnet test --nologo `
-    --runtime $Runtime  --configuration $Configuration `
-    "..\Left4DeadHelper.Tests.Unit\"
+dotnet clean --nologo --configuration $Configuration
+dotnet restore --nologo --runtime $Runtime
+dotnet build --nologo --framework $Framework --runtime $Runtime --self-contained --configuration $Configuration --no-restore
+
+foreach ($TestProjectDir in $TestProjectDirs)
+{
+    Push-Location $TestProjectDir
+
+    dotnet restore --nologo --runtime $Runtime
+    dotnet build --nologo --framework $Framework --runtime $Runtime --no-self-contained --configuration $Configuration --no-restore
+    dotnet test --nologo --no-restore --no-build --framework $Framework --runtime $Runtime --configuration $Configuration
+
+    Pop-Location
+}
+
 
 if ($LASTEXITCODE -ne 0)
 {
@@ -33,6 +52,7 @@ if ($LASTEXITCODE -ne 0)
     exit $LASTEXITCODE
 }
 
+# Tests passed, we can deploy/publish/whatever you want to call it.
 if ($Service.Status -eq [System.ServiceProcess.ServiceControllerStatus]::Running)
 {
     try
@@ -49,14 +69,9 @@ if ($Service.Status -eq [System.ServiceProcess.ServiceControllerStatus]::Running
 }
 
 Remove-Item -Recurse "dist\*" -ErrorAction SilentlyContinue
-dotnet clean --configuration $Configuration --nologo
-dotnet restore --runtime $Runtime
-dotnet build --runtime $Runtime  --configuration $Configuration `
-    --no-restore --nologo
-
-dotnet publish --configuration Release `
+dotnet publish --configuration $Configuration `
     --no-restore --no-build --nologo `
-    --runtime $Runtime `
+    --framework $Framework --runtime $Runtime --self-contained true `
     --output dist
 
 if ($Service)
