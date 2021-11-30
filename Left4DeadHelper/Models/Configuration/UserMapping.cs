@@ -29,7 +29,31 @@ namespace Left4DeadHelper.Models.Configuration
 
         public List<string> SteamIds
         {
-            get => _steamIds.ToList(); // Copy so the underlying list isn't accidentally corrupted.
+            get
+            {
+                var fullIds = new List<string>(_steamIds.Count + 1);
+                
+                foreach (var id in _steamIds)
+                {
+                    if (string.IsNullOrEmpty(id)) continue;
+
+                    if (!fullIds.Contains(id))
+                    {
+                        fullIds.Add(id);
+                    }
+
+                    if (id.StartsWith("STEAM_0:"))
+                    {
+                        var altId = id.Replace("STEAM_0:", "STEAM_1:");
+
+                        if (!fullIds.Contains(altId))
+                        {
+                            fullIds.Add(altId);
+                        }
+                    }
+                }
+                return fullIds;
+            }
             set => _steamIds.AddRange(value);
         }
 
