@@ -6,7 +6,7 @@ public class Settings
 {
     public DiscordSettings DiscordSettings { get; set; } = new DiscordSettings();
     public Left4DeadSettings Left4DeadSettings { get; set;} = new Left4DeadSettings();
-    //public SteamWebApiSettings SteamWebApi { get; set; } = new SteamWebApiSettings();
+    public SteamWebApiSettings? SteamWebApi { get; set; }
     public ShiftCodeSettings ShiftCodes { get; set; } = new ShiftCodeSettings();
     public MinecraftSettings? Minecraft { get; set; }
     public List<TaskDefinition> Tasks { get; set; } = new List<TaskDefinition>();
