@@ -9,104 +9,103 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Left4DeadHelper.Tests.Integration
+namespace Left4DeadHelper.Tests.Integration;
+
+[TestFixture]
+[Explicit("Run manually")]
+public class DiscordIntegrationTests
 {
-    [TestFixture]
-    [Explicit("Run manually")]
-    public class DiscordIntegrationTests
+    private Settings _settings;
+
+    private string _botToken;
+    private ulong _guildId;
+    private ulong _primaryChannelId;
+    private ulong _secondaryChannelId;
+
+    private Task Log(LogMessage msg)
     {
-        private Settings _settings;
+        Console.WriteLine(msg.ToString());
+        return Task.CompletedTask;
+    }
 
-        private string _botToken;
-        private ulong _guildId;
-        private ulong _primaryChannelId;
-        private ulong _secondaryChannelId;
+    [SetUp]
+    public void SetUp()
+    {
+        var config = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory()) //From NuGet Package Microsoft.Extensions.Configuration.Json
+            .AddJsonFile("appSettings.json", optional: false, reloadOnChange: true)
+            .Build();
 
-        private Task Log(LogMessage msg)
+        _settings = config.Get<Settings>();
+
+        _botToken = _settings.DiscordSettings.BotToken;
+        var guildSettings = _settings.DiscordSettings.GuildSettings.First();
+        _guildId = guildSettings.Id;
+
+        _primaryChannelId = guildSettings.Channels.Primary.Id;
+        _secondaryChannelId = guildSettings.Channels.Secondary.Id;
+    }
+
+    [Test]
+    public async Task Test()
+    {
+        using var client = await GetClientAsync();
+
+        var guild = client.GetGuild(_guildId);
+
+        var primaryChannel = guild.GetVoiceChannel(_primaryChannelId);
+        var secondaryChannel = guild.GetVoiceChannel(_secondaryChannelId);
+    }
+
+    [Test]
+    public async Task GetRoles()
+    {
+        using var client = await GetClientAsync();
+
+        var guild = client.GetGuild(_guildId);
+        var allRolesSorted = new List<SocketRole>(guild.Roles.OrderByDescending(r => r.Position));
+
+        var gradientRoles = new List<SocketRole>();
+
+        var adding = false;
+
+        foreach (var role in allRolesSorted)
         {
-            Console.WriteLine(msg.ToString());
-            return Task.CompletedTask;
-        }
+            if (role.Name == "Parents") adding = true;
 
-        [SetUp]
-        public void SetUp()
-        {
-            var config = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory()) //From NuGet Package Microsoft.Extensions.Configuration.Json
-                .AddJsonFile("appSettings.json", optional: false, reloadOnChange: true)
-                .Build();
-
-            _settings = config.Get<Settings>();
-
-            _botToken = _settings.DiscordSettings.BotToken;
-            var guildSettings = _settings.DiscordSettings.GuildSettings.First();
-            _guildId = guildSettings.Id;
-
-            _primaryChannelId = guildSettings.Channels.Primary.Id;
-            _secondaryChannelId = guildSettings.Channels.Secondary.Id;
-        }
-
-        [Test]
-        public async Task Test()
-        {
-            using var client = await GetClientAsync();
-
-            var guild = client.GetGuild(_guildId);
-
-            var primaryChannel = guild.GetVoiceChannel(_primaryChannelId);
-            var secondaryChannel = guild.GetVoiceChannel(_secondaryChannelId);
-        }
-
-        [Test]
-        public async Task GetRoles()
-        {
-            using var client = await GetClientAsync();
-
-            var guild = client.GetGuild(_guildId);
-            var allRolesSorted = new List<SocketRole>(guild.Roles.OrderByDescending(r => r.Position));
-
-            var gradientRoles = new List<SocketRole>();
-
-            var adding = false;
-
-            foreach (var role in allRolesSorted)
+            if (adding)
             {
-                if (role.Name == "Parents") adding = true;
+                gradientRoles.Add(role);
+            }
 
-                if (adding)
-                {
-                    gradientRoles.Add(role);
-                }
-
-                if (role.Name == "Titanfall Pilots")
-                {
-                    adding = false;
-                    break;
-                }
+            if (role.Name == "Titanfall Pilots")
+            {
+                adding = false;
+                break;
             }
         }
+    }
 
-        private async Task<DiscordSocketClient> GetClientAsync()
-        {
-            using var client = new DiscordSocketClient();
+    private async Task<DiscordSocketClient> GetClientAsync()
+    {
+        using var client = new DiscordSocketClient();
 
-            client.Log += Log;
+        client.Log += Log;
 
-            await client.LoginAsync(TokenType.Bot, _botToken);
-            await client.StartAsync();
+        await client.LoginAsync(TokenType.Bot, _botToken);
+        await client.StartAsync();
 
-            var tsc = new TaskCompletionSource<bool>();
+        var tsc = new TaskCompletionSource<bool>();
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-            client.Ready += async () =>
+        client.Ready += async () =>
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
-            {
-                tsc.SetResult(true);
-            };
+        {
+            tsc.SetResult(true);
+        };
 
-            await tsc.Task;
+        await tsc.Task;
 
-            return client;
-        }
+        return client;
     }
 }
