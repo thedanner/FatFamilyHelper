@@ -127,9 +127,9 @@ public class Program
                 config.SourceName = "Left4DeadHelper - Discord Bot";
             });
 
-        //serviceCollection.AddTransient<ISteamWebApiAccessKeyProvider, SteamWebApiAccessKeyProvider>();
-        //serviceCollection.AddTransient<ISteamWebApiCaller, SteamWebApiCaller>();
-        //serviceCollection.AddTransient<ITeamSuggester, TeamSuggester>();
+        serviceCollection.AddTransient<ISteamWebApiAccessKeyProvider, SteamWebApiAccessKeyProvider>();
+        serviceCollection.AddTransient<ISteamWebApiCaller, SteamWebApiCaller>();
+        serviceCollection.AddTransient<ITeamSuggester, TeamSuggester>();
 
         serviceCollection.AddSingleton<ICanPingProvider, CanPingProvider>();
         serviceCollection.AddTransient<IMinecraftPingService, MinecraftPingService>();
