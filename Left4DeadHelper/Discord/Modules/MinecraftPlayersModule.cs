@@ -62,19 +62,28 @@ public class MinecraftPlayersModule : ModuleBase<SocketCommandContext>, ICommand
             }
 
             var plural = response.Players.Online == 1 ? "" : "s";
-
-            var playersMessage = new StringBuilder();
-            foreach (var player in response.Players.Sample)
-            {
-                playersMessage.Append('\n').Append(player.Name);
-            }
-
             var embedBuilder = new EmbedBuilder
             {
                 Title = response.Description?.Text ?? server.Name,
                 Description = string.Format("{0} of {1} player{2}",
                     response.Players.Online, response.Players.Max, plural)
             };
+
+
+            var playersMessage = new StringBuilder();
+
+            if (response.Players.Online != 0)
+            {
+                foreach (var player in response.Players.Sample)
+                {
+                    playersMessage.Append('\n').Append(player.Name);
+                }
+            }
+            else
+            {
+                playersMessage.Append("*Nobody is palying right now.*");
+            }
+
             embedBuilder
                 .AddField("Players", playersMessage.ToString())
                 .WithColor(Color.Green) // TODO Minecraft grass

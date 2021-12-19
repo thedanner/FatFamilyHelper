@@ -2,6 +2,9 @@
 using Left4DeadHelper.Minecraft;
 using Left4DeadHelper.Models.Configuration;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
 using System.IO;
 using System.Threading.Tasks;
@@ -29,7 +32,9 @@ public class MinecraftPingServiceTests
     public async Task TestPingAsync()
     {
         // Arrange
-        var pinger = new MinecraftPingService();
+        var pinger = new MinecraftPingService(
+            new NullLogger<MinecraftPingService>(),
+            new CanPingProvider());
         var serverEntry = _settings.Minecraft!.Servers[0];
 
         // Act
