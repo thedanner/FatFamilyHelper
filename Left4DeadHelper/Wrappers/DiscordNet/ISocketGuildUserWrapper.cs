@@ -10,6 +10,5 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
         AudioInStream AudioStream { get; }
         SocketVoiceState? VoiceState { get; }
         IReadOnlyCollection<SocketRole> Roles { get; }
-        int Hierarchy { get; }
     }
 }

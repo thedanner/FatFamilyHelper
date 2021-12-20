@@ -2,6 +2,7 @@
 using Left4DeadHelper.Helpers.Extensions;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Left4DeadHelper.Helpers
@@ -15,7 +16,7 @@ namespace Left4DeadHelper.Helpers
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public SprayModuleParseResult? Resolve(string? arg1, string? arg2, IUserMessage message)
+        public bool TryResolve(string? arg1, string? arg2, IUserMessage message, [NotNullWhen(true)] out SprayModuleParseResult? result)
         {
             if (message == null) throw new ArgumentNullException(nameof(message));
 
@@ -37,9 +38,13 @@ namespace Left4DeadHelper.Helpers
                 if (Uri.TryCreate(arg1, UriKind.Absolute, out var uri)
                     && uri != null)
                 {
-                    return arg1.StartsWithHttpProtocol()
-                        ? new SprayModuleParseResult(uri)
-                        : null;
+                    if (arg1.StartsWithHttpProtocol())
+                    {
+                        result = new SprayModuleParseResult(uri);
+                        return true;
+                    }
+                    result = null;
+                    return false;
                 }
                 else
                 {
@@ -50,9 +55,13 @@ namespace Left4DeadHelper.Helpers
                         && Uri.TryCreate(arg2, UriKind.Absolute, out uri)
                         && uri != null)
                     {
-                        return arg2.StartsWithHttpProtocol()
-                            ? new SprayModuleParseResult(uri, fileName)
-                            : null;
+                        if (arg2.StartsWithHttpProtocol())
+                        {
+                            result = new SprayModuleParseResult(uri, fileName);
+                            return true;
+                        }
+                        result = null;
+                        return false;
                     }
 
                     // Case 3. Message content starts with a filename and attachment.
@@ -60,15 +69,15 @@ namespace Left4DeadHelper.Helpers
                         && Uri.TryCreate(message.Attachments.First().ProxyUrl, UriKind.Absolute, out uri)
                         && uri != null)
                     {
-                        return new SprayModuleParseResult(uri, fileName);
+                        result = new SprayModuleParseResult(uri, fileName);
+                        return true;
                     }
 
                     // 4. Message content starts with a filename and is a reply to a message with only a URL as its content.
                     // 5. Message content starts with a filename and is a reply to a message with an attachement.
                     if (referencedMessage != null)
                     {
-                        var referencedMessageResult = HandleReferencedMessage(referencedMessage, fileName);
-                        if (referencedMessageResult != null) return referencedMessageResult;
+                        return TryHandleReferencedMessage(referencedMessage, fileName, out result);
                     }
                 }
             }
@@ -79,22 +88,23 @@ namespace Left4DeadHelper.Helpers
                     && Uri.TryCreate(message.Attachments.First().ProxyUrl, UriKind.Absolute, out var uri)
                     && uri != null)
                 {
-                    return new SprayModuleParseResult(uri, null);
+                    result = new SprayModuleParseResult(uri, null);
+                    return true;
                 }
 
                 // 7. Message content is empty and is a reply to a message with only a URL as its content.
                 // 8. Message content is empty and is a reply to a message with an attachment.
                 if (referencedMessage != null)
                 {
-                    var referencedMessageResult = HandleReferencedMessage(referencedMessage, null);
-                    if (referencedMessageResult != null) return referencedMessageResult;
+                    return TryHandleReferencedMessage(referencedMessage, null, out result);
                 }
             }
 
-            return null;
+            result = null;
+            return false;
         }
 
-        private SprayModuleParseResult? HandleReferencedMessage(IUserMessage referencedMessage, string? fileName)
+        public bool TryHandleReferencedMessage(IMessage referencedMessage, string? fileName, [NotNullWhen(true)] out SprayModuleParseResult? result)
         {
             if (referencedMessage is null) throw new ArgumentNullException(nameof(referencedMessage));
             
@@ -102,19 +112,25 @@ namespace Left4DeadHelper.Helpers
                 && Uri.TryCreate(referencedMessage.Content, UriKind.Absolute, out var uri)
                 && uri != null)
             {
-                return referencedMessage.Content.StartsWithHttpProtocol()
-                    ? new SprayModuleParseResult(uri, fileName)
-                    : null;
+                if (referencedMessage.Content.StartsWithHttpProtocol())
+                {
+                    result = new SprayModuleParseResult(uri, fileName);
+                    return true;
+                }
+                result = null;
+                return false;
             }
 
             if (referencedMessage.Attachments.Any()
                 && Uri.TryCreate(referencedMessage.Attachments.First().ProxyUrl, UriKind.Absolute, out uri)
                 && uri != null)
             {
-                return new SprayModuleParseResult(uri, fileName);
+                result = new SprayModuleParseResult(uri, fileName);
+                return true;
             }
 
-            return null;
+            result = null;
+            return false;
         }
     }
 }

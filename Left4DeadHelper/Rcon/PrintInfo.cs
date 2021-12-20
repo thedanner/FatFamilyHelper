@@ -121,14 +121,14 @@ namespace Left4DeadHelper.Rcon
     {
         public static readonly string Prefix = "[PI] ";
 
-        public string Pattern => throw new NotImplementedException();
+        public string Pattern => throw new NotSupportedException();
 
         public bool IsMatch(string input)
         {
             return input.StartsWith(Prefix + "BEGIN") && input.EndsWith(Prefix + "END");
         }
 
-        public PrintInfo Load(GroupCollection groups) => throw new NotImplementedException();
+        public PrintInfo Load(GroupCollection groups) => throw new NotSupportedException();
 
         public PrintInfo Parse(string input)
         {
@@ -152,6 +152,6 @@ namespace Left4DeadHelper.Rcon
             return output;
         }
 
-        public PrintInfo Parse(Group group) => throw new NotImplementedException();
+        public PrintInfo Parse(Group group) => throw new NotSupportedException();
     }
 }

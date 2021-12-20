@@ -1,7 +1,6 @@
 ﻿using Discord;
-using Discord.Commands;
+using Discord.Interactions;
 using Discord.WebSocket;
-using Left4DeadHelper.Discord.Interfaces;
 using Left4DeadHelper.Helpers;
 using Left4DeadHelper.Helpers.DiscordExtensions;
 using Left4DeadHelper.Models;
@@ -15,30 +14,35 @@ using System.Threading.Tasks;
 
 namespace Left4DeadHelper.Discord.Modules
 {
-    public class DeleteExpiredShiftCodesModule : ModuleBase<SocketCommandContext>, ICommandModule
+    public class DeleteExpiredShiftCodesInteractionModule : InteractionModuleBase<SocketInteractionContext>
     {
         private const string Command = "prune";
-
 
         private const int BatchSize = 100;
 
         private static readonly Regex ChannelIdRefRegex = new Regex(@"<#(?<id>\d+)>", RegexOptions.Compiled);
 
-        private readonly ILogger<DeleteExpiredShiftCodesModule> _logger;
+        private readonly ILogger<DeleteExpiredShiftCodesInteractionModule> _logger;
 
-        public DeleteExpiredShiftCodesModule(ILogger<DeleteExpiredShiftCodesModule> logger)
+        public DeleteExpiredShiftCodesInteractionModule(ILogger<DeleteExpiredShiftCodesInteractionModule> logger)
             : base()
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        [Command(Command)]
-        [Summary("Deletes expired SHiFT codes.")]
+        [SlashCommand(Command, "Deletes expired SHiFT codes.")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task DeleteExpiredShiftCodesAsync(string channelToken)
         {
-            if (Context.Message == null) return;
-            if (Context.Guild == null) return;
+            await DeferAsync();
+            await Task.Delay(Constants.DelayAfterCommand);
+
+            if (Context.Guild == null)
+            {
+                await DeleteOriginalResponseAsync();
+                await Task.Delay(Constants.DelayAfterCommand);
+                return;
+            }
 
             ulong? channelId;
             if (ulong.TryParse(channelToken, out var channelIdValue))
@@ -82,7 +86,7 @@ namespace Left4DeadHelper.Discord.Modules
 
                     if (otherChannel == null)
                     {
-                        await ReplyAsync("Couldn't find a channel with that ID or name.");
+                        await RespondAsync("Couldn't find a channel with that ID or name.");
                         return;
                     }
 
@@ -137,12 +141,12 @@ namespace Left4DeadHelper.Discord.Modules
 
                     if (messagesToDelete.Count > 0)
                     {
-                        await ReplyAsync($"Deleted {messagesToDelete.Count} expired code{plural} in {channel.ToMessageRef()}.");
+                        await FollowupAsync($"Deleted {messagesToDelete.Count} expired code{plural} in {channel.ToMessageRef()}.");
                         await Task.Delay(Constants.DelayAfterCommandMs);
                     }
                     else
                     {
-                        await ReplyAsync($"No messages with epxired codes found to delete in {channel.ToMessageRef()}.");
+                        await FollowupAsync($"No messages with epxired codes found to delete in {channel.ToMessageRef()}.");
                         await Task.Delay(Constants.DelayAfterCommandMs);
                     }
                 }
@@ -152,11 +156,5 @@ namespace Left4DeadHelper.Discord.Modules
                 _logger.LogError(e, "Error trying to prune expired messages :(");
             }
         }
-
-        public string GetGeneralHelpMessage(HelpContext helpContext) =>
-            $"  - `{helpContext.GenericCommandExample} <#channelReference|channelId>`:\n" +
-            $"    Scans the given channel (or the channel the command was run in) for messages posted by bots with\n" +
-            $"    an embed with text \"Expires:\" and a timestamp. Those messages are deleted if that timestamp is in the past.\n" +
-            $"    To work, the bot must have the Manage Messages permission for the channel.";
     }
 }

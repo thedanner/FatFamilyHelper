@@ -25,27 +25,26 @@ namespace Left4DeadHelper.Discord.DiscordEventHandlers
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
 
-        public async Task HandleReactionAddedAsync(Cacheable<IUserMessage, ulong> cachedMessage, ISocketMessageChannel simpleChannel,
-            SocketReaction reaction)
+        public async Task HandleReactionAddedAsync(Cacheable<IUserMessage, ulong> maybeCachedMessage,
+            Cacheable<IMessageChannel, ulong> maybeCachedChannel, SocketReaction reaction)
         {
-            IUserMessage reactedMessage;
-            if (cachedMessage.HasValue)
+            var reactedMessage = await maybeCachedMessage.GetOrDownloadAsync();
+            var messageChannel = await maybeCachedChannel.GetOrDownloadAsync();
+
+            IMessage simpleMessage = reactedMessage;
+            if (simpleMessage == null && messageChannel is SocketTextChannel textChannel)
             {
-                reactedMessage = cachedMessage.Value;
-            }
-            else
-            {
-                reactedMessage = await cachedMessage.DownloadAsync();
+                simpleMessage = await textChannel.GetMessageAsync(maybeCachedMessage.Id);
             }
 
-            if (reactedMessage == null)
+            if (simpleMessage == null)
             {
-                throw new Exception($"Couldn't get the reacted-to message with ID {cachedMessage.Id}.");
+                throw new Exception($"Couldn't get the reacted-to message with ID {maybeCachedMessage.Id}.");
             }
 
             // I broke sesh RSVPs by missing this check :(
             // Only consider changing the reaction if it's on a message from this bot.
-            if (reactedMessage.Author.Id != _client.CurrentUser.Id) return;
+            if (simpleMessage.Author.Id != _client.CurrentUser.Id) return;
 
             // Skip reactions made by this bot itself (notably the one it immediately adds to indicate which emote will do the delete).
             if (reaction.UserId == _client.CurrentUser.Id) return;
@@ -65,43 +64,54 @@ namespace Left4DeadHelper.Discord.DiscordEventHandlers
                 throw new Exception($"Couldn't get the reacting user with ID {reaction.UserId}.");
             }
 
-            var removeEmote = await TryHandleDeleteReactionAsync(reactingUser, simpleChannel, reaction);
+            var result = await TryHandleDeleteReactionAsync(simpleMessage, reactingUser, messageChannel, reaction);
 
-            if (removeEmote)
+            if (result.ShouldReactionBeRemoved)
             {
-                await reactedMessage.RemoveReactionAsync(reaction.Emote, reactingUser);
-                await Task.Delay(Constants.DelayAfterCommandMs);
+                await simpleMessage.RemoveReactionAsync(reaction.Emote, reactingUser);
+                await Task.Delay(Constants.DelayAfterCommand);
             }
         }
 
-        private async Task<bool> TryHandleDeleteReactionAsync(IUser reactingUser, ISocketMessageChannel simpleChannel, SocketReaction reaction)
+        private async Task<TryHandleDeleteReactionResult> TryHandleDeleteReactionAsync(IMessage simpleMessage, IUser reactingUser,
+            IMessageChannel simpleChannel, SocketReaction reaction)
         {
             if (reactingUser == null) throw new ArgumentNullException(nameof(reactingUser));
 
-            if (!SprayModule.DeleteEmote.Equals(reaction.Emote)) return true;
+            if (!SprayModule.DeleteEmote.Equals(reaction.Emote))
+            {
+                return new TryHandleDeleteReactionResult(false, true);
+            }
 
             // Support SocketGuildChannel and SocketDMChannel.
             var channel = (SocketChannel)simpleChannel;
             var guildChannel = simpleChannel as SocketGuildChannel;
 
-            var message = await simpleChannel.GetMessageAsync(reaction.MessageId);
+            if (simpleMessage.Interaction != null
+                && simpleMessage.Interaction.User.Id == reactingUser.Id)
+            {
+                await simpleMessage.DeleteAsync();
+                await Task.Delay(Constants.DelayAfterCommand);
 
+                return new TryHandleDeleteReactionResult(true, false);
+            }
+            
             // Make sure we have a reference. Don't allow cross-posts.
-            if (message.Reference != null
+            if (simpleMessage.Reference != null
                 // And that it's to a message
-                && message.Reference.MessageId.IsSpecified
+                && simpleMessage.Reference.MessageId.IsSpecified
                 // in the same guild (or there is no guild, so it's a DM)
                 && (
                     guildChannel == null
                     || (
-                        message.Reference.GuildId.IsSpecified
-                        && message.Reference.GuildId.Value == guildChannel.Guild.Id
+                        simpleMessage.Reference.GuildId.IsSpecified
+                        && simpleMessage.Reference.GuildId.Value == guildChannel.Guild.Id
                     )
                 )
                 // and same channel
-                && message.Channel != null && message.Reference.ChannelId == message.Channel.Id)
+                && simpleMessage.Channel != null && simpleMessage.Reference.ChannelId == simpleMessage.Channel.Id)
             {
-                var referencedIMessage = await simpleChannel.GetMessageAsync(message.Reference.MessageId.Value);
+                var referencedIMessage = await simpleChannel.GetMessageAsync(simpleMessage.Reference.MessageId.Value);
 
                 // If the referenced message was deleted (referencedIMessage is null), let anyone remove the conversion
                 // message. This will allow users to delete their own requested conversions if they accidentally delete
@@ -110,14 +120,15 @@ namespace Left4DeadHelper.Discord.DiscordEventHandlers
 
                 if (referencedIMessage == null)
                 {
-                    await message.DeleteAsync();
-                    await Task.Delay(Constants.DelayAfterCommandMs);
-                    return false;
+                    await simpleMessage.DeleteAsync();
+                    await Task.Delay(Constants.DelayAfterCommand);
+
+                    return new TryHandleDeleteReactionResult(true, false);
                 }
 
                 if (!(referencedIMessage is IUserMessage referencedMessage))
                 {
-                    return true;
+                    return new TryHandleDeleteReactionResult(true, false);
                 }
 
                 var argPos = 0;
@@ -132,16 +143,19 @@ namespace Left4DeadHelper.Discord.DiscordEventHandlers
                 if (reactingUser.Id == referencedMessage.Author.Id
                     && referencedMessageIsBotCommand)
                 {
-                    await message.DeleteAsync();
-                    await Task.Delay(Constants.DelayAfterCommandMs);
+                    await simpleMessage.DeleteAsync();
+                    await Task.Delay(Constants.DelayAfterCommand);
+
+                    return new TryHandleDeleteReactionResult(true, false);
                 }
 
-                return false;
+                return new TryHandleDeleteReactionResult(false, false);
             }
-            else
-            {
-                return true;
-            }
+
+            // Not an interaction, message was a response to someone else's spray request, or we couldn't figure out what it was a response to.
+            return new TryHandleDeleteReactionResult(false, true);
         }
     }
+
+    internal record TryHandleDeleteReactionResult(bool WasMessageDeleted, bool ShouldReactionBeRemoved);
 }

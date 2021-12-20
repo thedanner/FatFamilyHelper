@@ -5,6 +5,7 @@ using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -52,16 +53,6 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
 
         public virtual bool HasAllMembers => _socketGuild.HasAllMembers;
 
-        [Obsolete("This property is deprecated, use WidgetChannel instead.")]
-        public virtual ISocketGuildChannelWrapper? EmbedChannel
-        {
-            get
-            {
-                var rawChannel = _socketGuild.EmbedChannel;
-                return rawChannel != null ? new SocketGuildChannelWrapper(rawChannel) : null;
-            }
-        }
-
         public virtual IReadOnlyCollection<ISocketGuildUserWrapper>? Users
         {
             get
@@ -78,8 +69,6 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
         public virtual string Name => _socketGuild.Name;
 
         public virtual int AFKTimeout => _socketGuild.AFKTimeout;
-
-        public virtual bool IsEmbeddable => _socketGuild.IsEmbeddable;
 
         public virtual DefaultMessageNotifications DefaultMessageNotifications => _socketGuild.DefaultMessageNotifications;
 
@@ -101,10 +90,6 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
 
         public virtual ulong? AFKChannelId => ((IGuild)_socketGuild).AFKChannelId;
 
-        public virtual ulong DefaultChannelId => ((IGuild)_socketGuild).DefaultChannelId;
-
-        public virtual ulong? EmbedChannelId => ((IGuild)_socketGuild).EmbedChannelId;
-
         public virtual ulong? SystemChannelId => ((IGuild)_socketGuild).SystemChannelId;
 
         public virtual ulong OwnerId => _socketGuild.OwnerId;
@@ -118,8 +103,6 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
         public virtual IRole EveryoneRole => _socketGuild.EveryoneRole;
 
         public virtual IReadOnlyCollection<GuildEmote> Emotes => _socketGuild.Emotes;
-
-        public virtual IReadOnlyCollection<string> Features => _socketGuild.Features;
 
         public virtual IReadOnlyCollection<SocketRole> Roles => _socketGuild.Roles;
         IReadOnlyCollection<IRole> IGuild.Roles => ((IGuild)_socketGuild).Roles;
@@ -144,27 +127,37 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
 
         public virtual DateTimeOffset CreatedAt => _socketGuild.CreatedAt;
 
-        public bool IsWidgetEnabled => throw new NotImplementedException();
+        public bool IsWidgetEnabled => _socketGuild.IsWidgetEnabled;
 
-        public string DiscoverySplashId => throw new NotImplementedException();
+        public string DiscoverySplashId => _socketGuild.DiscoverySplashId;
 
-        public string DiscoverySplashUrl => throw new NotImplementedException();
+        public string DiscoverySplashUrl => _socketGuild.DiscoverySplashUrl;
 
-        public ulong? WidgetChannelId => throw new NotImplementedException();
+        public ulong? RulesChannelId => ((IGuild)_socketGuild).RulesChannelId;
 
-        public ulong? RulesChannelId => throw new NotImplementedException();
+        public ulong? PublicUpdatesChannelId => ((IGuild)_socketGuild).PublicUpdatesChannelId;
 
-        public ulong? PublicUpdatesChannelId => throw new NotImplementedException();
+        public int? MaxPresences => ((IGuild)_socketGuild).MaxPresences;
 
-        public int? MaxPresences => throw new NotImplementedException();
+        public int? MaxMembers => ((IGuild)_socketGuild).MaxMembers;
 
-        public int? MaxMembers => throw new NotImplementedException();
+        public int? MaxVideoChannelUsers => ((IGuild)_socketGuild).MaxVideoChannelUsers;
 
-        public int? MaxVideoChannelUsers => throw new NotImplementedException();
+        public int? ApproximateMemberCount => ((IGuild)_socketGuild).ApproximateMemberCount;
 
-        public int? ApproximateMemberCount => throw new NotImplementedException();
+        public int? ApproximatePresenceCount => ((IGuild)_socketGuild).ApproximatePresenceCount;
 
-        public int? ApproximatePresenceCount => throw new NotImplementedException();
+        public IReadOnlyCollection<ICustomSticker> Stickers => _socketGuild.Stickers;
+
+        GuildFeatures IGuild.Features => _socketGuild.Features;
+
+        public int MaxBitrate => _socketGuild.MaxBitrate;
+
+        public NsfwLevel NsfwLevel => _socketGuild.NsfwLevel;
+
+        public bool IsBoostProgressBarEnabled => _socketGuild.IsBoostProgressBarEnabled;
+
+        public ulong? WidgetChannelId => ((IGuild)_socketGuild).WidgetChannelId;
 
         public virtual Task AddBanAsync(IUser user, int pruneDays = 0, string? reason = null, RequestOptions? options = null)
         {
@@ -351,12 +344,6 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
             return ((IGuild)_socketGuild).GetDefaultChannelAsync(mode, options);
         }
 
-        [Obsolete("This endpoint is deprecated, use GetWidgetChannelAsync instead.")]
-        public virtual Task<IGuildChannel> GetEmbedChannelAsync(CacheMode mode = CacheMode.AllowDownload, RequestOptions? options = null)
-        {
-            return ((IGuild)_socketGuild).GetEmbedChannelAsync(mode, options);
-        }
-
         public virtual Task<GuildEmote> GetEmoteAsync(ulong id, RequestOptions? options = null)
         {
             return _socketGuild.GetEmoteAsync(id, options);
@@ -498,12 +485,6 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
             return _socketGuild.ModifyAsync(func, options);
         }
 
-        [Obsolete("This endpoint is deprecated, use ModifyWidgetAsync instead.")]
-        public virtual Task ModifyEmbedAsync(Action<GuildEmbedProperties> func, RequestOptions? options = null)
-        {
-            return _socketGuild.ModifyEmbedAsync(func, options);
-        }
-
         public virtual Task<GuildEmote> ModifyEmoteAsync(GuildEmote emote, Action<EmoteProperties> func, RequestOptions? options = null)
         {
             return _socketGuild.ModifyEmoteAsync(emote, func, options);
@@ -562,6 +543,106 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
         public virtual Task<IReadOnlyCollection<IGuildUser>> SearchUsersAsync(string query, int limit = 1000, CacheMode mode = CacheMode.AllowDownload, RequestOptions? options = null)
         {
             return ((IGuild)_socketGuild).SearchUsersAsync(query, limit, mode, options);
+        }
+
+        public Task<IStageChannel> GetStageChannelAsync(ulong id, CacheMode mode = CacheMode.AllowDownload, RequestOptions? options = null)
+        {
+            return ((IGuild)_socketGuild).GetStageChannelAsync(id, mode, options);
+        }
+
+        public Task<IReadOnlyCollection<IStageChannel>> GetStageChannelsAsync(CacheMode mode = CacheMode.AllowDownload, RequestOptions? options = null)
+        {
+            return ((IGuild)_socketGuild).GetStageChannelsAsync(mode, options);
+        }
+
+        public Task<IThreadChannel> GetThreadChannelAsync(ulong id, CacheMode mode = CacheMode.AllowDownload, RequestOptions? options = null)
+        {
+            return ((IGuild)_socketGuild).GetThreadChannelAsync(id, mode, options);
+        }
+
+        public Task<IReadOnlyCollection<IThreadChannel>> GetThreadChannelsAsync(CacheMode mode = CacheMode.AllowDownload, RequestOptions? options = null)
+        {
+            return ((IGuild)_socketGuild).GetThreadChannelsAsync(mode, options);
+        }
+
+        public Task<IStageChannel> CreateStageChannelAsync(string name, Action<VoiceChannelProperties>? func = null, RequestOptions? options = null)
+        {
+            return ((IGuild)_socketGuild).CreateStageChannelAsync(name, func, options);
+        }
+
+        public Task DisconnectAsync(IGuildUser user)
+        {
+            return ((IGuild)_socketGuild).DisconnectAsync(user);
+        }
+
+        public Task MoveAsync(IGuildUser user, IVoiceChannel targetChannel)
+        {
+            return ((IGuild)_socketGuild).MoveAsync(user, targetChannel);
+        }
+
+        public Task<ICustomSticker> CreateStickerAsync(string name, string description, IEnumerable<string> tags, Image image, RequestOptions? options = null)
+        {
+            return ((IGuild)_socketGuild).CreateStickerAsync(name, description, tags, image, options);
+        }
+
+        public Task<ICustomSticker> CreateStickerAsync(string name, string description, IEnumerable<string> tags, string path, RequestOptions? options = null)
+        {
+            return ((IGuild)_socketGuild).CreateStickerAsync(name, description, tags, path, options);
+        }
+
+        public Task<ICustomSticker> CreateStickerAsync(string name, string description, IEnumerable<string> tags, Stream stream, string filename, RequestOptions? options = null)
+        {
+            return ((IGuild)_socketGuild).CreateStickerAsync(name, description, tags, stream, filename, options);
+        }
+
+        public Task<ICustomSticker> GetStickerAsync(ulong id, CacheMode mode = CacheMode.AllowDownload, RequestOptions? options = null)
+        {
+            return ((IGuild)_socketGuild).GetStickerAsync(id, mode, options);
+        }
+
+        public Task<IReadOnlyCollection<ICustomSticker>> GetStickersAsync(CacheMode mode = CacheMode.AllowDownload, RequestOptions? options = null)
+        {
+            return ((IGuild)_socketGuild).GetStickersAsync(mode, options);
+        }
+
+        public Task DeleteStickerAsync(ICustomSticker sticker, RequestOptions? options = null)
+        {
+            return ((IGuild)_socketGuild).DeleteStickerAsync(sticker, options);
+        }
+
+        public Task<IGuildScheduledEvent> GetEventAsync(ulong id, RequestOptions? options = null)
+        {
+            return ((IGuild)_socketGuild).GetEventAsync(id, options);
+        }
+
+        public Task<IReadOnlyCollection<IGuildScheduledEvent>> GetEventsAsync(RequestOptions? options = null)
+        {
+            return ((IGuild)_socketGuild).GetEventsAsync(options);
+        }
+
+        public Task<IGuildScheduledEvent> CreateEventAsync(string name, DateTimeOffset startTime, GuildScheduledEventType type, GuildScheduledEventPrivacyLevel privacyLevel = GuildScheduledEventPrivacyLevel.Private, string? description = null, DateTimeOffset? endTime = null, ulong? channelId = null, string? location = null, RequestOptions? options = null)
+        {
+            return ((IGuild)_socketGuild).CreateEventAsync(name, startTime, type, privacyLevel, description, endTime, channelId, location, options);
+        }
+
+        public Task<IReadOnlyCollection<IApplicationCommand>> GetApplicationCommandsAsync(RequestOptions? options = null)
+        {
+            return ((IGuild)_socketGuild).GetApplicationCommandsAsync(options);
+        }
+
+        public Task<IApplicationCommand> GetApplicationCommandAsync(ulong id, CacheMode mode = CacheMode.AllowDownload, RequestOptions? options = null)
+        {
+            return ((IGuild)_socketGuild).GetApplicationCommandAsync(id, mode, options);
+        }
+
+        public Task<IApplicationCommand> CreateApplicationCommandAsync(ApplicationCommandProperties properties, RequestOptions? options = null)
+        {
+            return ((IGuild)_socketGuild).CreateApplicationCommandAsync(properties, options);
+        }
+
+        public Task<IReadOnlyCollection<IApplicationCommand>> BulkOverwriteApplicationCommandsAsync(ApplicationCommandProperties[] properties, RequestOptions? options = null)
+        {
+            return ((IGuild)_socketGuild).BulkOverwriteApplicationCommandsAsync(properties, options);
         }
     }
 }

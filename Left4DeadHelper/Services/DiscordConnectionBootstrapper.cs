@@ -1,4 +1,5 @@
 using Discord;
+using Discord.Interactions;
 using Left4DeadHelper.Helpers.Extensions;
 using Left4DeadHelper.Models.Configuration;
 using Left4DeadHelper.Wrappers.DiscordNet;
@@ -13,11 +14,14 @@ namespace Left4DeadHelper.Services
     {
         private readonly ILogger<DiscordChatMover> _logger;
         private readonly Settings _settings;
+        private readonly InteractionService _interactionService;
 
-        public DiscordConnectionBootstrapper(ILogger<DiscordChatMover> logger, Settings settings)
+        public DiscordConnectionBootstrapper(ILogger<DiscordChatMover> logger, Settings settings,
+            InteractionService interactionService)
         {
             _logger = logger;
             _settings = settings;
+            _interactionService = interactionService;
         }
 
         public async Task StartAsync(IDiscordSocketClientWrapper client, CancellationToken cancellationToken)
@@ -38,7 +42,16 @@ namespace Left4DeadHelper.Services
             // See https://github.com/discord-net/Discord.Net/releases/tag/2.1.0
 
             client.Disconnected += async (ex) => _logger.LogError(ex, "Discord client event: Disconnected");
-            client.GuildAvailable += async (guild) => _logger.LogInformation("Discord client event: GuildAvailable");
+            client.GuildAvailable += async (guild) =>
+            {
+                _logger.LogInformation("Discord client event: GuildAvailable ({id}: {name})", guild.Id, guild.Name);
+
+                // NOTE! global commands take about 1 hour to register.
+                // Since we're a private bot on only a couple of servers, register to guilds only.
+                var registeredCommands = await _interactionService.RegisterCommandsToGuildAsync(guild.Id, true);
+
+                _logger.LogInformation("Registered {count} commands in guild ({id}: {name})", registeredCommands.Count, guild.Id, guild.Name);
+            };
             client.GuildMembersDownloaded += async (guild) => _logger.LogInformation("Discord client event: GuildMembersDownloaded");
             client.Log += async (logMessage) =>
             {

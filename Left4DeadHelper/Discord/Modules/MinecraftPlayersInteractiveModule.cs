@@ -1,8 +1,7 @@
 ﻿using Discord;
-using Discord.Commands;
-using Left4DeadHelper.Discord.Interfaces;
+using Discord.Interactions;
+using Left4DeadHelper.Helpers;
 using Left4DeadHelper.Minecraft;
-using Left4DeadHelper.Models;
 using Left4DeadHelper.Models.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
@@ -12,33 +11,37 @@ using System.Threading.Tasks;
 
 namespace Left4DeadHelper.Discord.Modules;
 
-public class MinecraftPlayersModule : ModuleBase<SocketCommandContext>, ICommandModule
+public class MinecraftPlayersInteractiveModule : InteractionModuleBase<SocketInteractionContext>
 {
-    private const string Command = "who";
+    private const string CommandName = "who";
 
-    private readonly ILogger<MinecraftPlayersModule> _logger;
+    private readonly ILogger<MinecraftPlayersInteractiveModule> _logger;
     private readonly Settings _settings;
     private readonly IMinecraftPingService _minecraftPingService;
 
-    public MinecraftPlayersModule(ILogger<MinecraftPlayersModule> logger, Settings settings,
-        IMinecraftPingService minecraftPingService) : base()
+    public MinecraftPlayersInteractiveModule(ILogger<MinecraftPlayersInteractiveModule> logger, Settings settings,
+        IMinecraftPingService minecraftPingService)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         _minecraftPingService = minecraftPingService ?? throw new ArgumentNullException(nameof(minecraftPingService));
     }
 
-    [Command(Command)]
-    [Summary("Gets who's playing on our Minecraft server.")]
+    [SlashCommand(CommandName, "Gets who's playing on our Minecraft server.")]
     public async Task HandleCommandAsync()
     {
-        if (_settings.Minecraft == null) return;
+        await DeferAsync();
+        await Task.Delay(Constants.DelayAfterCommand);
+
+        if (_settings.Minecraft == null)
+        {
+            await DeleteOriginalResponseAsync();
+            await Task.Delay(Constants.DelayAfterCommand);
+            return;
+        }
 
         try
         {
-            var message = Context.Message;
-            if (message == null) return;
-
             if (_settings.Minecraft.ChannelIdFilter?.Any() == true)
             {
                 var channelFilter = _settings.Minecraft.ChannelIdFilter!;
@@ -87,16 +90,13 @@ public class MinecraftPlayersModule : ModuleBase<SocketCommandContext>, ICommand
                 .WithColor(Color.Green) // TODO Minecraft grass
                 .WithFooter($"{server.Hostname}:{server.Port}");
 
-            await ReplyAsync(null, embed: embedBuilder.Build());
+            await FollowupAsync(null, embed: embedBuilder.Build());
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error in {className}.{methodName}().", nameof(MinecraftPlayersModule), nameof(HandleCommandAsync));
+            _logger.LogError(e, "Error in {className}.{methodName}().", nameof(MinecraftPlayersInteractiveModule), nameof(HandleCommandAsync));
 
-            await ReplyAsync($"Sorry, there was an error. My logs have more information.");
+            await FollowupAsync($"Sorry, there was an error. My logs have more information.");
         }
     }
-
-    public string GetGeneralHelpMessage(HelpContext helpContext) =>
-        $"  - `{helpContext.GenericCommandExample}`: Gets who's playing on our Minecraft server.";
 }
