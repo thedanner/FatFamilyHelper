@@ -164,7 +164,7 @@ public class Program
         var serverInfo = settings.Left4DeadSettings.ServerInfo;
 
         serviceCollection.AddTransient(sp => new RCON(new IPEndPoint(IPAddress.Parse(serverInfo.Ip), serverInfo.Port), serverInfo.RconPassword));
-        serviceCollection.AddTransient<IRCONWrapper, RCONWrapper>();
+        serviceCollection.AddTransient<IRCONWrapperFactory, RCONWrapperFactory>();
 
         // More specific handlers
         var allLoadedTypes = AppDomain.CurrentDomain.GetAssemblies()

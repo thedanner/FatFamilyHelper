@@ -241,7 +241,7 @@ namespace Left4DeadHelper.Services
 
                     await user.ModifyAsync(p => p.ChannelId = intendedChannel.Id);
 
-                    await Task.Delay(TimeSpan.FromSeconds(1));
+                    await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
 
                     result.MoveCount++;
                 }
@@ -301,7 +301,7 @@ namespace Left4DeadHelper.Services
             foreach (var user in usersInSecondaryChannel)
             {
                 await user.ModifyAsync(p => p.ChannelId = primaryVoiceChannel.Id);
-                await Task.Delay(TimeSpan.FromSeconds(1));
+                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
 
                 result.MoveCount++;
             }
