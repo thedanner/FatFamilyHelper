@@ -3,7 +3,6 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using Left4DeadHelper.Helpers;
 using Left4DeadHelper.Helpers.DiscordExtensions;
-using Left4DeadHelper.Models;
 using Left4DeadHelper.Support.ExpiredCodes;
 using Microsoft.Extensions.Logging;
 using System;
