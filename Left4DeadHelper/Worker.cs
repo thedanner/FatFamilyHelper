@@ -48,7 +48,7 @@ namespace Left4DeadHelper
             {
                 _logger.LogDebug("Last user mapping entry: {lastUserMapping}", _settings.UserMappings.Last());
 
-                await _commandHandler.InstallCommandsAsync();
+                await _commandHandler.InitializeAsync();
 
                 // Try every 15 seconds (4 times a minute) for 15 minutes.
                 const int maxAttempts = 4 * 15;

@@ -57,6 +57,10 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
 
         public virtual bool? IsPending => _socketGuildUser.IsPending;
 
+        public string GuildAvatarId => _socketGuildUser.GuildAvatarId;
+
+        public DateTimeOffset? RequestToSpeakTimestamp => _socketGuildUser.RequestToSpeakTimestamp;
+
         public virtual Task AddRoleAsync(ulong roleId, RequestOptions? options = null)
         {
             return _socketGuildUser.AddRoleAsync(roleId, options);
@@ -75,6 +79,11 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
         public virtual Task AddRolesAsync(IEnumerable<IRole> roles, RequestOptions? options = null)
         {
             return _socketGuildUser.AddRolesAsync(roles, options);
+        }
+
+        public string GetGuildAvatarUrl(ImageFormat format = ImageFormat.Auto, ushort size = 128)
+        {
+            return GetGuildAvatarUrl(format, size);
         }
 
         public virtual ChannelPermissions GetPermissions(IGuildChannel channel)

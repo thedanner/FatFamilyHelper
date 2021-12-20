@@ -10,6 +10,7 @@ using Left4DeadHelper.Sprays.Exceptions;
 using Left4DeadHelper.Sprays.SaveProfiles;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -111,18 +112,13 @@ namespace Left4DeadHelper.Discord.Modules
             return HandleAsync(saveProfile, fileName, nearImageUri, farImageUri);
         }
 
-        private bool TryResolveArgs(string? arg1, string? arg2, out SprayModuleParseResult? result)
+        private bool TryResolveArgs(string? arg1, string? arg2, [NotNullWhen(true)] out SprayModuleParseResult? result)
         {
-            result = _resolver.Resolve(arg1, arg2, Context.Message);
+            if (_resolver.TryResolve(arg1, arg2, Context.Message, out result)) return true;
 
             // No source found
-            if (result == null)
-            {
-                _logger.LogInformation("Couldn't resolve an image; nothing to convert.");
-                return false;
-            }
-
-            return true;
+            _logger.LogInformation("Couldn't resolve an image; nothing to convert.");
+            return false;
         }
 
         private async Task HandleAsync(ISaveProfile saveProfile, string? fileName, params Uri[] imageUris)

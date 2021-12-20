@@ -2,7 +2,6 @@
 using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -47,15 +46,18 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
 
         public virtual string Mention => _socketUser.Mention;
 
-        public virtual IActivity Activity => _socketUser.Activity;
-
         public virtual UserStatus Status => _socketUser.Status;
-
-        public virtual IImmutableSet<ClientType> ActiveClients => _socketUser.ActiveClients;
 
         public virtual UserProperties? PublicFlags => _socketUser.PublicFlags;
 
-        public virtual IImmutableList<IActivity> Activities => _socketUser.Activities;
+        IReadOnlyCollection<ClientType> IPresence.ActiveClients => throw new NotImplementedException();
+
+        IReadOnlyCollection<IActivity> IPresence.Activities => throw new NotImplementedException();
+
+        public Task<IDMChannel> CreateDMChannelAsync(RequestOptions? options = null)
+        {
+            throw new NotImplementedException();
+        }
 
         public virtual string GetAvatarUrl(ImageFormat format = ImageFormat.Auto, ushort size = 128)
         {
@@ -65,11 +67,6 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
         public virtual string GetDefaultAvatarUrl()
         {
             return _socketUser.GetDefaultAvatarUrl();
-        }
-
-        public virtual Task<IDMChannel> GetOrCreateDMChannelAsync(RequestOptions? options = null)
-        {
-            return _socketUser.GetOrCreateDMChannelAsync(options);
         }
     }
 }

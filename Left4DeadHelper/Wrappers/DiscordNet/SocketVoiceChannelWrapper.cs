@@ -14,7 +14,7 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
         public SocketVoiceChannelWrapper(SocketVoiceChannel socketVoiceChannel)
             : base(socketVoiceChannel)
         {
-            _socketVoiceChannel = socketVoiceChannel ?? throw new System.ArgumentNullException(nameof(socketVoiceChannel));
+            _socketVoiceChannel = socketVoiceChannel ?? throw new ArgumentNullException(nameof(socketVoiceChannel));
         }
 
         public virtual ICategoryChannel Category => _socketVoiceChannel.Category;
@@ -25,6 +25,8 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
 
         public virtual ulong? CategoryId => _socketVoiceChannel.CategoryId;
 
+        public string Mention => _socketVoiceChannel.Mention;
+
         public virtual Task<IAudioClient> ConnectAsync(bool selfDeaf = false, bool selfMute = false, bool external = false)
         {
             return _socketVoiceChannel.ConnectAsync(selfDeaf, selfMute, external);
@@ -33,6 +35,21 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
         public virtual Task<IInviteMetadata> CreateInviteAsync(int? maxAge = 86400, int? maxUses = null, bool isTemporary = false, bool isUnique = false, RequestOptions? options = null)
         {
             return _socketVoiceChannel.CreateInviteAsync(maxAge, maxUses, isTemporary, isUnique, options);
+        }
+
+        public Task<IInviteMetadata> CreateInviteToApplicationAsync(ulong applicationId, int? maxAge = 86400, int? maxUses = null, bool isTemporary = false, bool isUnique = false, RequestOptions? options = null)
+        {
+            return _socketVoiceChannel.CreateInviteToApplicationAsync(applicationId, maxAge, maxUses, isTemporary, isUnique, options);
+        }
+
+        public Task<IInviteMetadata> CreateInviteToApplicationAsync(DefaultApplications application, int? maxAge = 86400, int? maxUses = null, bool isTemporary = false, bool isUnique = false, RequestOptions? options = null)
+        {
+            return _socketVoiceChannel.CreateInviteToApplicationAsync(application, maxAge, maxUses, isTemporary, isUnique, options);
+        }
+
+        public Task<IInviteMetadata> CreateInviteToStreamAsync(IUser user, int? maxAge = 86400, int? maxUses = null, bool isTemporary = false, bool isUnique = false, RequestOptions? options = null)
+        {
+            return _socketVoiceChannel.CreateInviteToStreamAsync(user, maxAge, maxUses, isTemporary, isUnique, options);
         }
 
         public virtual Task DisconnectAsync()
@@ -51,6 +68,11 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
         }
 
         public virtual Task ModifyAsync(Action<VoiceChannelProperties> func, RequestOptions? options = null)
+        {
+            return _socketVoiceChannel.ModifyAsync(func, options);
+        }
+
+        public Task ModifyAsync(Action<AudioChannelProperties> func, RequestOptions? options = null)
         {
             return _socketVoiceChannel.ModifyAsync(func, options);
         }

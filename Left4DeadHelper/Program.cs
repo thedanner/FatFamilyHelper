@@ -1,6 +1,7 @@
 using CoreRCON;
 using Discord;
 using Discord.Commands;
+using Discord.Interactions;
 using Discord.WebSocket;
 using Left4DeadHelper.Discord.Handlers;
 using Left4DeadHelper.Discord.Interfaces;
@@ -141,12 +142,12 @@ public class Program
         serviceCollection.AddTransient<ISprayModuleCommandResolver, SprayModuleCommandResolver>();
 
         serviceCollection.AddSingleton<CommandService>();
+        serviceCollection.AddSingleton<InteractionService>();
 
         serviceCollection.AddSingleton(sp =>
         {
             return new DiscordSocketClient(new DiscordSocketConfig
             {
-                ExclusiveBulkDelete = true,
                 GatewayIntents = GatewayIntents.Guilds
                     | GatewayIntents.GuildIntegrations
                     | GatewayIntents.GuildVoiceStates
@@ -334,8 +335,8 @@ public class Program
 
         serviceCollection.AddQuartzHostedService(options =>
         {
-                // when shutting down we want jobs to complete gracefully
-                options.WaitForJobsToComplete = true;
+            // when shutting down we want jobs to complete gracefully
+            options.WaitForJobsToComplete = true;
         });
     }
 }

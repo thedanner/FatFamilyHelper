@@ -25,7 +25,6 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
         Task SyncPromise { get; }
         bool IsSynced { get; }
         bool HasAllMembers { get; }
-        ISocketGuildChannelWrapper? EmbedChannel { get; }
         IReadOnlyCollection<ISocketGuildUserWrapper>? Users { get; }
 
         new IReadOnlyCollection<SocketRole> Roles { get; }

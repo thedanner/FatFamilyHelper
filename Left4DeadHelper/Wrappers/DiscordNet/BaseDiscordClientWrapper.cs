@@ -42,6 +42,16 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
             remove { _baseDiscordClient.LoggedOut += value; }
         }
 
+        public Task<IReadOnlyCollection<IApplicationCommand>> BulkOverwriteGlobalApplicationCommand(ApplicationCommandProperties[] properties, RequestOptions? options = null)
+        {
+            return BulkOverwriteGlobalApplicationCommand(properties, options);
+        }
+
+        public Task<IApplicationCommand> CreateGlobalApplicationCommand(ApplicationCommandProperties properties, RequestOptions? options = null)
+        {
+            return CreateGlobalApplicationCommand(properties, options);
+        }
+
         public virtual Task<IGuild> CreateGuildAsync(string name, IVoiceRegion region, Stream? jpegIcon = null, RequestOptions? options = null)
         {
             return ((IDiscordClient)_baseDiscordClient).CreateGuildAsync(name, region, jpegIcon, options);
@@ -75,6 +85,16 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
         public virtual Task<IReadOnlyCollection<IDMChannel>> GetDMChannelsAsync(CacheMode mode = CacheMode.AllowDownload, RequestOptions? options = null)
         {
             return ((IDiscordClient)_baseDiscordClient).GetDMChannelsAsync(mode, options);
+        }
+
+        public Task<IApplicationCommand> GetGlobalApplicationCommandAsync(ulong id, RequestOptions? options = null)
+        {
+            return GetGlobalApplicationCommandAsync(id, options);
+        }
+
+        public Task<IReadOnlyCollection<IApplicationCommand>> GetGlobalApplicationCommandsAsync(RequestOptions? options = null)
+        {
+            return GetGlobalApplicationCommandsAsync(options);
         }
 
         public virtual Task<IReadOnlyCollection<IGroupChannel>> GetGroupChannelsAsync(CacheMode mode = CacheMode.AllowDownload, RequestOptions? options = null)

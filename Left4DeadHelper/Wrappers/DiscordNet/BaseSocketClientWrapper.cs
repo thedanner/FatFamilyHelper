@@ -17,9 +17,6 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
             _baseSocketClient = baseSocketClient ?? throw new ArgumentNullException(nameof(baseSocketClient));
         }
 
-        [Obsolete("This property is obsolete, use the GetVoiceRegionsAsync method instead.")]
-        public virtual IReadOnlyCollection<RestVoiceRegion> VoiceRegions => _baseSocketClient.VoiceRegions;
-
         public virtual IReadOnlyCollection<ISocketPrivateChannel> PrivateChannels => _baseSocketClient.PrivateChannels;
 
         public virtual IReadOnlyCollection<SocketGuild> Guilds => _baseSocketClient.Guilds;
@@ -29,12 +26,6 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
         public virtual int Latency => _baseSocketClient.Latency;
 
         public virtual DiscordSocketRestClient Rest => _baseSocketClient.Rest;
-
-        public virtual event Func<Cacheable<IUserMessage, ulong>, ISocketMessageChannel, Task> ReactionsCleared
-        {
-            add { _baseSocketClient.ReactionsCleared += value; }
-            remove { _baseSocketClient.ReactionsCleared -= value; }
-        }
 
         public virtual event Func<SocketRole, Task> RoleCreated
         {
@@ -58,12 +49,6 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
         {
             add { _baseSocketClient.JoinedGuild += value; }
             remove { _baseSocketClient.JoinedGuild -= value; }
-        }
-
-        public virtual event Func<Cacheable<IUserMessage, ulong>, ISocketMessageChannel, SocketReaction, Task> ReactionRemoved
-        {
-            add { _baseSocketClient.ReactionRemoved += value; }
-            remove { _baseSocketClient.ReactionRemoved -= value; }
         }
 
         public virtual event Func<SocketGuild, Task> LeftGuild
@@ -96,12 +81,6 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
             remove { _baseSocketClient.UserJoined -= value; }
         }
 
-        public virtual event Func<SocketGuildUser, Task> UserLeft
-        {
-            add { _baseSocketClient.UserLeft += value; }
-            remove { _baseSocketClient.UserLeft -= value; }
-        }
-
         public virtual event Func<SocketUser, SocketGuild, Task> UserBanned
         {
             add { _baseSocketClient.UserBanned += value; }
@@ -118,12 +97,6 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
         {
             add { _baseSocketClient.UserUpdated += value; }
             remove { _baseSocketClient.UserUpdated -= value; }
-        }
-
-        public virtual event Func<SocketGuildUser, SocketGuildUser, Task> GuildMemberUpdated
-        {
-            add { _baseSocketClient.GuildMemberUpdated += value; }
-            remove { _baseSocketClient.GuildMemberUpdated -= value; }
         }
 
         public virtual event Func<SocketUser, SocketVoiceState, SocketVoiceState, Task> UserVoiceStateUpdated
@@ -144,34 +117,16 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
             remove { _baseSocketClient.CurrentUserUpdated -= value; }
         }
 
-        public virtual event Func<SocketUser, ISocketMessageChannel, Task> UserIsTyping
-        {
-            add { _baseSocketClient.UserIsTyping += value; }
-            remove { _baseSocketClient.UserIsTyping -= value; }
-        }
-
         public virtual event Func<SocketGuild, Task> GuildAvailable
         {
             add { _baseSocketClient.GuildAvailable += value; }
             remove { _baseSocketClient.GuildAvailable -= value; }
         }
 
-        public virtual event Func<Cacheable<IUserMessage, ulong>, ISocketMessageChannel, SocketReaction, Task> ReactionAdded
-        {
-            add { _baseSocketClient.ReactionAdded += value; }
-            remove { _baseSocketClient.ReactionAdded -= value; }
-        }
-
         public virtual event Func<SocketMessage, Task> MessageReceived
         {
             add { _baseSocketClient.MessageReceived += value; }
             remove { _baseSocketClient.MessageReceived -= value; }
-        }
-
-        public virtual event Func<IReadOnlyCollection<Cacheable<IMessage, ulong>>, ISocketMessageChannel, Task> MessagesBulkDeleted
-        {
-            add { _baseSocketClient.MessagesBulkDeleted += value; }
-            remove { _baseSocketClient.MessagesBulkDeleted -= value; }
         }
 
         public virtual event Func<Cacheable<IMessage, ulong>, SocketMessage, ISocketMessageChannel, Task> MessageUpdated
@@ -204,18 +159,59 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
             remove { _baseSocketClient.RecipientAdded -= value; }
         }
 
-        public virtual event Func<Cacheable<IMessage, ulong>, ISocketMessageChannel, Task> MessageDeleted
-        {
-            add { _baseSocketClient.MessageDeleted += value; }
-            remove { _baseSocketClient.MessageDeleted -= value; }
-        }
-
         public virtual event Func<SocketChannel, SocketChannel, Task> ChannelUpdated
         {
             add { _baseSocketClient.ChannelUpdated += value; }
             remove { _baseSocketClient.ChannelUpdated -= value; }
         }
 
+        event Func<Cacheable<IUserMessage, ulong>, ISocketMessageChannel, Task> IBaseSocketClientWrapper.ReactionsCleared
+        {
+            add { ((IBaseSocketClientWrapper)_baseSocketClient).ReactionsCleared += value; }
+            remove { ((IBaseSocketClientWrapper)_baseSocketClient).ReactionsCleared -= value; }
+        }
+
+        event Func<Cacheable<IUserMessage, ulong>, ISocketMessageChannel, SocketReaction, Task> IBaseSocketClientWrapper.ReactionRemoved
+        {
+            add { ((IBaseSocketClientWrapper)_baseSocketClient).ReactionRemoved += value; }
+            remove { ((IBaseSocketClientWrapper)_baseSocketClient).ReactionRemoved -= value; }
+        }
+
+        event Func<SocketGuildUser, Task> IBaseSocketClientWrapper.UserLeft
+        {
+            add { ((IBaseSocketClientWrapper)_baseSocketClient).UserLeft += value; }
+            remove { ((IBaseSocketClientWrapper)_baseSocketClient).UserLeft -= value; }
+        }
+
+        event Func<SocketGuildUser, SocketGuildUser, Task> IBaseSocketClientWrapper.GuildMemberUpdated
+        {
+            add { ((IBaseSocketClientWrapper)_baseSocketClient).GuildMemberUpdated += value; }
+            remove { ((IBaseSocketClientWrapper)_baseSocketClient).GuildMemberUpdated -= value; }
+        }
+
+        event Func<SocketUser, ISocketMessageChannel, Task> IBaseSocketClientWrapper.UserIsTyping
+        {
+            add { ((IBaseSocketClientWrapper)_baseSocketClient).UserIsTyping += value; }
+            remove { ((IBaseSocketClientWrapper)_baseSocketClient).UserIsTyping -= value; }
+        }
+
+        event Func<Cacheable<IUserMessage, ulong>, ISocketMessageChannel, SocketReaction, Task> IBaseSocketClientWrapper.ReactionAdded
+        {
+            add { ((IBaseSocketClientWrapper)_baseSocketClient).ReactionAdded += value; }
+            remove { ((IBaseSocketClientWrapper)_baseSocketClient).ReactionAdded -= value; }
+        }
+
+        event Func<IReadOnlyCollection<Cacheable<IMessage, ulong>>, ISocketMessageChannel, Task> IBaseSocketClientWrapper.MessagesBulkDeleted
+        {
+            add { ((IBaseSocketClientWrapper)_baseSocketClient).MessagesBulkDeleted += value; }
+            remove { ((IBaseSocketClientWrapper)_baseSocketClient).MessagesBulkDeleted -= value; }
+        }
+
+        event Func<Cacheable<IMessage, ulong>, ISocketMessageChannel, Task> IBaseSocketClientWrapper.MessageDeleted
+        {
+            add { ((IBaseSocketClientWrapper)_baseSocketClient).MessageDeleted += value; }
+            remove { ((IBaseSocketClientWrapper)_baseSocketClient).MessageDeleted -= value; }
+        }
 
         public virtual Task DownloadUsersAsync(IEnumerable<IGuild> guilds)
         {
@@ -245,10 +241,9 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
             return rawUser != null ? new SocketUserWrapper(rawUser) : null;
         }
 
-        [Obsolete("This method is obsolete, use GetVoiceRegionAsync instead.")]
-        public virtual RestVoiceRegion GetVoiceRegion(string id)
+        public RestVoiceRegion GetVoiceRegion(string id)
         {
-            return _baseSocketClient.GetVoiceRegion(id);
+            throw new NotImplementedException();
         }
 
         public virtual Task SetActivityAsync(IActivity activity)

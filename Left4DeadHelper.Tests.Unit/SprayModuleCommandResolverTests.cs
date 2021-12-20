@@ -38,7 +38,7 @@ public class SprayModuleCommandResolverTests
 
 
         // Act
-        Action call = () => _resolver.Resolve(null, null, null);
+        Action call = () => _resolver.TryResolve(null, null, null, out var result);
 
         // Assert
         call.Should().Throw<ArgumentNullException>().Where(ex => ex.ParamName == "message");
@@ -61,9 +61,10 @@ public class SprayModuleCommandResolverTests
         var message = A.Fake<IUserMessage>();
 
         // Act
-        var result = _resolver.Resolve(null, null, message);
+        var success = _resolver.TryResolve(null, null, message, out var result);
 
         // Assert
+        success.Should().BeFalse();
         result.Should().BeNull();
     }
 
@@ -74,9 +75,10 @@ public class SprayModuleCommandResolverTests
         var message = A.Fake<IUserMessage>();
 
         // Act
-        var result = _resolver.Resolve(null, null, message);
+        var success = _resolver.TryResolve(null, null, message, out var result);
 
         // Assert
+        success.Should().BeFalse();
         result.Should().BeNull();
     }
 
@@ -89,9 +91,10 @@ public class SprayModuleCommandResolverTests
         var message = A.Fake<IUserMessage>();
 
         // Act
-        var result = _resolver.Resolve(UrlExample, null, message);
+        var success = _resolver.TryResolve(UrlExample, null, message, out var result);
 
         // Assert
+        success.Should().BeTrue();
         result.Should().NotBeNull();
         result.SourceImageUri.AbsoluteUri.Should().Be(UrlExample);
         result.FileName.Should().BeNull();
@@ -111,9 +114,10 @@ public class SprayModuleCommandResolverTests
         var url = $"{protocol}://example.com/";
 
         // Act
-        var result = _resolver.Resolve(url, null, message);
+        var success = _resolver.TryResolve(url, null, message, out var result);
 
         // Assert
+        success.Should().BeTrue();
         result.Should().NotBeNull();
         result.SourceImageUri.AbsoluteUri.Should().Be(url.ToLower());
         result.FileName.Should().BeNull();
@@ -130,9 +134,10 @@ public class SprayModuleCommandResolverTests
         var url = $"{protocol}://example.com";
 
         // Act
-        var result = _resolver.Resolve(url, null, message);
+        var success = _resolver.TryResolve(url, null, message, out var result);
 
         // Assert
+        success.Should().BeFalse();
         result.Should().BeNull();
     }
 
@@ -146,9 +151,10 @@ public class SprayModuleCommandResolverTests
         var message = A.Fake<IUserMessage>();
 
         // Act
-        var result = _resolver.Resolve(givenFileName, UrlExample, message);
+        var success = _resolver.TryResolve(givenFileName, UrlExample, message, out var result);
 
         // Assert
+        success.Should().BeTrue();
         result.Should().NotBeNull();
         result.SourceImageUri.AbsoluteUri.Should().Be(UrlExample);
         result.FileName.Should().Be(givenFileName);
@@ -161,9 +167,10 @@ public class SprayModuleCommandResolverTests
         var message = A.Fake<IUserMessage>();
 
         // Act
-        var result = _resolver.Resolve("not a URL", "not a URL", message);
+        var success = _resolver.TryResolve("not a URL", "not a URL", message, out var result);
 
         // Assert
+        success.Should().BeFalse();
         result.Should().BeNull();
     }
 
@@ -187,9 +194,10 @@ public class SprayModuleCommandResolverTests
         A.CallTo(() => message.Attachments).Returns(new List<IAttachment>() { attachment }.AsReadOnly());
 
         // Act
-        var result = _resolver.Resolve(givenFileName, arg2, message);
+        var success = _resolver.TryResolve(givenFileName, arg2, message, out var result);
 
         // Assert
+        success.Should().BeTrue();
         result.Should().NotBeNull();
         result.SourceImageUri.AbsoluteUri.Should().Be(sourceImageUrl);
         result.FileName.Should().Be(givenFileName);
@@ -212,9 +220,10 @@ public class SprayModuleCommandResolverTests
         A.CallTo(() => message.ReferencedMessage).Returns(referencedMessage);
 
         // Act
-        var result = _resolver.Resolve(givenFileName, arg2, message);
+        var success = _resolver.TryResolve(givenFileName, arg2, message, out var result);
 
         // Assert
+        success.Should().BeTrue();
         result.Should().NotBeNull();
         result.SourceImageUri.AbsoluteUri.Should().Be(UrlExample);
         result.FileName.Should().Be(givenFileName);
@@ -244,9 +253,10 @@ public class SprayModuleCommandResolverTests
         A.CallTo(() => message.ReferencedMessage).Returns(referencedMessage);
 
         // Act
-        var result = _resolver.Resolve(givenFileName, arg2, message);
+        var success = _resolver.TryResolve(givenFileName, arg2, message, out var result);
 
         // Assert
+        success.Should().BeTrue();
         result.Should().NotBeNull();
         result.SourceImageUri.AbsoluteUri.Should().Be(sourceImageUrl);
         result.FileName.Should().Be(givenFileName);
@@ -264,9 +274,10 @@ public class SprayModuleCommandResolverTests
         A.CallTo(() => message.ReferencedMessage).Returns(referencedMessage);
 
         // Act
-        var result = _resolver.Resolve(null, null, message);
+        var success = _resolver.TryResolve(null, null, message, out var result);
 
         // Assert
+        success.Should().BeFalse();
         result.Should().BeNull();
         A.CallTo(() => message.Attachments).MustHaveHappened();
         A.CallTo(() => referencedMessage.Content).MustHaveHappened();
@@ -290,9 +301,10 @@ public class SprayModuleCommandResolverTests
         A.CallTo(() => message.Attachments).Returns(new List<IAttachment>() { attachment }.AsReadOnly());
 
         // Act
-        var result = _resolver.Resolve(null, null, message);
+        var success = _resolver.TryResolve(null, null, message, out var result);
 
         // Assert
+        success.Should().BeTrue();
         result.Should().NotBeNull();
         result.SourceImageUri.AbsoluteUri.Should().Be(sourceImageUrl);
         result.FileName.Should().BeNull();
@@ -311,9 +323,10 @@ public class SprayModuleCommandResolverTests
         A.CallTo(() => message.ReferencedMessage).Returns(referencedMessage);
 
         // Act
-        var result = _resolver.Resolve(null, null, message);
+        var success = _resolver.TryResolve(null, null, message, out var result);
 
         // Assert
+        success.Should().BeTrue();
         result.Should().NotBeNull();
         result.SourceImageUri.AbsoluteUri.Should().Be(UrlExample);
         result.FileName.Should().BeNull();
@@ -340,9 +353,10 @@ public class SprayModuleCommandResolverTests
         A.CallTo(() => message.ReferencedMessage).Returns(referencedMessage);
 
         // Act
-        var result = _resolver.Resolve(null, null, message);
+        var success = _resolver.TryResolve(null, null, message, out var result);
 
         // Assert
+        success.Should().BeTrue();
         result.Should().NotBeNull();
         result.SourceImageUri.AbsoluteUri.Should().Be(sourceImageUrl);
         result.FileName.Should().BeNull();

@@ -9,7 +9,6 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
 {
     public interface IBaseSocketClientWrapper : IBaseDiscordClientWrapper, IDiscordClient, IDisposable
     {
-        IReadOnlyCollection<RestVoiceRegion> VoiceRegions { get; }
         IReadOnlyCollection<ISocketPrivateChannel> PrivateChannels { get; }
         IReadOnlyCollection<SocketGuild> Guilds { get; }
         DiscordSocketRestClient Rest { get; }
