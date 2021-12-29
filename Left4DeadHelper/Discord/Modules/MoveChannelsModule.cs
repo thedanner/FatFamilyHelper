@@ -27,13 +27,18 @@ namespace Left4DeadHelper.Discord.Modules
         public const string GroupDivorce = "divorce";
         public const string GroupDontMarriage = "dontmarriage";
 
-        private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<MoveChannelsModule> _logger;
+        private readonly Settings _settings;
+        private readonly IRCONWrapperFactory _rconFactory;
+        private readonly IDiscordChatMover _mover;
 
-        public MoveChannelsModule(ILogger<MoveChannelsModule> logger, IServiceProvider serviceProvider) : base()
+        public MoveChannelsModule(ILogger<MoveChannelsModule> logger, Settings settings,
+            IRCONWrapperFactory rconFactory, IDiscordChatMover mover) : base()
         {
-            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _rconFactory = rconFactory ?? throw new ArgumentNullException(nameof(rconFactory));
+            _mover = mover ?? throw new ArgumentNullException(nameof(mover));
         }
 
         [Command]
@@ -47,16 +52,13 @@ namespace Left4DeadHelper.Discord.Modules
 
             try
             {
-                using var rcon = _serviceProvider.GetRequiredService<IRCONWrapper>();
+                using var rcon = _rconFactory.GetRcon();
 
                 await rcon.ConnectAsync();
 
-                var settings = _serviceProvider.GetRequiredService<Settings>();
-                var guildSettings = settings.DiscordSettings.GuildSettings.FirstOrDefault(g => g.Id == Context.Guild.Id);
+                var guildSettings = _settings.DiscordSettings.GuildSettings.FirstOrDefault(g => g.Id == Context.Guild.Id);
 
-                var mover = _serviceProvider.GetRequiredService<IDiscordChatMover>();
-
-                var moveResult = await mover.MovePlayersToCorrectChannelsAsync(
+                var moveResult = await _mover.MovePlayersToCorrectChannelsAsync(
                     rcon,
                     new DiscordSocketClientWrapper(Context.Client),
                     new SocketGuildWrapper(Context.Guild),
