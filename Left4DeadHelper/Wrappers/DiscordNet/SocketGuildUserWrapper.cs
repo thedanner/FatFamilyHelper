@@ -61,6 +61,8 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
 
         public DateTimeOffset? RequestToSpeakTimestamp => _socketGuildUser.RequestToSpeakTimestamp;
 
+        public DateTimeOffset? TimedOutUntil => _socketGuildUser.TimedOutUntil;
+
         public virtual Task AddRoleAsync(ulong roleId, RequestOptions? options = null)
         {
             return _socketGuildUser.AddRoleAsync(roleId, options);
@@ -119,6 +121,16 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
         public virtual Task RemoveRolesAsync(IEnumerable<IRole> roles, RequestOptions? options = null)
         {
             return _socketGuildUser.RemoveRolesAsync(roles, options);
+        }
+
+        public Task RemoveTimeOutAsync(RequestOptions? options = null)
+        {
+            return _socketGuildUser.RemoveTimeOutAsync(options);
+        }
+
+        public Task SetTimeOutAsync(TimeSpan span, RequestOptions? options = null)
+        {
+            return _socketGuildUser.SetTimeOutAsync(span, options);
         }
     }
 }

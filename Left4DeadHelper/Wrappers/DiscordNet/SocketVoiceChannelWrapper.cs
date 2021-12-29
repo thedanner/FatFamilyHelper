@@ -27,6 +27,8 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
 
         public string Mention => _socketVoiceChannel.Mention;
 
+        public string RTCRegion => _socketVoiceChannel.RTCRegion;
+
         public virtual Task<IAudioClient> ConnectAsync(bool selfDeaf = false, bool selfMute = false, bool external = false)
         {
             return _socketVoiceChannel.ConnectAsync(selfDeaf, selfMute, external);

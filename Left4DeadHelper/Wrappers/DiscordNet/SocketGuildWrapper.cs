@@ -159,6 +159,8 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
 
         public ulong? WidgetChannelId => ((IGuild)_socketGuild).WidgetChannelId;
 
+        public ulong MaxUploadLimit => ((IGuild)_socketGuild).MaxUploadLimit;
+
         public virtual Task AddBanAsync(IUser user, int pruneDays = 0, string? reason = null, RequestOptions? options = null)
         {
             return _socketGuild.AddBanAsync(user, pruneDays, reason, options);
