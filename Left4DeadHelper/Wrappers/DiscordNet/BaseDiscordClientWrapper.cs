@@ -62,6 +62,11 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
             _baseDiscordClient.Dispose();
         }
 
+        public ValueTask DisposeAsync()
+        {
+            return _baseDiscordClient.DisposeAsync();
+        }
+
         public virtual Task<IApplication> GetApplicationInfoAsync(RequestOptions? options = null)
         {
             return ((IDiscordClient)_baseDiscordClient).GetApplicationInfoAsync(options);
