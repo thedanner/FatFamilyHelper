@@ -8,7 +8,6 @@ using Left4DeadHelper.Sprays.Exceptions;
 using Left4DeadHelper.Sprays.SaveProfiles;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -31,7 +30,7 @@ namespace Left4DeadHelper.Discord.Modules
 
         // CROSS MARK emoji https://www.fileformat.info/info/emoji/x/index.htm
         private const string DeleteEmojiString = "\u274C";
-        public static Emoji DeleteEmote => new Emoji(DeleteEmojiString);
+        public static Emoji DeleteEmote => new(DeleteEmojiString);
 
         public SprayInteractionModule(ILogger<SprayInteractionModule> logger, Settings settings, ISprayModuleCommandResolver resolver, HttpClient httpClient)
         {
@@ -121,6 +120,13 @@ namespace Left4DeadHelper.Discord.Modules
             await HandleAsync(saveProfile, fileName, nearImageUri, farImageUri);
         }
 
+        [SlashCommand("near-far-attachments",
+            "Converts two images a fading spray. Both images should be the same size.")]
+        public Task ConvertFadingWithAttachmentsAsync(IAttachment nearImage, IAttachment farImage, string? fileName = null)
+        {
+            return ConvertFadingAsync(nearImage.ProxyUrl, farImage.ProxyUrl, !string.IsNullOrEmpty(fileName) ? fileName : nearImage.Filename);
+        }
+
         [MessageCommand("sprayme: near-far")]
         public async Task ConvertFadingMessageAsync(IMessage message) // SocketMessage
         {
@@ -172,8 +178,7 @@ namespace Left4DeadHelper.Discord.Modules
 
             var cancellationToken = CancellationToken.None;
 
-            var dmChannel = Context.Channel as SocketDMChannel;
-            if (dmChannel != null)
+            if (Context.Channel is SocketDMChannel dmChannel)
             {
                 _logger.LogInformation(
                     "Spray requested from DM conversation {dmChannelId} with recipients {recipients}.",

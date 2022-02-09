@@ -312,16 +312,19 @@ namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
 			{
 				foreach (var image in images)
 				{
-					for (int y = 0; y < image.Height; y++)
+					image.ProcessPixelRows(pixelAccessor =>
 					{
-						Span<Rgba32> pixelRowSpan = image.GetPixelRowSpan(y);
-						for (int x = 0; x < image.Width; x++)
+						for (int y = 0; y < image.Height; y++)
 						{
-							pixelRowSpan[x].A = pixelRowSpan[x].A >= 32 ? byte.MaxValue : byte.MinValue;
-						}
+							Span<Rgba32> pixelRowSpan = pixelAccessor.GetRowSpan(y);
+							for (int x = 0; x < image.Width; x++)
+							{
+								pixelRowSpan[x].A = pixelRowSpan[x].A >= 32 ? byte.MaxValue : byte.MinValue;
+							}
 
-						if (cancellationToken.IsCancellationRequested) throw new TaskCanceledException();
-					}
+							if (cancellationToken.IsCancellationRequested) throw new TaskCanceledException();
+						}
+					});
 				}
 			}
 		}
