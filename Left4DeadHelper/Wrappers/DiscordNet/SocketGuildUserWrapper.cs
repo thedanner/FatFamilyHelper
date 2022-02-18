@@ -63,6 +63,10 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
 
         public DateTimeOffset? TimedOutUntil => _socketGuildUser.TimedOutUntil;
 
+        public string DisplayName => _socketGuildUser.DisplayName;
+
+        public string DisplayAvatarId => _socketGuildUser.DisplayAvatarId;
+
         public virtual Task AddRoleAsync(ulong roleId, RequestOptions? options = null)
         {
             return _socketGuildUser.AddRoleAsync(roleId, options);
@@ -81,6 +85,11 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
         public virtual Task AddRolesAsync(IEnumerable<IRole> roles, RequestOptions? options = null)
         {
             return _socketGuildUser.AddRolesAsync(roles, options);
+        }
+
+        public string GetDisplayAvatarUrl(ImageFormat format = ImageFormat.Auto, ushort size = 128)
+        {
+            return _socketGuildUser.GetDisplayAvatarUrl(format, size);
         }
 
         public string GetGuildAvatarUrl(ImageFormat format = ImageFormat.Auto, ushort size = 128)
