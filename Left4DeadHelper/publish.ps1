@@ -1,5 +1,3 @@
-# This script stops and starts a Windows service.
-
 Set-Location $PSScriptRoot
 
 $Runtime = 'win-x64'
@@ -8,8 +6,11 @@ $Configuration = 'Release'
 $ServiceName = "Left4DeadHelper"
 $ServiceDescription = "Left 4 Dead Helper bot service"
 
+$DeployDir = "dist"
+$ExeName = "Left4DeadHelper.exe"
+
 $TestProjectDirs = @(
-    "..\Left4DeadHelper.Tests.Unit\"
+    Join-Path ".." "Left4DeadHelper.Tests.Unit"
 )
 
 
@@ -68,7 +69,7 @@ if ($Service.Status -eq [System.ServiceProcess.ServiceControllerStatus]::Running
     }
 }
 
-Remove-Item -Recurse "dist\*" -ErrorAction SilentlyContinue
+Remove-Item -Recurse (Join-Path $DeployDir "*") -ErrorAction SilentlyContinue
 dotnet publish --configuration $Configuration `
     --no-restore --no-build --nologo `
     --framework $Framework --runtime $Runtime --self-contained true `
@@ -82,7 +83,7 @@ else
 {
     if ($IsAdmin)
     {
-        $BinPath = (Get-Item "dist\Left4DeadHelper.exe").FullName
+        $BinPath = (Get-Item (Join-Path $DeployDir $ExeName)).FullName
         $Service = New-Service -Name $ServiceName -Description $ServiceDescription `
             -BinaryPathName $BinPath -StartupType Automatic -DependsOn "TcpIp"
         $Service.Start()
