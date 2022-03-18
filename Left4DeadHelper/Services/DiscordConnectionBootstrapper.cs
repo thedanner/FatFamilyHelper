@@ -80,7 +80,7 @@ namespace Left4DeadHelper.Services
 
             await client.SetStatusAsync(UserStatus.Online);
             // TODO read commands/prefixes?
-            await client.SetGameAsync(".l4d / !l4d2", type: ActivityType.Listening);
+            await client.SetGameAsync("/help", type: ActivityType.Listening);
         }
 
         private Task ReadyHandlerWithSignalAsync(TaskCompletionSource<bool> readyComplete)
