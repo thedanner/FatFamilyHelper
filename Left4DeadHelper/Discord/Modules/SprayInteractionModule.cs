@@ -19,10 +19,6 @@ namespace Left4DeadHelper.Discord.Modules
     [Group("sprayme", "Converts an image into a Source engine-compatible spary.")]
     public class SprayInteractionModule : InteractionModuleBase<SocketInteractionContext>
     {
-        private const string CommandVtfAlpha = "sprayme512";
-        private const string CommandTga = "spraymetga";
-        private const string CommandFading = "sprayme-nearfar";
-
         private readonly ILogger<SprayInteractionModule> _logger;
         private readonly Settings _settings;
         private readonly ISprayModuleCommandResolver _resolver;
@@ -40,9 +36,9 @@ namespace Left4DeadHelper.Discord.Modules
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         }
 
-        [SlashCommand("high-res",
+        [SlashCommand("high-res-url",
             "Converts to VTF format (1024x1020 or vice-versa; 1-bit alpha).")]
-        public async Task ConvertVtfHighResAsync(
+        public async Task ConvertVtfHighResUrlAsync(
             [Summary("sourceUrl", "URL of image to convert.")] string sourceUrl,
             [Summary("fileName", "Optional; use this to customize the file name.")] string? fileName = null
         )
@@ -55,6 +51,16 @@ namespace Left4DeadHelper.Discord.Modules
             }
 
             await RespondAsync("The given source doesn't look like a URL.");
+        }
+
+        [SlashCommand("high-res-attachment",
+            "Converts to VTF format (1024x1020 or vice-versa; 1-bit alpha).")]
+        public Task ConvertVtfHighResAttachmentAsync(
+            [Summary("image", "Image to convert.")] IAttachment attachment,
+            [Summary("fileName", "Optional; use this to customize the file name.")] string? fileName = null
+        )
+        {
+            return ConvertVtfHighResUrlAsync(attachment.ProxyUrl, !string.IsNullOrEmpty(fileName) ? fileName : attachment.Filename);
         }
 
         [MessageCommand("sprayme: high-res")]
@@ -70,9 +76,9 @@ namespace Left4DeadHelper.Discord.Modules
             await RespondAsync("That message doesn't look like it has an image in it.");
         }
 
-        [SlashCommand("8-bit-alpha",
+        [SlashCommand("8-bit-alpha-url",
             "Converts to VTF format (512x512 with 8-bit alpha).")]
-        public async Task ConvertVtfAlphaAsync(
+        public async Task ConvertVtf8BitAlphaUrlAsync(
             [Summary("sourceUrl", "URL of image to convert.")] string sourceUrl,
             [Summary("fileName", "Optional; use this to customize the file name.")] string? fileName = null
         )
@@ -85,6 +91,16 @@ namespace Left4DeadHelper.Discord.Modules
             }
 
             await RespondAsync("The given source doesn't look like a URL.");
+        }
+
+        [SlashCommand("8-bit-alpha-attachment",
+            "Converts to VTF format (512x512 with 8-bit alpha).")]
+        public Task ConvertVtf8BitAlphaAttachmentAsync(
+            [Summary("image", "Image to convert.")] IAttachment attachment,
+            [Summary("fileName", "Optional; use this to customize the file name.")] string? fileName = null
+        )
+        {
+            return ConvertVtf8BitAlphaUrlAsync(attachment.ProxyUrl, !string.IsNullOrEmpty(fileName) ? fileName : attachment.Filename);
         }
 
         [MessageCommand("sprayme: 8-bit-alpha")]
@@ -100,9 +116,9 @@ namespace Left4DeadHelper.Discord.Modules
             await RespondAsync("That message doesn't look like it has an image in it.");
         }
 
-        [SlashCommand("near-far",
+        [SlashCommand("near-far-urls",
             "Converts *two* images a fading spray. Both images should be the same size.")]
-        public async Task ConvertFadingAsync(string nearImageUrl, string farImageUrl, string? fileName = null)
+        public async Task ConvertNearFarUrlsAsync(string nearImageUrl, string farImageUrl, string? fileName = null)
         {
             if (!Uri.TryCreate(nearImageUrl, UriKind.Absolute, out var nearImageUri))
             {
@@ -122,9 +138,9 @@ namespace Left4DeadHelper.Discord.Modules
 
         [SlashCommand("near-far-attachments",
             "Converts two images a fading spray. Both images should be the same size.")]
-        public Task ConvertFadingWithAttachmentsAsync(IAttachment nearImage, IAttachment farImage, string? fileName = null)
+        public Task ConvertNearFarAttachmentsAsync(IAttachment nearImage, IAttachment farImage, string? fileName = null)
         {
-            return ConvertFadingAsync(nearImage.ProxyUrl, farImage.ProxyUrl, !string.IsNullOrEmpty(fileName) ? fileName : nearImage.Filename);
+            return ConvertNearFarUrlsAsync(nearImage.ProxyUrl, farImage.ProxyUrl, !string.IsNullOrEmpty(fileName) ? fileName : nearImage.Filename);
         }
 
         [MessageCommand("sprayme: near-far")]
