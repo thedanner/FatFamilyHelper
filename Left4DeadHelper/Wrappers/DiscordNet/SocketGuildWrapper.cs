@@ -196,29 +196,14 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
             return _socketGuild.CreateEmoteAsync(name, image, roles, options);
         }
 
-        public virtual Task<RestGuildIntegration> CreateIntegrationAsync(ulong id, string type, RequestOptions? options = null)
+        public virtual Task<RestRole> CreateRoleAsync(string name, GuildPermissions? permissions = null, Color? color = null, bool isHoisted = false, bool isMentionable = false, RequestOptions? options = null)
         {
-            return _socketGuild.CreateIntegrationAsync(id, type, options);
-        }
-
-        Task<IGuildIntegration> IGuild.CreateIntegrationAsync(ulong id, string type, RequestOptions? options)
-        {
-            return ((IGuild)_socketGuild).CreateIntegrationAsync(id, type, options);
-        }
-
-        public virtual Task<RestRole> CreateRoleAsync(string name, GuildPermissions? permissions = null, Color? color = null, bool isHoisted = false, RequestOptions? options = null)
-        {
-            return _socketGuild.CreateRoleAsync(name, permissions, color, isHoisted, options);
+            return _socketGuild.CreateRoleAsync(name, permissions, color, isHoisted, isMentionable, options);
         }
 
         Task<IRole> IGuild.CreateRoleAsync(string name, GuildPermissions? permissions, Color? color, bool isHoisted, RequestOptions? options)
         {
             return ((IGuild)_socketGuild).CreateRoleAsync(name, permissions, color, isHoisted, options);
-        }
-
-        public virtual Task<RestRole> CreateRoleAsync(string name, GuildPermissions? permissions = null, Color? color = null, bool isHoisted = false, bool isMentionable = false, RequestOptions? options = null)
-        {
-            return _socketGuild.CreateRoleAsync(name, permissions, color, isHoisted, isMentionable, options);
         }
 
         Task<IRole> IGuild.CreateRoleAsync(string name, GuildPermissions? permissions, Color? color, bool isHoisted, bool isMentionable, RequestOptions? options)
@@ -301,14 +286,14 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
             return ((IGuild)_socketGuild).GetBanAsync(userId, options);
         }
 
-        public virtual Task<IReadOnlyCollection<RestBan>> GetBansAsync(RequestOptions? options = null)
+        public virtual IAsyncEnumerable<IReadOnlyCollection<RestBan>> GetBansAsync(int limit = 100, RequestOptions? options = null)
         {
-            return _socketGuild.GetBansAsync(options);
+            return _socketGuild.GetBansAsync(limit, options);
         }
 
-        Task<IReadOnlyCollection<IBan>> IGuild.GetBansAsync(RequestOptions? options)
+        IAsyncEnumerable<IReadOnlyCollection<IBan>> IGuild.GetBansAsync(int limit, RequestOptions? options)
         {
-            return ((IGuild)_socketGuild).GetBansAsync(options);
+            return ((IGuild)_socketGuild).GetBansAsync(limit, options);
         }
 
         public virtual Task<IReadOnlyCollection<ICategoryChannel>> GetCategoriesAsync(CacheMode mode = CacheMode.AllowDownload, RequestOptions? options = null)
@@ -354,16 +339,6 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
         public virtual Task<IReadOnlyCollection<GuildEmote>> GetEmotesAsync(RequestOptions? options = null)
         {
             return _socketGuild.GetEmotesAsync(options);
-        }
-
-        public virtual Task<IReadOnlyCollection<RestGuildIntegration>> GetIntegrationsAsync(RequestOptions? options = null)
-        {
-            return _socketGuild.GetIntegrationsAsync(options);
-        }
-
-        Task<IReadOnlyCollection<IGuildIntegration>> IGuild.GetIntegrationsAsync(RequestOptions? options)
-        {
-            return ((IGuild)_socketGuild).GetIntegrationsAsync(options);
         }
 
         public virtual Task<IReadOnlyCollection<RestInviteMetadata>> GetInvitesAsync(RequestOptions? options = null)
@@ -622,9 +597,9 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
             return ((IGuild)_socketGuild).GetEventsAsync(options);
         }
 
-        public Task<IGuildScheduledEvent> CreateEventAsync(string name, DateTimeOffset startTime, GuildScheduledEventType type, GuildScheduledEventPrivacyLevel privacyLevel = GuildScheduledEventPrivacyLevel.Private, string? description = null, DateTimeOffset? endTime = null, ulong? channelId = null, string? location = null, RequestOptions? options = null)
+        public Task<IGuildScheduledEvent> CreateEventAsync(string name, DateTimeOffset startTime, GuildScheduledEventType type, GuildScheduledEventPrivacyLevel privacyLevel = GuildScheduledEventPrivacyLevel.Private, string? description = null, DateTimeOffset? endTime = null, ulong? channelId = null, string? location = null, Image? coverImage = null, RequestOptions? options = null)
         {
-            return ((IGuild)_socketGuild).CreateEventAsync(name, startTime, type, privacyLevel, description, endTime, channelId, location, options);
+            return ((IGuild)_socketGuild).CreateEventAsync(name, startTime, type, privacyLevel, description, endTime, channelId, location, coverImage, options);
         }
 
         public Task<IReadOnlyCollection<IApplicationCommand>> GetApplicationCommandsAsync(RequestOptions? options = null)
@@ -645,6 +620,26 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
         public Task<IReadOnlyCollection<IApplicationCommand>> BulkOverwriteApplicationCommandsAsync(ApplicationCommandProperties[] properties, RequestOptions? options = null)
         {
             return ((IGuild)_socketGuild).BulkOverwriteApplicationCommandsAsync(properties, options);
+        }
+
+        public IAsyncEnumerable<IReadOnlyCollection<IBan>> GetBansAsync(ulong fromUserId, Direction dir, int limit = 1000, RequestOptions? options = null)
+        {
+            return _socketGuild.GetBansAsync(fromUserId, dir, limit, options);
+        }
+
+        public IAsyncEnumerable<IReadOnlyCollection<IBan>> GetBansAsync(IUser fromUser, Direction dir, int limit = 1000, RequestOptions? options = null)
+        {
+            return GetBansAsync(fromUser, dir, limit, options);
+        }
+
+        public Task<IReadOnlyCollection<IIntegration>> GetIntegrationsAsync(RequestOptions? options = null)
+        {
+            return GetIntegrationsAsync(options);
+        }
+
+        public Task DeleteIntegrationAsync(ulong id, RequestOptions? options = null)
+        {
+            return DeleteIntegrationAsync(id, options);
         }
     }
 }

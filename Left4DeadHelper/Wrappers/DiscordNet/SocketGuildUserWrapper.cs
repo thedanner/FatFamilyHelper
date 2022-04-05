@@ -67,6 +67,8 @@ namespace Left4DeadHelper.Wrappers.DiscordNet
 
         public string DisplayAvatarId => _socketGuildUser.DisplayAvatarId;
 
+        public bool IsVideoing => _socketGuildUser.IsVideoing;
+
         public virtual Task AddRoleAsync(ulong roleId, RequestOptions? options = null)
         {
             return _socketGuildUser.AddRoleAsync(roleId, options);
