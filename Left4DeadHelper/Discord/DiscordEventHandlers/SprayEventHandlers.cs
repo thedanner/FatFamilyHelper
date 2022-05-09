@@ -78,7 +78,7 @@ namespace Left4DeadHelper.Discord.DiscordEventHandlers
         {
             if (reactingUser == null) throw new ArgumentNullException(nameof(reactingUser));
 
-            if (!SprayModule.DeleteEmote.Equals(reaction.Emote))
+            if (!SprayInteractionModule.DeleteEmote.Equals(reaction.Emote))
             {
                 return new TryHandleDeleteReactionResult(false, true);
             }

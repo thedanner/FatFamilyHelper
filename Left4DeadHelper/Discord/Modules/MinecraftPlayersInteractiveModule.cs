@@ -27,7 +27,7 @@ public class MinecraftPlayersInteractiveModule : InteractionModuleBase<SocketInt
         _minecraftPingService = minecraftPingService ?? throw new ArgumentNullException(nameof(minecraftPingService));
     }
 
-    [SlashCommand(CommandName, "Gets who's playing on our Minecraft server.")]
+    //[SlashCommand(CommandName, "Gets who's playing on our Minecraft server.")]
     public async Task HandleCommandAsync()
     {
         await DeferAsync();

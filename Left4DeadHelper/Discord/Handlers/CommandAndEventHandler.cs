@@ -17,7 +17,6 @@ namespace Left4DeadHelper.Discord.Handlers
     {
         private readonly ILogger<CommandAndEventHandler> _logger;
         private readonly DiscordSocketClient _client;
-        private readonly CommandService _commandService;
         private readonly InteractionService _interactionService;
         private readonly Settings _settings;
         private readonly IServiceProvider _serviceProvider;
@@ -27,12 +26,11 @@ namespace Left4DeadHelper.Discord.Handlers
         // Retrieve client and CommandService instance via ctor
         public CommandAndEventHandler(
             ILogger<CommandAndEventHandler> logger, DiscordSocketClient client,
-            CommandService commandService, InteractionService interactionService,
+            InteractionService interactionService,
             Settings settings, IServiceProvider serviceProvider)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _client = client ?? throw new ArgumentNullException(nameof(client));
-            _commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
             _interactionService = interactionService ?? throw new ArgumentNullException(nameof(interactionService));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
@@ -40,48 +38,12 @@ namespace Left4DeadHelper.Discord.Handlers
 
         public async Task InitializeAsync()
         {
-            _client.MessageReceived += HandleCommandAsync;
-
             _client.MessageReceived += HandleMessageReceivedAsync;
             _client.ReactionAdded += HandleReactionAddedAsync;
-
-            await _commandService.AddModulesAsync(typeof(MinecraftPlayersModule).Assembly, _serviceProvider);
 
             await _interactionService.AddModulesAsync(typeof(MinecraftPlayersInteractiveModule).Assembly, _serviceProvider);
 
             _client.InteractionCreated += HandleInteraction;
-        }
-
-        private async Task HandleCommandAsync(SocketMessage messageParam)
-        {
-            // Don't process the command if it was a system message
-            var message = messageParam as SocketUserMessage;
-            if (message == null) return;
-
-            // Create a number to track where the prefix ends and the command begins
-            var argPos = 0;
-
-
-            // Determine if the message is a command based on the prefix and make sure no bots trigger commands
-            if (message.Author.IsBot) return;
-
-            var isPrivateChannel = message.Channel is IPrivateChannel;
-            var hasAnyPrefix = _settings.DiscordSettings.Prefixes.Any(p => message.HasCharPrefix(p, ref argPos));
-            if ((!isPrivateChannel
-                && !(hasAnyPrefix || message.HasMentionPrefix(_client.CurrentUser, ref argPos))))
-            {
-                return;
-            }
-
-            // Create a WebSocket-based command context based on the message
-            var context = new SocketCommandContext(_client, message);
-
-            // Execute the command with the command context we just
-            // created, along with the service provider for precondition checks.
-            var result = await _commandService.ExecuteAsync(
-                context: context,
-                argPos: argPos,
-                services: _serviceProvider);
         }
 
         private async Task HandleMessageReceivedAsync(SocketMessage message)
@@ -126,12 +88,10 @@ namespace Left4DeadHelper.Discord.Handlers
             {
                 if (disposing)
                 {
-                    _client.MessageReceived -= HandleCommandAsync;
                     _client.MessageReceived -= HandleMessageReceivedAsync;
                     _client.ReactionAdded -= HandleReactionAddedAsync;
                     _client.InteractionCreated -= HandleInteraction;
 
-                    (_commandService as IDisposable)?.Dispose();
                     _interactionService?.Dispose();
                 }
 
