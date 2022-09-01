@@ -2,61 +2,60 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Left4DeadHelper.Models.Configuration
+namespace Left4DeadHelper.Models.Configuration;
+
+public class UserMapping
 {
-    public class UserMapping
+    private readonly List<string> _steamIds;
+
+    public UserMapping()
     {
-        private readonly List<string> _steamIds;
+        Name = "";
 
-        public UserMapping()
+        _steamIds = new List<string>();
+    }
+
+    public string Name { get; set; }
+
+    public ulong DiscordId { get; set; }
+
+    public string SteamId
+    {
+        // This needs to be a public accessor because the settings framework skips it if it's not.
+        [Obsolete("Use the SteamIds property.", true)]
+        get => _steamIds.FirstOrDefault() ?? "<none>";
+        set => _steamIds.Add(value);
+    }
+
+    public List<string> SteamIds
+    {
+        get
         {
-            Name = "";
-
-            _steamIds = new List<string>();
-        }
-
-        public string Name { get; set; }
-
-        public ulong DiscordId { get; set; }
-
-        public string SteamId
-        {
-            // This needs to be a public accessor because the settings framework skips it if it's not.
-            [Obsolete("Use the SteamIds property.", true)]
-            get => _steamIds.FirstOrDefault() ?? "<none>";
-            set => _steamIds.Add(value);
-        }
-
-        public List<string> SteamIds
-        {
-            get
+            var fullIds = new List<string>(_steamIds.Count + 1);
+            
+            foreach (var id in _steamIds)
             {
-                var fullIds = new List<string>(_steamIds.Count + 1);
-                
-                foreach (var id in _steamIds)
+                if (string.IsNullOrEmpty(id)) continue;
+
+                if (!fullIds.Contains(id))
                 {
-                    if (string.IsNullOrEmpty(id)) continue;
+                    fullIds.Add(id);
+                }
 
-                    if (!fullIds.Contains(id))
+                if (id.StartsWith("STEAM_0:"))
+                {
+                    var altId = id.Replace("STEAM_0:", "STEAM_1:");
+
+                    if (!fullIds.Contains(altId))
                     {
-                        fullIds.Add(id);
-                    }
-
-                    if (id.StartsWith("STEAM_0:"))
-                    {
-                        var altId = id.Replace("STEAM_0:", "STEAM_1:");
-
-                        if (!fullIds.Contains(altId))
-                        {
-                            fullIds.Add(altId);
-                        }
+                        fullIds.Add(altId);
                     }
                 }
-                return fullIds;
             }
-            set => _steamIds.AddRange(value);
+            return fullIds;
         }
-
-        public override string ToString() => $"{Name} [SteamIds:{string.Join(",", SteamIds)}, DiscordId:{DiscordId}]";
+        set => _steamIds.AddRange(value);
     }
+
+    public override string ToString() => $"{Name} [SteamIds:{string.Join(",", SteamIds)}, DiscordId:{DiscordId}]";
 }

@@ -1,15 +1,14 @@
 ﻿using System.Collections.Generic;
 
-namespace Left4DeadHelper.Services
-{
-    public class MoveResult
-    {
-        public MoveResult()
-        {
-            UnmappedSteamUsers = new List<UnmappedSteamUser>();
-        }
+namespace Left4DeadHelper.Services;
 
-        public int MoveCount { get; set; }
-        public List<UnmappedSteamUser> UnmappedSteamUsers { get; set; }
+public class MoveResult
+{
+    public MoveResult()
+    {
+        UnmappedSteamUsers = new List<UnmappedSteamUser>();
     }
+
+    public int MoveCount { get; set; }
+    public List<UnmappedSteamUser> UnmappedSteamUsers { get; set; }
 }

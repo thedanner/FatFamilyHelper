@@ -2,10 +2,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Left4DeadHelper.Services
+namespace Left4DeadHelper.Services;
+
+public interface IDiscordConnectionBootstrapper
 {
-    public interface IDiscordConnectionBootstrapper
-    {
-        Task StartAsync(IDiscordSocketClientWrapper client, CancellationToken cancellationToken);
-    }
+    Task StartAsync(IDiscordSocketClientWrapper client, CancellationToken cancellationToken);
 }

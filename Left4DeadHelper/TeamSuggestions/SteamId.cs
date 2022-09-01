@@ -1,67 +1,66 @@
 ﻿using System;
 
-namespace Left4DeadHelper.TeamSuggestions
+namespace Left4DeadHelper.TeamSuggestions;
+
+public struct SteamId
 {
-    public struct SteamId
+    private SteamId(ulong value)
     {
-        private SteamId(ulong value)
+        Value = value;
+    }
+
+    public ulong Value { get; }
+
+
+    public static SteamId Create(string steamId)
+    {
+        return new SteamId(FromStringId(steamId));
+    }
+
+    public static SteamId Create(ulong steamId) => new(steamId);
+
+
+
+    // Adapted from https://gist.github.com/bcahue/4eae86ae1d10364bb66d
+    private const ulong SteamId64Ident = 76561197960265728;
+
+
+    public static ulong FromStringId(string stringId)
+    {
+        if (!stringId.StartsWith("STEAM_0:") && !stringId.StartsWith("STEAM_1:"))
         {
-            Value = value;
+            throw new ArgumentException($"SteamId {stringId} is not in the correct format.", nameof(stringId));
         }
 
-        public ulong Value { get; }
+        var parts = stringId.Split(':', 3, StringSplitOptions.None);
 
+        if (parts.Length != 3) throw new ArgumentException($"SteamId {stringId} is not in the correct format.", nameof(stringId));
 
-        public static SteamId Create(string steamId)
-        {
-            return new SteamId(FromStringId(steamId));
-        }
+        var id = ulong.Parse(parts[2]) * 2;
 
-        public static SteamId Create(ulong steamId) => new(steamId);
+        if (id < 0) throw new ArgumentException($"SteamId {stringId} is not in the correct format.", nameof(stringId));
 
+        if (parts[1] == "1") id++;
 
+        id += SteamId64Ident;
 
-        // Adapted from https://gist.github.com/bcahue/4eae86ae1d10364bb66d
-        private const ulong SteamId64Ident = 76561197960265728;
+        return id;
+    }
 
+    public static string ToStringId(ulong id)
+    {
+        if (id <= 0) throw new ArgumentOutOfRangeException(nameof(id), "ID must be positive.");
 
-        public static ulong FromStringId(string stringId)
-        {
-            if (!stringId.StartsWith("STEAM_0:") && !stringId.StartsWith("STEAM_1:"))
-            {
-                throw new ArgumentException($"SteamId {stringId} is not in the correct format.", nameof(stringId));
-            }
+        var steamIdInOldFormat = "STEAM_1:";
 
-            var parts = stringId.Split(':', 3, StringSplitOptions.None);
+        var ulongId = id - SteamId64Ident;
 
-            if (parts.Length != 3) throw new ArgumentException($"SteamId {stringId} is not in the correct format.", nameof(stringId));
+        steamIdInOldFormat += ulongId % 2 == 0
+            ? "0:"
+            : "1:";
 
-            var id = ulong.Parse(parts[2]) * 2;
+        steamIdInOldFormat += ulongId / 2;
 
-            if (id < 0) throw new ArgumentException($"SteamId {stringId} is not in the correct format.", nameof(stringId));
-
-            if (parts[1] == "1") id++;
-
-            id += SteamId64Ident;
-
-            return id;
-        }
-
-        public static string ToStringId(ulong id)
-        {
-            if (id <= 0) throw new ArgumentOutOfRangeException(nameof(id), "ID must be positive.");
-
-            var steamIdInOldFormat = "STEAM_1:";
-
-            var ulongId = id - SteamId64Ident;
-
-            steamIdInOldFormat += ulongId % 2 == 0
-                ? "0:"
-                : "1:";
-
-            steamIdInOldFormat += ulongId / 2;
-
-            return steamIdInOldFormat;
-        }
+        return steamIdInOldFormat;
     }
 }

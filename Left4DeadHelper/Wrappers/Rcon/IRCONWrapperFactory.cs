@@ -1,7 +1,6 @@
-﻿namespace Left4DeadHelper.Wrappers.Rcon
+﻿namespace Left4DeadHelper.Wrappers.Rcon;
+
+public interface IRCONWrapperFactory
 {
-    public interface IRCONWrapperFactory
-    {
-        IRCONWrapper GetRcon();
-    }
+    IRCONWrapper GetRcon();
 }

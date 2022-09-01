@@ -2,12 +2,11 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Left4DeadHelper.Wrappers.Rcon
+namespace Left4DeadHelper.Wrappers.Rcon;
+
+public interface IRCONWrapper : IDisposable
 {
-    public interface IRCONWrapper : IDisposable
-    {
-        Task ConnectAsync();
-        Task<T> SendCommandAsync<T>(string command) where T : class, IParseable, new();
-        Task<string> SendCommandAsync(string command);
-    }
+    Task ConnectAsync();
+    Task<T> SendCommandAsync<T>(string command) where T : class, IParseable, new();
+    Task<string> SendCommandAsync(string command);
 }

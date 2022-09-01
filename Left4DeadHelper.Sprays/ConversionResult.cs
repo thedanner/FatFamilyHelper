@@ -1,39 +1,38 @@
 ﻿using System;
 
-namespace Left4DeadHelper.Sprays
+namespace Left4DeadHelper.Sprays;
+
+public class ConversionResult
 {
-    public class ConversionResult
+    public bool IsSuccessful { get; private set; }
+    public string? Message { get; private set; }
+    public string? FileExtension { get; private set; }
+
+    public static ConversionResult Pass(string fileExtension)
     {
-        public bool IsSuccessful { get; private set; }
-        public string? Message { get; private set; }
-        public string? FileExtension { get; private set; }
-
-        public static ConversionResult Pass(string fileExtension)
+        if (string.IsNullOrEmpty(fileExtension))
         {
-            if (string.IsNullOrEmpty(fileExtension))
-            {
-                throw new ArgumentException($"'{nameof(fileExtension)}' cannot be null or empty.", nameof(fileExtension));
-            }
-
-            return new ConversionResult
-            {
-                IsSuccessful = true,
-                FileExtension = fileExtension
-            };
+            throw new ArgumentException($"'{nameof(fileExtension)}' cannot be null or empty.", nameof(fileExtension));
         }
 
-        public static ConversionResult Fail(string message)
+        return new ConversionResult
         {
-            if (string.IsNullOrEmpty(message))
-            {
-                throw new ArgumentException($"'{nameof(message)}' cannot be null or empty.", nameof(message));
-            }
+            IsSuccessful = true,
+            FileExtension = fileExtension
+        };
+    }
 
-            return new ConversionResult
-            {
-                IsSuccessful = false,
-                Message = message
-            };
+    public static ConversionResult Fail(string message)
+    {
+        if (string.IsNullOrEmpty(message))
+        {
+            throw new ArgumentException($"'{nameof(message)}' cannot be null or empty.", nameof(message));
         }
+
+        return new ConversionResult
+        {
+            IsSuccessful = false,
+            Message = message
+        };
     }
 }

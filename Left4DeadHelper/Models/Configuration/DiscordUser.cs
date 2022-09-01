@@ -1,14 +1,13 @@
-﻿namespace Left4DeadHelper.Models.Configuration
+﻿namespace Left4DeadHelper.Models.Configuration;
+
+public class DiscordUser : IDiscordUser
 {
-    public class DiscordUser : IDiscordUser
+    public DiscordUser()
     {
-        public DiscordUser()
-        {
-            Name = "";
-        }
-
-        public string Name { get; set; }
-
-        public ulong DiscordId { get; set; }
+        Name = "";
     }
+
+    public string Name { get; set; }
+
+    public ulong DiscordId { get; set; }
 }

@@ -8,32 +8,31 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Left4DeadHelper.Sprays.SaveProfiles
+namespace Left4DeadHelper.Sprays.SaveProfiles;
+
+public class TgaSaveProfile : BaseSaveProfile
 {
-    public class TgaSaveProfile : BaseSaveProfile
+    public override int MaxWidth => 256;
+    public override int MaxHeight => 256;
+    public override string Extension => ".tga";
+
+    public override async Task ConvertAsync(IList<Image<Rgba32>> images,
+        Stream outputStream, CancellationToken cancellationToken)
     {
-        public override int MaxWidth => 256;
-        public override int MaxHeight => 256;
-        public override string Extension => ".tga";
+        if (images is null) throw new ArgumentNullException(nameof(images));
+        if (images.Count != 1) throw new ArgumentException("Only one image is permitted for this format.", nameof(images));
+        if (outputStream is null) throw new ArgumentNullException(nameof(outputStream));
 
-        public override async Task ConvertAsync(IList<Image<Rgba32>> images,
-            Stream outputStream, CancellationToken cancellationToken)
+        var image = images[0];
+
+        Resize(image);
+
+        var encoder = new TgaEncoder
         {
-            if (images is null) throw new ArgumentNullException(nameof(images));
-            if (images.Count != 1) throw new ArgumentException("Only one image is permitted for this format.", nameof(images));
-            if (outputStream is null) throw new ArgumentNullException(nameof(outputStream));
+            BitsPerPixel = TgaBitsPerPixel.Pixel32,
+            Compression = TgaCompression.None,
+        };
 
-            var image = images[0];
-
-            Resize(image);
-
-            var encoder = new TgaEncoder
-            {
-                BitsPerPixel = TgaBitsPerPixel.Pixel32,
-                Compression = TgaCompression.None,
-            };
-
-            await image.SaveAsync(outputStream, encoder, cancellationToken);
-        }
+        await image.SaveAsync(outputStream, encoder, cancellationToken);
     }
 }

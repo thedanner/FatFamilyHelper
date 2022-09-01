@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Left4DeadHelper.Discord.Interfaces
+namespace Left4DeadHelper.Discord.Interfaces;
+
+public interface ITask
 {
-    public interface ITask
-    {
-        Task RunTaskAsync(
-            DiscordSocketClient client, IReadOnlyDictionary<string, object> taskSettings,
-            CancellationToken cancellationToken);
-    }
+    Task RunTaskAsync(
+        DiscordSocketClient client, IReadOnlyDictionary<string, object> taskSettings,
+        CancellationToken cancellationToken);
 }

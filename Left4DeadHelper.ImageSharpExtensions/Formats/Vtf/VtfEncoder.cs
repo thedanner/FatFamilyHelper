@@ -7,48 +7,47 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf
+namespace Left4DeadHelper.ImageSharpExtensions.Formats.Vtf;
+
+public sealed class VtfEncoder : IImageEncoder
 {
-    public sealed class VtfEncoder : IImageEncoder
+    private readonly VtfImageType _imageType;
+
+    public VtfEncoder(VtfImageType imageType)
     {
-        private readonly VtfImageType _imageType;
+        _imageType = imageType;
+    }
 
-        public VtfEncoder(VtfImageType imageType)
+    public Task EncodeWithMipmapsAsync(IList<Image<Rgba32>> images, Stream stream, CancellationToken cancellationToken)
+    {
+        var encoder = new VtfEncoderCore(_imageType);
+        return encoder.EncodeAsync(images, stream, cancellationToken);
+    }
+
+    public void Encode<TPixel>(Image<TPixel> image, Stream stream) where TPixel : unmanaged, IPixel<TPixel>
+    {
+        if (_imageType != VtfImageType.Single1024
+            && _imageType != VtfImageType.Single512)
         {
-            _imageType = imageType;
+            throw new Exception($"Use {nameof(EncodeWithMipmapsAsync)}() directly for images that require mipmaps.");
         }
 
-        public Task EncodeWithMipmapsAsync(IList<Image<Rgba32>> images, Stream stream, CancellationToken cancellationToken)
+        var encoder = new VtfEncoderCore(_imageType);
+        if (!(image is Image<Rgba32> imageAsRgba32)) imageAsRgba32 = image.CloneAs<Rgba32>();
+        encoder.Encode(imageAsRgba32, stream, default);
+    }
+
+    public async Task EncodeAsync<TPixel>(Image<TPixel> image, Stream stream, CancellationToken cancellationToken)
+        where TPixel : unmanaged, IPixel<TPixel>
+    {
+        if (_imageType != VtfImageType.Single1024
+            && _imageType != VtfImageType.Single512)
         {
-            var encoder = new VtfEncoderCore(_imageType);
-            return encoder.EncodeAsync(images, stream, cancellationToken);
+            throw new Exception($"Use {nameof(EncodeWithMipmapsAsync)}() directly for images that require mipmaps.");
         }
 
-        public void Encode<TPixel>(Image<TPixel> image, Stream stream) where TPixel : unmanaged, IPixel<TPixel>
-        {
-            if (_imageType != VtfImageType.Single1024
-                && _imageType != VtfImageType.Single512)
-            {
-                throw new Exception($"Use {nameof(EncodeWithMipmapsAsync)}() directly for images that require mipmaps.");
-            }
-
-            var encoder = new VtfEncoderCore(_imageType);
-            if (!(image is Image<Rgba32> imageAsRgba32)) imageAsRgba32 = image.CloneAs<Rgba32>();
-            encoder.Encode(imageAsRgba32, stream, default);
-        }
-
-        public async Task EncodeAsync<TPixel>(Image<TPixel> image, Stream stream, CancellationToken cancellationToken)
-            where TPixel : unmanaged, IPixel<TPixel>
-        {
-            if (_imageType != VtfImageType.Single1024
-                && _imageType != VtfImageType.Single512)
-            {
-                throw new Exception($"Use {nameof(EncodeWithMipmapsAsync)}() directly for images that require mipmaps.");
-            }
-
-            var encoder = new VtfEncoderCore(_imageType);
-            if (!(image is Image<Rgba32> imageAsRgba32)) imageAsRgba32 = image.CloneAs<Rgba32>();
-            await encoder.EncodeAsync(imageAsRgba32, stream, cancellationToken).ConfigureAwait(false);
-        }
+        var encoder = new VtfEncoderCore(_imageType);
+        if (!(image is Image<Rgba32> imageAsRgba32)) imageAsRgba32 = image.CloneAs<Rgba32>();
+        await encoder.EncodeAsync(imageAsRgba32, stream, cancellationToken).ConfigureAwait(false);
     }
 }

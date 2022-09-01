@@ -1,26 +1,25 @@
 ﻿using System;
 
-namespace Left4DeadHelper.Services
+namespace Left4DeadHelper.Services;
+
+public class UnmappedSteamUser
 {
-    public class UnmappedSteamUser
+    public UnmappedSteamUser(string name, string steamId)
     {
-        public UnmappedSteamUser(string name, string steamId)
+        if (string.IsNullOrEmpty(name))
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentException($"'{nameof(name)}' cannot be null or empty", nameof(name));
-            }
-
-            if (string.IsNullOrEmpty(steamId))
-            {
-                throw new ArgumentException($"'{nameof(steamId)}' cannot be null or empty", nameof(steamId));
-            }
-
-            Name = name;
-            SteamId = steamId;
+            throw new ArgumentException($"'{nameof(name)}' cannot be null or empty", nameof(name));
         }
 
-        public string Name { get; private set; }
-        public string SteamId { get; private set; }
+        if (string.IsNullOrEmpty(steamId))
+        {
+            throw new ArgumentException($"'{nameof(steamId)}' cannot be null or empty", nameof(steamId));
+        }
+
+        Name = name;
+        SteamId = steamId;
     }
+
+    public string Name { get; private set; }
+    public string SteamId { get; private set; }
 }

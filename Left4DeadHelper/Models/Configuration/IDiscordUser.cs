@@ -1,7 +1,6 @@
-﻿namespace Left4DeadHelper.Models.Configuration
+﻿namespace Left4DeadHelper.Models.Configuration;
+
+public interface IDiscordUser : IGenericUser
 {
-    public interface IDiscordUser : IGenericUser
-    {
-        ulong DiscordId { get; set; }
-    }
+    ulong DiscordId { get; set; }
 }

@@ -1,7 +1,6 @@
-﻿namespace Left4DeadHelper.Models.Configuration
+﻿namespace Left4DeadHelper.Models.Configuration;
+
+public interface IGenericUser
 {
-    public interface IGenericUser
-    {
-        string Name { get; set; }
-    }
+    string Name { get; set; }
 }

@@ -1,7 +1,6 @@
-﻿namespace Left4DeadHelper.Services
+﻿namespace Left4DeadHelper.Services;
+
+public interface ITranslationService
 {
-    public interface ITranslationService
-    {
-        
-    }
+    
 }

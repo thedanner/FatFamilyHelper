@@ -1,6 +1,5 @@
-﻿namespace Left4DeadHelper.Discord.Interfaces.Events
+﻿namespace Left4DeadHelper.Discord.Interfaces.Events;
+
+public interface IHandleDiscordEvents
 {
-    public interface IHandleDiscordEvents
-    {
-    }
 }

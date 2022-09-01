@@ -3,26 +3,25 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace Left4DeadHelper.SourceQuery
+namespace Left4DeadHelper.SourceQuery;
+
+public static class BinaryReaderExtensions
 {
-    public static class BinaryReaderExtensions
+    public static string ReadNullTerminatedString(this BinaryReader br)
     {
-        public static string ReadNullTerminatedString(this BinaryReader br)
-        {
-            return ReadNullTerminatedString(br, Encoding.UTF8);
-        }
+        return ReadNullTerminatedString(br, Encoding.UTF8);
+    }
 
-        public static string ReadNullTerminatedString(this BinaryReader br, Encoding encoding)
-        {
-            if (encoding == null) throw new ArgumentNullException(nameof(encoding));
+    public static string ReadNullTerminatedString(this BinaryReader br, Encoding encoding)
+    {
+        if (encoding == null) throw new ArgumentNullException(nameof(encoding));
 
-            var stringBytes = new List<byte>();
-            byte charByte;
-            while ((charByte = br.ReadByte()) != 0)
-            {
-                stringBytes.Add(charByte);
-            }
-            return encoding.GetString(stringBytes.ToArray());
+        var stringBytes = new List<byte>();
+        byte charByte;
+        while ((charByte = br.ReadByte()) != 0)
+        {
+            stringBytes.Add(charByte);
         }
+        return encoding.GetString(stringBytes.ToArray());
     }
 }

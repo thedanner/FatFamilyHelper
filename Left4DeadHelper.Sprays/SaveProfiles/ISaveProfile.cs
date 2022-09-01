@@ -5,14 +5,13 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Left4DeadHelper.Sprays.SaveProfiles
+namespace Left4DeadHelper.Sprays.SaveProfiles;
+
+public interface ISaveProfile
 {
-    public interface ISaveProfile
-    {
-        string Extension { get; }
+    string Extension { get; }
 
-        void Validate();
+    void Validate();
 
-        Task ConvertAsync(IList<Image<Rgba32>> images, Stream outputStream, CancellationToken cancellationToken);
-    }
+    Task ConvertAsync(IList<Image<Rgba32>> images, Stream outputStream, CancellationToken cancellationToken);
 }

@@ -1,19 +1,18 @@
 ﻿using System.Collections.Generic;
 
-namespace Left4DeadHelper.Models.Configuration
-{
-    public class Maps
-    {
-        public Maps()
-        {
-            DefaultCategory = "normal";
-            Categories = new Dictionary<string, List<string>>
-            {
-                { "normal", new List<string>() }
-            };
-        }
+namespace Left4DeadHelper.Models.Configuration;
 
-        public string DefaultCategory { get; set; }
-        public Dictionary<string, List<string>> Categories { get; set; }
+public class Maps
+{
+    public Maps()
+    {
+        DefaultCategory = "normal";
+        Categories = new Dictionary<string, List<string>>
+        {
+            { "normal", new List<string>() }
+        };
     }
+
+    public string DefaultCategory { get; set; }
+    public Dictionary<string, List<string>> Categories { get; set; }
 }

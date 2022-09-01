@@ -1,15 +1,14 @@
 ﻿using System;
 
-namespace Left4DeadHelper.Helpers.Extensions
-{
-    public static class StringExtensions
-    {
-        public static bool StartsWithHttpProtocol(this string value)
-        {
-            if (string.IsNullOrEmpty(value)) return false;
+namespace Left4DeadHelper.Helpers.Extensions;
 
-            return value.StartsWith("http://", StringComparison.CurrentCultureIgnoreCase)
-                    || value.StartsWith("https://", StringComparison.CurrentCultureIgnoreCase);
-        }
+public static class StringExtensions
+{
+    public static bool StartsWithHttpProtocol(this string value)
+    {
+        if (string.IsNullOrEmpty(value)) return false;
+
+        return value.StartsWith("http://", StringComparison.CurrentCultureIgnoreCase)
+                || value.StartsWith("https://", StringComparison.CurrentCultureIgnoreCase);
     }
 }

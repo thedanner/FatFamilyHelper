@@ -1,10 +1,9 @@
 ﻿using Discord.WebSocket;
 using System.Threading.Tasks;
 
-namespace Left4DeadHelper.Discord.Interfaces.Events
+namespace Left4DeadHelper.Discord.Interfaces.Events;
+
+public interface IHandleMessageReceivedAsync : IHandleDiscordEvents
 {
-    public interface IHandleMessageReceivedAsync : IHandleDiscordEvents
-    {
-        Task HandleMessageReceivedAsync(SocketMessage message);
-    }
+    Task HandleMessageReceivedAsync(SocketMessage message);
 }

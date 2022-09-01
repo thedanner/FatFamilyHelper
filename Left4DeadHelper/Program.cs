@@ -11,7 +11,6 @@ using Left4DeadHelper.Minecraft;
 using Left4DeadHelper.Models.Configuration;
 using Left4DeadHelper.Scheduling;
 using Left4DeadHelper.Services;
-using Left4DeadHelper.TeamSuggestions;
 using Left4DeadHelper.Wrappers.Rcon;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

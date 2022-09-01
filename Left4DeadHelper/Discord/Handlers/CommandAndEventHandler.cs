@@ -11,99 +11,98 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Left4DeadHelper.Discord.Handlers
+namespace Left4DeadHelper.Discord.Handlers;
+
+public class CommandAndEventHandler : IDisposable
 {
-    public class CommandAndEventHandler : IDisposable
+    private readonly ILogger<CommandAndEventHandler> _logger;
+    private readonly DiscordSocketClient _client;
+    private readonly InteractionService _interactionService;
+    private readonly Settings _settings;
+    private readonly IServiceProvider _serviceProvider;
+
+    private bool _disposedValue;
+
+    // Retrieve client and CommandService instance via ctor
+    public CommandAndEventHandler(
+        ILogger<CommandAndEventHandler> logger, DiscordSocketClient client,
+        InteractionService interactionService,
+        Settings settings, IServiceProvider serviceProvider)
     {
-        private readonly ILogger<CommandAndEventHandler> _logger;
-        private readonly DiscordSocketClient _client;
-        private readonly InteractionService _interactionService;
-        private readonly Settings _settings;
-        private readonly IServiceProvider _serviceProvider;
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _client = client ?? throw new ArgumentNullException(nameof(client));
+        _interactionService = interactionService ?? throw new ArgumentNullException(nameof(interactionService));
+        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+    }
 
-        private bool _disposedValue;
+    public async Task InitializeAsync()
+    {
+        _client.MessageReceived += HandleMessageReceivedAsync;
+        _client.ReactionAdded += HandleReactionAddedAsync;
 
-        // Retrieve client and CommandService instance via ctor
-        public CommandAndEventHandler(
-            ILogger<CommandAndEventHandler> logger, DiscordSocketClient client,
-            InteractionService interactionService,
-            Settings settings, IServiceProvider serviceProvider)
+        await _interactionService.AddModulesAsync(typeof(MinecraftPlayersInteractiveModule).Assembly, _serviceProvider);
+
+        _client.InteractionCreated += HandleInteraction;
+    }
+
+    private async Task HandleMessageReceivedAsync(SocketMessage message)
+    {
+        var implementingServices = _serviceProvider.GetServices<IHandleMessageReceivedAsync>();
+
+        await Task.WhenAll(implementingServices.Select(s => s.HandleMessageReceivedAsync(message)));
+    }
+
+    private async Task HandleReactionAddedAsync(Cacheable<IUserMessage, ulong> maybeCachedMessage,
+        Cacheable<IMessageChannel, ulong> maybeCachedChannel, SocketReaction reaction)
+    {
+           var implementingServices = _serviceProvider.GetServices<IHandleReactionAddedAsync>();
+    
+        await Task.WhenAll(implementingServices.Select(s => s.HandleReactionAddedAsync(maybeCachedMessage, maybeCachedChannel, reaction)));
+    }
+
+    private async Task HandleInteraction(SocketInteraction arg)
+    {
+        try
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _client = client ?? throw new ArgumentNullException(nameof(client));
-            _interactionService = interactionService ?? throw new ArgumentNullException(nameof(interactionService));
-            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
-            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+            // Create an execution context that matches the generic type parameter of your InteractionModuleBase<T> modules
+            var ctx = new SocketInteractionContext(_client, arg);
+            await _interactionService.ExecuteCommandAsync(ctx, _serviceProvider);
         }
-
-        public async Task InitializeAsync()
+        catch (Exception ex)
         {
-            _client.MessageReceived += HandleMessageReceivedAsync;
-            _client.ReactionAdded += HandleReactionAddedAsync;
+            _logger.LogError(ex, "Error trying to handle interaction (e.g., from a slash command).");
 
-            await _interactionService.AddModulesAsync(typeof(MinecraftPlayersInteractiveModule).Assembly, _serviceProvider);
-
-            _client.InteractionCreated += HandleInteraction;
-        }
-
-        private async Task HandleMessageReceivedAsync(SocketMessage message)
-        {
-            var implementingServices = _serviceProvider.GetServices<IHandleMessageReceivedAsync>();
-
-            await Task.WhenAll(implementingServices.Select(s => s.HandleMessageReceivedAsync(message)));
-        }
-
-        private async Task HandleReactionAddedAsync(Cacheable<IUserMessage, ulong> maybeCachedMessage,
-            Cacheable<IMessageChannel, ulong> maybeCachedChannel, SocketReaction reaction)
-        {
-               var implementingServices = _serviceProvider.GetServices<IHandleReactionAddedAsync>();
-        
-            await Task.WhenAll(implementingServices.Select(s => s.HandleReactionAddedAsync(maybeCachedMessage, maybeCachedChannel, reaction)));
-        }
-
-        private async Task HandleInteraction(SocketInteraction arg)
-        {
-            try
+            // If a Slash Command execution fails it is most likely that the original interaction acknowledgement will persist. It is a good idea to delete the original
+            // response, or at least let the user know that something went wrong during the command execution.
+            if (arg.Type == InteractionType.ApplicationCommand)
             {
-                // Create an execution context that matches the generic type parameter of your InteractionModuleBase<T> modules
-                var ctx = new SocketInteractionContext(_client, arg);
-                await _interactionService.ExecuteCommandAsync(ctx, _serviceProvider);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error trying to handle interaction (e.g., from a slash command).");
-
-                // If a Slash Command execution fails it is most likely that the original interaction acknowledgement will persist. It is a good idea to delete the original
-                // response, or at least let the user know that something went wrong during the command execution.
-                if (arg.Type == InteractionType.ApplicationCommand)
-                {
-                    await arg.GetOriginalResponseAsync().ContinueWith(async (msg) => await msg.Result.DeleteAsync());
-                }
+                await arg.GetOriginalResponseAsync().ContinueWith(async (msg) => await msg.Result.DeleteAsync());
             }
         }
+    }
 
-        protected virtual void Dispose(bool disposing)
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposedValue)
         {
-            if (!_disposedValue)
+            if (disposing)
             {
-                if (disposing)
-                {
-                    _client.MessageReceived -= HandleMessageReceivedAsync;
-                    _client.ReactionAdded -= HandleReactionAddedAsync;
-                    _client.InteractionCreated -= HandleInteraction;
+                _client.MessageReceived -= HandleMessageReceivedAsync;
+                _client.ReactionAdded -= HandleReactionAddedAsync;
+                _client.InteractionCreated -= HandleInteraction;
 
-                    _interactionService?.Dispose();
-                }
-
-                _disposedValue = true;
+                _interactionService?.Dispose();
             }
-        }
 
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
+            _disposedValue = true;
         }
+    }
+
+    public void Dispose()
+    {
+        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
     }
 }
