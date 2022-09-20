@@ -80,7 +80,7 @@ public class DiscordConnectionBootstrapper : IDiscordConnectionBootstrapper
 
         await client.SetStatusAsync(UserStatus.Online);
         // TODO read commands/prefixes?
-        await client.SetGameAsync("/help", type: ActivityType.Listening);
+        await client.SetGameAsync("the long game", type: ActivityType.Playing);
     }
 
     private Task ReadyHandlerWithSignalAsync(TaskCompletionSource<bool> readyComplete)
