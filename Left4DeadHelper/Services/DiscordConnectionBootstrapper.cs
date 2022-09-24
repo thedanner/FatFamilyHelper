@@ -1,8 +1,8 @@
 using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
 using Left4DeadHelper.Helpers.Extensions;
 using Left4DeadHelper.Models.Configuration;
-using Left4DeadHelper.Wrappers.DiscordNet;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
@@ -24,7 +24,7 @@ public class DiscordConnectionBootstrapper : IDiscordConnectionBootstrapper
         _interactionService = interactionService;
     }
 
-    public async Task StartAsync(IDiscordSocketClientWrapper client, CancellationToken cancellationToken)
+    public async Task StartAsync(DiscordSocketClient client, CancellationToken cancellationToken)
     {
         if (client == null) throw new ArgumentNullException(nameof(client));
 

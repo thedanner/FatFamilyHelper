@@ -104,11 +104,6 @@ public class Program
         var config = hostContext.Configuration;
         var settings = config.Get<Settings>();
 
-        if (settings.DiscordSettings.Prefixes.Length == 0)
-        {
-            throw new Exception("At least one prefix must be set in DiscordSettings.Prefixes.");
-        }
-
         serviceCollection.AddSingleton(new HttpClient());
 
         serviceCollection.AddTransient(sp => config.Get<Settings>());
@@ -145,8 +140,8 @@ public class Program
             {
                 GatewayIntents = GatewayIntents.Guilds
                     | GatewayIntents.GuildIntegrations
-                    //| GatewayIntents.GuildVoiceStates
-                    //| GatewayIntents.GuildPresences // Needed to know which users are in which voice channels
+                    | GatewayIntents.GuildVoiceStates
+                    | GatewayIntents.GuildPresences // Needed to know which users are in which voice channels
                     | GatewayIntents.GuildMessages
                     | GatewayIntents.GuildMessageReactions
                     | GatewayIntents.DirectMessages

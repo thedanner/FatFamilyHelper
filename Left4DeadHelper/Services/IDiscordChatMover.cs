@@ -1,4 +1,4 @@
-﻿using Left4DeadHelper.Wrappers.DiscordNet;
+﻿using Discord.WebSocket;
 using Left4DeadHelper.Wrappers.Rcon;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,10 +9,10 @@ public interface IDiscordChatMover
 {
     Task<MoveResult> MovePlayersToCorrectChannelsAsync(
         IRCONWrapper rcon,
-        IDiscordSocketClientWrapper client, ISocketGuildWrapper guild,
+        DiscordSocketClient client, SocketGuild guild,
         CancellationToken cancellationToken);
 
     Task<ReuniteResult> RenuitePlayersAsync(
-        IDiscordSocketClientWrapper client, ISocketGuildWrapper guild,
+        DiscordSocketClient client, SocketGuild guild,
         CancellationToken cancellationToken);
 }

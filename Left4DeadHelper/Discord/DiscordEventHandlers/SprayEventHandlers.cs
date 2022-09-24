@@ -135,8 +135,7 @@ public class SprayEventHandlers : IHandleReactionAddedAsync
             var referencedMessageIsBotCommand =
                 guildChannel == null // In a DM, everything is assumed to be a bot command.
                 || !(
-                    !(_settings.DiscordSettings.Prefixes.Any(p => referencedMessage.HasCharPrefix(p, ref argPos)) ||
-                        referencedMessage.HasMentionPrefix(_client.CurrentUser, ref argPos))
+                    !referencedMessage.HasMentionPrefix(_client.CurrentUser, ref argPos)
                     || referencedMessage.Author.IsBot
                 );
 

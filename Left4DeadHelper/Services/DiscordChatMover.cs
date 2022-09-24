@@ -1,7 +1,7 @@
 using Discord;
+using Discord.WebSocket;
 using Left4DeadHelper.Models.Configuration;
 using Left4DeadHelper.Rcon;
-using Left4DeadHelper.Wrappers.DiscordNet;
 using Left4DeadHelper.Wrappers.Rcon;
 using Microsoft.Extensions.Logging;
 using System;
@@ -25,8 +25,8 @@ public class DiscordChatMover : IDiscordChatMover
 
     public async Task<MoveResult> MovePlayersToCorrectChannelsAsync(
         IRCONWrapper rcon,
-        IDiscordSocketClientWrapper client,
-        ISocketGuildWrapper guild,
+        DiscordSocketClient client,
+        SocketGuild guild,
         CancellationToken cancellationToken)
     {
         if (rcon is null) throw new ArgumentNullException(nameof(rcon));
@@ -54,27 +54,8 @@ public class DiscordChatMover : IDiscordChatMover
 
         _logger.LogDebug("Getting current voice channel users.");
 
-        var getPrimaryChannelTask = guild.GetVoiceChannelAsync(primaryVoiceChannel.Id,
-            options: new RequestOptions { CancelToken = cancellationToken });
-        var getSecondaryChannelTask = guild.GetVoiceChannelAsync(secondaryVoiceChannel.Id,
-            options: new RequestOptions { CancelToken = cancellationToken });
-
-        await Task.WhenAll(getPrimaryChannelTask, getSecondaryChannelTask);
-
-        var priamryChannel = getPrimaryChannelTask.Result;
-        var secondaryChannel = getSecondaryChannelTask.Result;
-
-        var getPrimaryChannelUsersTask = priamryChannel.GetUsersAsync(
-                options: new RequestOptions { CancelToken = cancellationToken })
-            .FlattenAsync();
-        var getSecondaryChannelUsersTask = secondaryChannel.GetUsersAsync(
-                options: new RequestOptions { CancelToken = cancellationToken })
-            .FlattenAsync();
-
-        await Task.WhenAll(getPrimaryChannelTask, getSecondaryChannelUsersTask);
-
-        var usersInPrimaryChannel = getPrimaryChannelUsersTask.Result.ToList();
-        var usersInSecondaryChannel = getSecondaryChannelUsersTask.Result.ToList();
+        var usersInPrimaryChannel = primaryVoiceChannel.ConnectedUsers;
+        var usersInSecondaryChannel = secondaryVoiceChannel.ConnectedUsers;
 
         _logger.LogDebug("Current players per PrintInfo results ({playerCount}):", currentPlayersOnServer.Count);
         for (var i = 0; i < currentPlayersOnServer.Count; i++)
@@ -82,7 +63,7 @@ public class DiscordChatMover : IDiscordChatMover
             _logger.LogDebug("  {index}: {steamId} - {name}", i, currentPlayersOnServer[i].SteamId, currentPlayersOnServer[i].Name);
         }
 
-        var discordUsersToMove = new List<(ISocketGuildUserWrapper user, ISocketVoiceChannelWrapper intendedChannel)>();
+        var discordUsersToMove = new List<(SocketGuildUser user, SocketVoiceChannel intendedChannel)>();
 
         var currentlyPlayingSteamIds = currentPlayersOnServer
             .Select(p => p.SteamId)
@@ -108,7 +89,7 @@ public class DiscordChatMover : IDiscordChatMover
             .Select(p => p.DiscordId)
             .ToList();
 
-        var discordAccountsForCurrentPlayers = (guild.Users ?? Array.Empty<ISocketGuildUserWrapper>())
+        var discordAccountsForCurrentPlayers = (guild.Users ?? Array.Empty<SocketGuildUser>())
             .Where(u => currentPlayerDiscordSnowflakes.Contains(u.Id))
             .ToList();
 
@@ -152,7 +133,7 @@ public class DiscordChatMover : IDiscordChatMover
 
         foreach (var discordAccount in discordAccountsForCurrentPlayers)
         {
-            ISocketVoiceChannelWrapper currentVoiceChannel;
+            SocketVoiceChannel currentVoiceChannel;
 
             if (usersInPrimaryChannel != null && usersInPrimaryChannel.Any(u => u.Id == discordAccount.Id))
             {
@@ -198,7 +179,7 @@ public class DiscordChatMover : IDiscordChatMover
                 continue;
             }
 
-            ISocketVoiceChannelWrapper intendedChannel;
+            SocketVoiceChannel intendedChannel;
             if (usersPrintInfo.TeamIndex == PrintInfo.TeamIndexSurvivor)
             {
                 intendedChannel = primaryVoiceChannel;
@@ -217,7 +198,7 @@ public class DiscordChatMover : IDiscordChatMover
 
         foreach (var (user, intendedChannel) in discordUsersToMove)
         {
-            ISocketVoiceChannelWrapper currentVoiceChannel;
+            SocketVoiceChannel currentVoiceChannel;
 
             if (usersInPrimaryChannel.Any(u => u.Id == user.Id))
             {
@@ -250,7 +231,7 @@ public class DiscordChatMover : IDiscordChatMover
         return result;
     }
 
-    public async Task<ReuniteResult> RenuitePlayersAsync(IDiscordSocketClientWrapper client, ISocketGuildWrapper guild,
+    public async Task<ReuniteResult> RenuitePlayersAsync(DiscordSocketClient client, SocketGuild guild,
         CancellationToken cancellationToken)
     {
         if (client is null) throw new ArgumentNullException(nameof(client));
@@ -271,27 +252,8 @@ public class DiscordChatMover : IDiscordChatMover
 
         _logger.LogDebug("Getting current voice channel users.");
 
-        var getPrimaryChannelTask = guild.GetVoiceChannelAsync(primaryVoiceChannel.Id,
-            options: new RequestOptions { CancelToken = cancellationToken }); 
-        var getSecondaryChannelTask = guild.GetVoiceChannelAsync(secondaryVoiceChannel.Id,
-            options: new RequestOptions { CancelToken = cancellationToken });
-
-        await Task.WhenAll(getPrimaryChannelTask, getSecondaryChannelTask);
-
-        var priamryChannel = getPrimaryChannelTask.Result;
-        var secondaryChannel = getSecondaryChannelTask.Result;
-
-        var getPrimaryChannelUsersTask = priamryChannel.GetUsersAsync(
-                options: new RequestOptions { CancelToken = cancellationToken })
-            .FlattenAsync();
-        var getSecondaryChannelUsersTask = secondaryChannel.GetUsersAsync(
-                options: new RequestOptions { CancelToken = cancellationToken })
-            .FlattenAsync();
-
-        await Task.WhenAll(getPrimaryChannelTask, getSecondaryChannelUsersTask);
-
-        var usersInPrimaryChannel = getPrimaryChannelUsersTask.Result.ToList();
-        var usersInSecondaryChannel = getSecondaryChannelUsersTask.Result.ToList();
+        var usersInPrimaryChannel = primaryVoiceChannel.ConnectedUsers;
+        var usersInSecondaryChannel = secondaryVoiceChannel.ConnectedUsers;
 
         if (!usersInPrimaryChannel.Any() || !usersInSecondaryChannel.Any())
         {

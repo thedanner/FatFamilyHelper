@@ -24,6 +24,12 @@ public static class RandomHelper
             throw new ArgumentException($"The list can't have more than {byte.MaxValue} sides.", nameof(list));
         }
 
+        if (list.Count == 1)
+        {
+            index = 0;
+            return list[0];
+        }
+
         index = SecureRollDice((byte) list.Count);
         var item = list[index - 1];
         return item;
