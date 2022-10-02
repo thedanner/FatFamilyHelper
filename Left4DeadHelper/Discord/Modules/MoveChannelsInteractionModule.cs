@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Left4DeadHelper.Helpers;
 using Left4DeadHelper.Helpers.DiscordExtensions;
 using Left4DeadHelper.Models.Configuration;
 using Left4DeadHelper.Services;
@@ -100,6 +101,7 @@ public class MoveChannelsInteractionModule : InteractionModuleBase<SocketInterac
             if (Context.Guild == null) return;
 
             await DeferAsync();
+            await Task.Delay(Constants.DelayAfterCommand);
 
             var guildSettings = _settings.DiscordSettings.GuildSettings.FirstOrDefault(g => g.Id == Context.Guild.Id);
 

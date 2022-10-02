@@ -5,7 +5,6 @@ using System;
 using Left4DeadHelper.Models.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Linq;
-using System.Collections.Generic;
 
 namespace Left4DeadHelper.Discord.Modules;
 

@@ -41,6 +41,15 @@ public class Program
         ErrorException = 30,
     }
 
+
+
+    // Authorize the bot by visiting:
+    // https://discord.com/api/oauth2/authorize?client_id=778014691804577844&permissions=16777216&scope=applications.commands%20bot
+    // If that link doesn't work, the generators are:
+    // https://discord.com/developers/applications/778014691804577844/oauth2/url-generator
+    // or just the bit calculator:
+    // https://discord.com/developers/applications/778014691804577844/bot at the bottom
+
     public static int Main(string[] args)
     {
         try
