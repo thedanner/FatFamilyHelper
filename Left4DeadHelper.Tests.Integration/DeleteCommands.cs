@@ -4,7 +4,6 @@ using Left4DeadHelper.Models.Configuration;
 using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;

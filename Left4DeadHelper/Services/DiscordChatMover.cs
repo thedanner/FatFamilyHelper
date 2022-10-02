@@ -1,4 +1,3 @@
-using Discord;
 using Discord.WebSocket;
 using Left4DeadHelper.Models.Configuration;
 using Left4DeadHelper.Rcon;

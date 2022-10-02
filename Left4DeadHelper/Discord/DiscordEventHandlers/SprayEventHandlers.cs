@@ -7,7 +7,6 @@ using Left4DeadHelper.Helpers;
 using Left4DeadHelper.Models.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Left4DeadHelper.Discord.DiscordEventHandlers;

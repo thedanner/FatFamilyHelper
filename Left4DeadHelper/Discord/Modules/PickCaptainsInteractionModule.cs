@@ -1,11 +1,7 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using Left4DeadHelper.Helpers;
 using Left4DeadHelper.Helpers.Extensions;
-using Left4DeadHelper.Models.Configuration;
-using Left4DeadHelper.Services;
-using Left4DeadHelper.Wrappers.Rcon;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -18,13 +14,10 @@ namespace Left4DeadHelper.Discord.Modules;
 public class PickCaptainsInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly ILogger<PickCaptainsInteractionModule> _logger;
-    private readonly Settings _settings;
 
-    public PickCaptainsInteractionModule(ILogger<PickCaptainsInteractionModule> logger,
-        Settings settings, IRCONWrapperFactory rconFactory, IDiscordChatMover chatMover) : base()
+    public PickCaptainsInteractionModule(ILogger<PickCaptainsInteractionModule> logger) : base()
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
     }
 
     [SlashCommand("captains", "Picks two random users in the current user's voice chat.")]

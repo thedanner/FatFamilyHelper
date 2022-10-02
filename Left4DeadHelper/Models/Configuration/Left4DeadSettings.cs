@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Left4DeadHelper.Models.Configuration;
+﻿namespace Left4DeadHelper.Models.Configuration;
 
 public class Left4DeadSettings
 {

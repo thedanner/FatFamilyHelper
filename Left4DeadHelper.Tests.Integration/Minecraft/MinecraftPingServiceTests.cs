@@ -2,8 +2,6 @@
 using Left4DeadHelper.Minecraft;
 using Left4DeadHelper.Models.Configuration;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
 using System.IO;

@@ -1,5 +1,4 @@
-﻿using Discord;
-using Discord.WebSocket;
+﻿using Discord.WebSocket;
 using Left4DeadHelper.Discord.Interfaces.Events;
 using Left4DeadHelper.Helpers;
 using Left4DeadHelper.Helpers.DiscordExtensions;
