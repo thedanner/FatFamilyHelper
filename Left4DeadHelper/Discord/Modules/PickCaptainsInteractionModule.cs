@@ -103,7 +103,7 @@ public class PickCaptainsInteractionModule : InteractionModuleBase<SocketInterac
                 potentialCaptains.RemoveAt(index);
 
                 response.Append(' ', 2).Append('#').Append(i++).Append(':').Append(' ')
-                    .Append('*', 2).Append(captain.Nickname ?? captain.DisplayName).Append('*', 2);
+                    .Append('*', 2).Append(captain.Nickname ?? captain.DisplayName).Append('*', 2).Append('\n');
             }
 
             await RespondAsync(response.ToString());

@@ -31,7 +31,10 @@ public static class RandomHelper
         }
 
         index = SecureRollDice((byte) list.Count);
-        var item = list[index - 1];
+
+        index--;
+
+        var item = list[index];
         return item;
     }
 
@@ -55,7 +58,7 @@ public static class RandomHelper
         }
         while (!IsFairRoll(randomNumber[0], numberSides));
         // Return the random number mod the number
-        // of sides.  The possible values are zero-
+        // of sides. The possible values are zero-
         // based, so we add one.
         return (byte)((randomNumber[0] % numberSides) + 1);
     }
