@@ -20,9 +20,14 @@ public class PickCaptainsInteractionModule : InteractionModuleBase<SocketInterac
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    [UserCommand("captains")]
+    public async Task PickCaptainsUserCommandAsync(IUser user)
+    {
+        await PickCaptainsSlashCommandAsync();
+    }
+
     [SlashCommand("captains", "Picks two random users in the current user's voice chat.")]
-    [RequireUserPermission(GuildPermission.MoveMembers)]
-    public async Task HandleDivorceAsync(
+    public async Task PickCaptainsSlashCommandAsync(
         [Summary(description: "How many captains to pick?")] int teams = 2,
         [Summary(description: "User in the current channel to exlcude")] IUser? not1 = null,
         [Summary(description: "Another user in the current channel to exlcude (Discord doesn't support arrays here :(")] IUser? not2 = null,

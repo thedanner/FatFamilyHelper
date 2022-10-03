@@ -29,9 +29,16 @@ public class MoveChannelsInteractionModule : InteractionModuleBase<SocketInterac
         _chatMover = chatMover ?? throw new ArgumentNullException(nameof(chatMover));
     }
 
+    [UserCommand("divorce")]
+    [RequireUserPermission(GuildPermission.MoveMembers)]
+    public async Task DivorceUserCommandAsync()
+    {
+        await DivorceSlashCommandAsync();
+    }
+
     [SlashCommand("divorce", "Moves users into respective voice channels based on game team.")]
     [RequireUserPermission(GuildPermission.MoveMembers)]
-    public async Task HandleDivorceAsync()
+    public async Task DivorceSlashCommandAsync()
     {
         if (Context.Guild == null) return;
 
@@ -92,9 +99,17 @@ public class MoveChannelsInteractionModule : InteractionModuleBase<SocketInterac
         }
     }
 
+
+    [UserCommand("remarry")]
+    [RequireUserPermission(GuildPermission.MoveMembers)]
+    public async Task RemarryUserCommandAsync()
+    {
+        await RemarrySlashCommandAsync();
+    }
+
     [SlashCommand("remarry", "Moves users from the configured secondary channel into the primary channel.")]
     [RequireUserPermission(GuildPermission.MoveMembers)]
-    public async Task HandleRemarryAsync()
+    public async Task RemarrySlashCommandAsync()
     {
         try
         {

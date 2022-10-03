@@ -175,8 +175,6 @@ public class Program
 
         BindTasks(allLoadedTypes, serviceCollection);
 
-        BindModulesWithHelpSupport(allLoadedTypes, serviceCollection);
-
         ConfigureScheduler(serviceCollection, config);
     }
 
@@ -253,27 +251,6 @@ public class Program
             var task = (ITask)serviceProvider.GetRequiredService(type);
             return task;
         });
-    }
-
-    private static void BindModulesWithHelpSupport(ReadOnlyCollection<Type> allLoadedTypes, IServiceCollection serviceCollection)
-    {
-        var modulesWithHelpSupport = new List<Type>();
-
-        // Do all the filtering and sorting in one pass over the loaded types list.
-        foreach (var type in allLoadedTypes)
-        {
-            if (!type.IsInterface && !type.IsAbstract
-                && typeof(ModuleBase<SocketCommandContext>).IsAssignableFrom(type)
-                && typeof(ICommandModule).IsAssignableFrom(type))
-            {
-                modulesWithHelpSupport.Add(type);
-            }
-        }
-
-        foreach (var implmenetedHandlerInterface in modulesWithHelpSupport)
-        {
-            serviceCollection.AddTransient(typeof(ICommandModule), implmenetedHandlerInterface);
-        }
     }
 
     private static void ConfigureScheduler(IServiceCollection serviceCollection, IConfiguration config)
