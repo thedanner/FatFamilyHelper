@@ -31,7 +31,7 @@ public class MoveChannelsInteractionModule : InteractionModuleBase<SocketInterac
 
     [UserCommand("divorce")]
     [RequireUserPermission(GuildPermission.MoveMembers)]
-    public async Task DivorceUserCommandAsync()
+    public async Task DivorceUserCommandAsync(IUser user)
     {
         await DivorceSlashCommandAsync();
     }
@@ -102,7 +102,7 @@ public class MoveChannelsInteractionModule : InteractionModuleBase<SocketInterac
 
     [UserCommand("remarry")]
     [RequireUserPermission(GuildPermission.MoveMembers)]
-    public async Task RemarryUserCommandAsync()
+    public async Task RemarryUserCommandAsync(IUser user)
     {
         await RemarrySlashCommandAsync();
     }
