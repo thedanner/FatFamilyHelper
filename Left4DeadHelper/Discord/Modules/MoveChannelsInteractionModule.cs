@@ -68,7 +68,7 @@ public class MoveChannelsInteractionModule : InteractionModuleBase<SocketInterac
 
             if (moveResult.FailureReason == MoveResult.MoveFailureReason.NotEnoughEmptyVoiceChannels)
             {
-                replyMessage = "It doesn't look liek there were enough empty channels.";
+                replyMessage = "It doesn't look like there were enough empty channels.";
             }
             else if (moveResult.MoveCount == 0)
             {
