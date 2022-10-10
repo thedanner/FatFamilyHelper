@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
 using Left4DeadHelper.Helpers;
 using Left4DeadHelper.Helpers.DiscordExtensions;
 using Left4DeadHelper.Models.Configuration;
@@ -29,18 +30,22 @@ public class MoveChannelsInteractionModule : InteractionModuleBase<SocketInterac
         _chatMover = chatMover ?? throw new ArgumentNullException(nameof(chatMover));
     }
 
-    [UserCommand("divorce")]
-    [RequireUserPermission(GuildPermission.MoveMembers)]
-    public async Task DivorceUserCommandAsync(IUser user)
-    {
-        await DivorceSlashCommandAsync();
-    }
-
     [SlashCommand("divorce", "Moves users into respective voice channels based on game team.")]
     [RequireUserPermission(GuildPermission.MoveMembers)]
-    public async Task DivorceSlashCommandAsync()
+    public async Task DivorceCommandAsync()
     {
-        if (Context.Guild == null) return;
+        if (Context.Guild is null)
+        {
+            await RespondAsync("This only works in a guild.", ephemeral: true);
+            return;
+        }
+
+        if (Context.User is not SocketGuildUser socketGuildUser
+            || socketGuildUser.VoiceChannel is null)
+        {
+            await RespondAsync("Please join a voice channel first.", ephemeral: true);
+            return;
+        }
 
         try
         {
@@ -56,11 +61,16 @@ public class MoveChannelsInteractionModule : InteractionModuleBase<SocketInterac
                 rcon,
                 Context.Client,
                 Context.Guild,
+                socketGuildUser.VoiceChannel,
                 CancellationToken.None);
 
             string replyMessage;
 
-            if (moveResult.MoveCount == 0)
+            if (moveResult.FailureReason == MoveResult.MoveFailureReason.NotEnoughEmptyVoiceChannels)
+            {
+                replyMessage = "It doesn't look liek there were enough empty channels.";
+            }
+            else if (moveResult.MoveCount == 0)
             {
                 replyMessage = "Nobody was playing.";
             }
@@ -100,44 +110,52 @@ public class MoveChannelsInteractionModule : InteractionModuleBase<SocketInterac
     }
 
 
-    [UserCommand("remarry")]
-    [RequireUserPermission(GuildPermission.MoveMembers)]
-    public async Task RemarryUserCommandAsync(IUser user)
-    {
-        await RemarrySlashCommandAsync();
-    }
-
     [SlashCommand("remarry", "Moves users from the configured secondary channel into the primary channel.")]
     [RequireUserPermission(GuildPermission.MoveMembers)]
     public async Task RemarrySlashCommandAsync()
     {
+        if (Context.Guild is null)
+        {
+            await RespondAsync("This only works in a guild.", ephemeral: true);
+            return;
+        }
+
+        if (Context.User is not SocketGuildUser socketGuildUser
+            || socketGuildUser.VoiceChannel is null)
+        {
+            await RespondAsync("Please join a voice channel first.", ephemeral: true);
+            return;
+        }
+
         try
         {
-            if (Context.Guild == null) return;
-
             await DeferAsync();
-            await Task.Delay(Constants.DelayAfterCommand);
 
             var guildSettings = _settings.DiscordSettings.GuildSettings.FirstOrDefault(g => g.Id == Context.Guild.Id);
 
-            var moveResult = await _chatMover.RenuitePlayersAsync(
+            var reuniteResult = await _chatMover.RenuitePlayersAsync(
                 Context.Client,
                 Context.Guild,
+                socketGuildUser.VoiceChannel,
                 CancellationToken.None);
 
             string replyMessage;
 
-            if (moveResult.MoveCount == 0)
+            if (reuniteResult.FailureReason == ReuniteResult.ReuniteFailureReason.TooManyPopulatedVoiceChannels)
+            {
+                replyMessage = "I'm not sure where to reunite people to.";
+            }
+            else if (reuniteResult.MoveCount == 0)
             {
                 replyMessage = "Nobody was in the channel to move.";
             }
-            else if (moveResult.MoveCount == 1)
+            else if (reuniteResult.MoveCount == 1)
             {
                 replyMessage = "1 person moved.";
             }
             else
             {
-                replyMessage = $"{moveResult.MoveCount} people moved.";
+                replyMessage = $"{reuniteResult.MoveCount} people moved.";
             }
 
             await FollowupAsync(replyMessage);

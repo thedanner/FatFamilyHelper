@@ -20,12 +20,6 @@ public class PickCaptainsInteractionModule : InteractionModuleBase<SocketInterac
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    [UserCommand("captains")]
-    public async Task PickCaptainsUserCommandAsync(IUser user)
-    {
-        await PickCaptainsSlashCommandAsync();
-    }
-
     [SlashCommand("captains", "Picks two random users in the current user's voice chat.")]
     public async Task PickCaptainsSlashCommandAsync(
         [Summary(description: "How many captains to pick?")] int teams = 2,
@@ -36,37 +30,42 @@ public class PickCaptainsInteractionModule : InteractionModuleBase<SocketInterac
         [Summary(description: "Another user in the current channel to exlcude (Discord doesn't support arrays here :(")] IUser? not5 = null
     )
     {
-        if (Context.Guild == null) return;
+        if (Context.Guild is null)
+        {
+            await RespondAsync("This only works in a guild.", ephemeral: true);
+            return;
+        }
+
+        if (teams < 1)
+        {
+            await RespondAsync("If there are no teams, why do you need a captain? 🤔", ephemeral: true);
+            return;
+        }
+
+        var genericVoiceChannel = (Context.User as IGuildUser)?.VoiceChannel;
+        if (genericVoiceChannel is null)
+        {
+            await RespondAsync("Please join a voice channel first. 📣", ephemeral: true);
+            return;
+        }
+
+        if (genericVoiceChannel is not SocketVoiceChannel voiceChannel)
+        {
+            await RespondAsync("For some reason, the channel isn't the type I need. It's probably a bug, sorry. 😢", ephemeral: true);
+            return;
+        }
+
+        if (voiceChannel.ConnectedUsers.Count < teams)
+        {
+            await RespondAsync("With how few players are here, everyone can be a captain! 🎉", ephemeral: true);
+            return;
+        }
 
         try
         {
-            if (teams < 1)
-            {
-                await RespondAsync("If there are no teams, why do you need a captain? 🤔", ephemeral: true);
-                return;
-            }
-
-            var genericVoiceChannel = (Context.User as IGuildUser)?.VoiceChannel;
-            if (genericVoiceChannel is null)
-            {
-                await RespondAsync("Please join a voice channel first. 📣", ephemeral: true);
-                return;
-            }
-
-            if (genericVoiceChannel is not SocketVoiceChannel voiceChannel)
-            {
-                await RespondAsync("For some reason, the channel isn't the type I need. It's probably a bug, sorry. 😢", ephemeral: true);
-                return;
-            }
-
-            if (voiceChannel.ConnectedUsers.Count < teams)
-            {
-                await RespondAsync("With how few players are here, everyone can be a captain! 🎉", ephemeral: true);
-                return;
-            }
-
             var potentialCaptains = new List<SocketGuildUser>(voiceChannel.ConnectedUsers);
 
+            // We'll filter the nulls out at the end.
 #pragma warning disable CS8604 // Possible null reference argument.
             var excludes = new List<IUser>(5)
             {

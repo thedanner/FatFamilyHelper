@@ -1,3 +1,4 @@
+using Discord.Commands;
 using Discord.WebSocket;
 using Left4DeadHelper.Models.Configuration;
 using Left4DeadHelper.Rcon;
@@ -26,11 +27,13 @@ public class DiscordChatMover : IDiscordChatMover
         IRCONWrapper rcon,
         DiscordSocketClient client,
         SocketGuild guild,
+        SocketVoiceChannel usedInChannel,
         CancellationToken cancellationToken)
     {
         if (rcon is null) throw new ArgumentNullException(nameof(rcon));
         if (client is null) throw new ArgumentNullException(nameof(client));
         if (guild is null) throw new ArgumentNullException(nameof(guild));
+        if (usedInChannel is null) throw new ArgumentNullException(nameof(usedInChannel));
 
         var guildSettings = _settings.DiscordSettings.GuildSettings.FirstOrDefault(g => g.Id == guild.Id);
         if (guildSettings == null)
@@ -43,6 +46,26 @@ public class DiscordChatMover : IDiscordChatMover
         var secondaryVoiceChannel = guild.GetVoiceChannel(guildSettings.Channels.Secondary.Id);
         if (secondaryVoiceChannel == null) throw new Exception("Bad secondary channel ID in config.");
         
+        // Used by someone in a different voice channel from the ones indicated in settings.
+        // Treat that as the primary, and the first of the empty of the two channels by setting ID as the secondary.
+        if (usedInChannel.Id != primaryVoiceChannel.Id && usedInChannel.Id != secondaryVoiceChannel.Id)
+        {
+            if (primaryVoiceChannel.ConnectedUsers.Count == 0)
+            {
+                secondaryVoiceChannel = primaryVoiceChannel;
+                primaryVoiceChannel = usedInChannel;
+            }
+            else if (secondaryVoiceChannel.ConnectedUsers.Count == 0)
+            {
+                // The primary channel stays the same.
+                secondaryVoiceChannel = usedInChannel;
+            }
+            else
+            {
+                return new MoveResult { FailureReason = MoveResult.MoveFailureReason.NotEnoughEmptyVoiceChannels };
+            }
+        }
+
         var result = new MoveResult();
 
         var printInfo = await rcon.SendCommandAsync<PrintInfo>("sm_printinfo");
@@ -88,7 +111,8 @@ public class DiscordChatMover : IDiscordChatMover
             .Select(p => p.DiscordId)
             .ToList();
 
-        var discordAccountsForCurrentPlayers = (guild.Users ?? Array.Empty<SocketGuildUser>())
+        var discordAccountsForCurrentPlayers =
+            (primaryVoiceChannel.ConnectedUsers.Concat(secondaryVoiceChannel.ConnectedUsers))
             .Where(u => currentPlayerDiscordSnowflakes.Contains(u.Id))
             .ToList();
 
@@ -230,11 +254,15 @@ public class DiscordChatMover : IDiscordChatMover
         return result;
     }
 
-    public async Task<ReuniteResult> RenuitePlayersAsync(DiscordSocketClient client, SocketGuild guild,
+    public async Task<ReuniteResult> RenuitePlayersAsync(
+        DiscordSocketClient client,
+        SocketGuild guild,
+        SocketVoiceChannel usedInChannel,
         CancellationToken cancellationToken)
     {
         if (client is null) throw new ArgumentNullException(nameof(client));
         if (guild is null) throw new ArgumentNullException(nameof(guild));
+        if (usedInChannel is null) throw new ArgumentNullException(nameof(usedInChannel));
 
         var guildSettings = _settings.DiscordSettings.GuildSettings.FirstOrDefault(g => g.Id == guild.Id);
         if (guildSettings == null)
@@ -246,14 +274,40 @@ public class DiscordChatMover : IDiscordChatMover
         if (primaryVoiceChannel == null) throw new Exception("Bad primary channel ID in config.");
         var secondaryVoiceChannel = guild.GetVoiceChannel(guildSettings.Channels.Secondary.Id);
         if (secondaryVoiceChannel == null) throw new Exception("Bad secondary channel ID in config.");
-
+        
         var result = new ReuniteResult();
+
+        // Used by someone in a different voice channel from the ones indicated in settings.
+        // Treat that as the primary, and the first of the empty of the two channels by setting ID as the secondary.
+        if (usedInChannel.Id != primaryVoiceChannel.Id && usedInChannel.Id != secondaryVoiceChannel.Id)
+        {
+            if (primaryVoiceChannel.ConnectedUsers.Count > 0 && secondaryVoiceChannel.ConnectedUsers.Count > 0)
+            {
+                return new ReuniteResult { FailureReason = ReuniteResult.ReuniteFailureReason.TooManyPopulatedVoiceChannels };
+            }
+
+            if (primaryVoiceChannel.ConnectedUsers.Count == 0)
+            {
+                secondaryVoiceChannel = usedInChannel;
+            }
+            else if (secondaryVoiceChannel.ConnectedUsers.Count == 0)
+            {
+                primaryVoiceChannel = usedInChannel;
+            }
+            else
+            {
+                // Both empty - no one to reunite.
+                return result;
+            }
+        }
+
 
         _logger.LogDebug("Getting current voice channel users.");
 
         var usersInPrimaryChannel = primaryVoiceChannel.ConnectedUsers;
         var usersInSecondaryChannel = secondaryVoiceChannel.ConnectedUsers;
 
+        // Shouldn't happen. If so, it's a race condition where one channel empted between the command running and now.
         if (!usersInPrimaryChannel.Any() || !usersInSecondaryChannel.Any())
         {
             return result;

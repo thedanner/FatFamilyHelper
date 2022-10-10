@@ -2,13 +2,20 @@
 
 namespace Left4DeadHelper.Services;
 
-public class MoveResult
+public partial class MoveResult
 {
     public MoveResult()
     {
         UnmappedSteamUsers = new List<UnmappedSteamUser>();
     }
 
+    public MoveFailureReason FailureReason { get; set; }
     public int MoveCount { get; set; }
     public List<UnmappedSteamUser> UnmappedSteamUsers { get; set; }
+
+    public enum MoveFailureReason
+    {
+        None,
+        NotEnoughEmptyVoiceChannels,
+    }
 }
