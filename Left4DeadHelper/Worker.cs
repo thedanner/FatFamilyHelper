@@ -71,7 +71,7 @@ public class Worker : BackgroundService, IDisposable
 
                     _logger.LogWarning(e, "SocketException while trying to connect. Sleeping for a bit.");
 
-                    await Task.Delay(TimeSpan.FromSeconds(15));
+                    await Task.Delay(TimeSpan.FromSeconds(15), cancellationToken);
 
                     attempts++;
                 }
@@ -97,12 +97,13 @@ public class Worker : BackgroundService, IDisposable
         try
         {
             await _client.SetStatusAsync(UserStatus.Offline);
+            await _client.StopAsync();
         }
         catch { } // don't care, shutting down.
 
         // Clean up Singleton IDisposables.
         _commandHandler.Dispose();
-        _client.Dispose();
+        await _client.DisposeAsync();
 
         await base.StopAsync(cancellationToken);
     }

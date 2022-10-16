@@ -92,19 +92,19 @@ public class DeleteExpiredShiftCodesTask : ITask
                 if (bulkDeletableMessages.Any())
                 {
                     await channel.DeleteMessagesAsync(bulkDeletableMessages);
-                    await Task.Delay(Constants.DelayAfterCommandMs);
+                    await Task.Delay(Constants.DelayAfterCommandMs, cancellationToken);
                 }
 
                 foreach (var singleDeletableMessage in singleDeletableMessages)
                 {
                     await channel.DeleteMessageAsync(singleDeletableMessage);
-                    await Task.Delay(Constants.DelayAfterCommandMs);
+                    await Task.Delay(Constants.DelayAfterCommandMs, cancellationToken);
                 }
 
                 if (messagesToDelete.Count > 0 && reportToChannel != null)
                 {
                     await reportToChannel.SendMessageAsync($"Deleted {messagesToDelete.Count} expired code{plural} in {channel.ToMessageRef()}.");
-                    await Task.Delay(Constants.DelayAfterCommandMs);
+                    await Task.Delay(Constants.DelayAfterCommandMs, cancellationToken);
                 }
             }
         }

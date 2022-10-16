@@ -79,7 +79,6 @@ public class DiscordConnectionBootstrapper : IDiscordConnectionBootstrapper
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 
         await client.SetStatusAsync(UserStatus.Online);
-        // TODO read commands/prefixes?
         await client.SetGameAsync("the long game", type: ActivityType.Playing);
     }
 
