@@ -3,7 +3,6 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using FatFamilyHelper.Discord.Interfaces.Events;
 using FatFamilyHelper.Discord.Modules;
-using FatFamilyHelper.Models.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -17,7 +16,6 @@ public class CommandAndEventHandler : IDisposable
     private readonly ILogger<CommandAndEventHandler> _logger;
     private readonly DiscordSocketClient _client;
     private readonly InteractionService _interactionService;
-    private readonly Settings _settings;
     private readonly IServiceProvider _serviceProvider;
 
     private bool _disposedValue;
@@ -26,12 +24,11 @@ public class CommandAndEventHandler : IDisposable
     public CommandAndEventHandler(
         ILogger<CommandAndEventHandler> logger, DiscordSocketClient client,
         InteractionService interactionService,
-        Settings settings, IServiceProvider serviceProvider)
+        IServiceProvider serviceProvider)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _client = client ?? throw new ArgumentNullException(nameof(client));
         _interactionService = interactionService ?? throw new ArgumentNullException(nameof(interactionService));
-        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
     }
 

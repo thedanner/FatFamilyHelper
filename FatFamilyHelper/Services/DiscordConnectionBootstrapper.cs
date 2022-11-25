@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using FatFamilyHelper.Helpers.Extensions;
 using FatFamilyHelper.Models.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,20 +14,20 @@ namespace FatFamilyHelper.Services;
 public class DiscordConnectionBootstrapper : IDiscordConnectionBootstrapper
 {
     private readonly ILogger<DiscordChatMover> _logger;
-    private readonly Settings _settings;
+    private readonly DiscordSettings _discordSettings;
     private readonly InteractionService _interactionService;
 
-    public DiscordConnectionBootstrapper(ILogger<DiscordChatMover> logger, Settings settings,
+    public DiscordConnectionBootstrapper(ILogger<DiscordChatMover> logger, IOptions<DiscordSettings>? discordSettings,
         InteractionService interactionService)
     {
         _logger = logger;
-        _settings = settings;
+        _discordSettings = discordSettings?.Value ?? throw new ArgumentNullException(nameof(discordSettings));
         _interactionService = interactionService;
     }
 
     public async Task StartAsync(DiscordSocketClient client, CancellationToken cancellationToken)
     {
-        if (client == null) throw new ArgumentNullException(nameof(client));
+        if (client is null) throw new ArgumentNullException(nameof(client));
 
         var readyComplete = new TaskCompletionSource<bool>();
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
@@ -66,7 +67,7 @@ public class DiscordConnectionBootstrapper : IDiscordConnectionBootstrapper
         client.LoggedIn += async () => _logger.LogInformation("Discord client event: LoggedIn");
         client.LoggedOut += async () => _logger.LogInformation("Discord client event: LoggedOut");
 
-        await client.LoginAsync(TokenType.Bot, _settings.DiscordSettings.BotToken);
+        await client.LoginAsync(TokenType.Bot, _discordSettings.BotToken);
         await client.StartAsync();
 
         await readyComplete.Task;

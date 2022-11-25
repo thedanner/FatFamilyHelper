@@ -4,6 +4,7 @@ using FatFamilyHelper.Helpers;
 using FatFamilyHelper.Minecraft;
 using FatFamilyHelper.Models.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
 using System.Text;
@@ -16,15 +17,16 @@ public class MinecraftPlayersInteractiveModule : InteractionModuleBase<SocketInt
     private const string CommandName = "who";
 
     private readonly ILogger<MinecraftPlayersInteractiveModule> _logger;
-    private readonly Settings _settings;
     private readonly IMinecraftPingService _minecraftPingService;
+    private readonly MinecraftSettings? _minecraftSettings;
 
-    public MinecraftPlayersInteractiveModule(ILogger<MinecraftPlayersInteractiveModule> logger, Settings settings,
+    public MinecraftPlayersInteractiveModule(ILogger<MinecraftPlayersInteractiveModule> logger,
+        IOptions<MinecraftSettings>? minecraftSettings,
         IMinecraftPingService minecraftPingService)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         _minecraftPingService = minecraftPingService ?? throw new ArgumentNullException(nameof(minecraftPingService));
+        _minecraftSettings = minecraftSettings?.Value;
     }
 
     //[SlashCommand(CommandName, "Gets who's playing on our Minecraft server.")]
@@ -33,7 +35,7 @@ public class MinecraftPlayersInteractiveModule : InteractionModuleBase<SocketInt
         await DeferAsync();
         await Task.Delay(Constants.DelayAfterCommand);
 
-        if (_settings.Minecraft == null)
+        if (_minecraftSettings is null)
         {
             await DeleteOriginalResponseAsync();
             await Task.Delay(Constants.DelayAfterCommand);
@@ -42,21 +44,21 @@ public class MinecraftPlayersInteractiveModule : InteractionModuleBase<SocketInt
 
         try
         {
-            if (_settings.Minecraft.ChannelIdFilter?.Any() == true)
+            if (_minecraftSettings.ChannelIdFilter?.Any() == true)
             {
-                var channelFilter = _settings.Minecraft.ChannelIdFilter!;
+                var channelFilter = _minecraftSettings.ChannelIdFilter!;
                 if (!channelFilter.Contains(Context.Channel.Id)) return;
             }
 
-            var defaultServerName = _settings.Minecraft.DefaultServerName ?? "";
-            var server = _settings.Minecraft.Servers.FirstOrDefault(s => s.Name == defaultServerName)
-                ?? _settings.Minecraft.Servers.FirstOrDefault();
+            var defaultServerName = _minecraftSettings.DefaultServerName ?? "";
+            var server = _minecraftSettings.Servers.FirstOrDefault(s => s.Name == defaultServerName)
+                ?? _minecraftSettings.Servers.FirstOrDefault();
 
-            if (server == null) return;
+            if (server is null) return;
 
             var response = await _minecraftPingService.PingAsync(server.Hostname, server.Port);
 
-            if (response == null)
+            if (response is null)
             {
                 _logger.LogInformation("No payload returned from the ping method; it may be throttled.");
                 return;

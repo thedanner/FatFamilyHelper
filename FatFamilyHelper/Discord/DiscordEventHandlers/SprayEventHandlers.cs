@@ -4,7 +4,6 @@ using Discord.WebSocket;
 using FatFamilyHelper.Discord.Interfaces.Events;
 using FatFamilyHelper.Discord.Modules;
 using FatFamilyHelper.Helpers;
-using FatFamilyHelper.Models.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
@@ -15,13 +14,11 @@ public class SprayEventHandlers : IHandleReactionAddedAsync
 {
     private readonly DiscordSocketClient _client;
     private readonly ILogger<SprayEventHandlers> _logger;
-    private readonly Settings _settings;
 
-    public SprayEventHandlers(DiscordSocketClient client, ILogger<SprayEventHandlers> logger, Settings settings)
+    public SprayEventHandlers(DiscordSocketClient client, ILogger<SprayEventHandlers> logger)
     {
         _client = client ?? throw new ArgumentNullException(nameof(client));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
     }
 
     public async Task HandleReactionAddedAsync(Cacheable<IUserMessage, ulong> maybeCachedMessage,
@@ -31,12 +28,12 @@ public class SprayEventHandlers : IHandleReactionAddedAsync
         var messageChannel = await maybeCachedChannel.GetOrDownloadAsync();
 
         IMessage simpleMessage = reactedMessage;
-        if (simpleMessage == null && messageChannel is SocketTextChannel textChannel)
+        if (simpleMessage is null && messageChannel is SocketTextChannel textChannel)
         {
             simpleMessage = await textChannel.GetMessageAsync(maybeCachedMessage.Id);
         }
 
-        if (simpleMessage == null)
+        if (simpleMessage is null)
         {
             throw new Exception($"Couldn't get the reacted-to message with ID {maybeCachedMessage.Id}.");
         }
@@ -58,7 +55,7 @@ public class SprayEventHandlers : IHandleReactionAddedAsync
             reactingUser = await _client.Rest.GetUserAsync(reaction.UserId);
         }
 
-        if (reactingUser == null)
+        if (reactingUser is null)
         {
             throw new Exception($"Couldn't get the reacting user with ID {reaction.UserId}.");
         }
@@ -75,7 +72,7 @@ public class SprayEventHandlers : IHandleReactionAddedAsync
     private async Task<TryHandleDeleteReactionResult> TryHandleDeleteReactionAsync(IMessage simpleMessage, IUser reactingUser,
         IMessageChannel simpleChannel, SocketReaction reaction)
     {
-        if (reactingUser == null) throw new ArgumentNullException(nameof(reactingUser));
+        if (reactingUser is null) throw new ArgumentNullException(nameof(reactingUser));
 
         if (!SprayInteractionModule.DeleteEmote.Equals(reaction.Emote))
         {
@@ -86,7 +83,7 @@ public class SprayEventHandlers : IHandleReactionAddedAsync
         var channel = (SocketChannel)simpleChannel;
         var guildChannel = simpleChannel as SocketGuildChannel;
 
-        if (simpleMessage.Interaction != null
+        if (simpleMessage.Interaction is not null
             && simpleMessage.Interaction.User.Id == reactingUser.Id)
         {
             await simpleMessage.DeleteAsync();
@@ -96,19 +93,19 @@ public class SprayEventHandlers : IHandleReactionAddedAsync
         }
         
         // Make sure we have a reference. Don't allow cross-posts.
-        if (simpleMessage.Reference != null
+        if (simpleMessage.Reference is not null
             // And that it's to a message
             && simpleMessage.Reference.MessageId.IsSpecified
             // in the same guild (or there is no guild, so it's a DM)
             && (
-                guildChannel == null
+                guildChannel is null
                 || (
                     simpleMessage.Reference.GuildId.IsSpecified
                     && simpleMessage.Reference.GuildId.Value == guildChannel.Guild.Id
                 )
             )
             // and same channel
-            && simpleMessage.Channel != null && simpleMessage.Reference.ChannelId == simpleMessage.Channel.Id)
+            && simpleMessage.Channel is not null && simpleMessage.Reference.ChannelId == simpleMessage.Channel.Id)
         {
             var referencedIMessage = await simpleChannel.GetMessageAsync(simpleMessage.Reference.MessageId.Value);
 
@@ -117,7 +114,7 @@ public class SprayEventHandlers : IHandleReactionAddedAsync
             // the original message first.
             // I don't really care if anyone else deletes these either.
 
-            if (referencedIMessage == null)
+            if (referencedIMessage is null)
             {
                 await simpleMessage.DeleteAsync();
                 await Task.Delay(Constants.DelayAfterCommand);
@@ -132,7 +129,7 @@ public class SprayEventHandlers : IHandleReactionAddedAsync
 
             var argPos = 0;
             var referencedMessageIsBotCommand =
-                guildChannel == null // In a DM, everything is assumed to be a bot command.
+                guildChannel is null // In a DM, everything is assumed to be a bot command.
                 || !(
                     !referencedMessage.HasMentionPrefix(_client.CurrentUser, ref argPos)
                     || referencedMessage.Author.IsBot

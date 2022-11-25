@@ -2,7 +2,6 @@
 using Discord.Interactions;
 using Discord.WebSocket;
 using FatFamilyHelper.Helpers;
-using FatFamilyHelper.Models.Configuration;
 using FatFamilyHelper.Sprays;
 using FatFamilyHelper.Sprays.Exceptions;
 using FatFamilyHelper.Sprays.SaveProfiles;
@@ -20,7 +19,6 @@ namespace FatFamilyHelper.Discord.Modules;
 public class SprayInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly ILogger<SprayInteractionModule> _logger;
-    private readonly Settings _settings;
     private readonly ISprayModuleCommandResolver _resolver;
     private readonly HttpClient _httpClient;
 
@@ -28,10 +26,9 @@ public class SprayInteractionModule : InteractionModuleBase<SocketInteractionCon
     private const string DeleteEmojiString = "\u274C";
     public static Emoji DeleteEmote => new(DeleteEmojiString);
 
-    public SprayInteractionModule(ILogger<SprayInteractionModule> logger, Settings settings, ISprayModuleCommandResolver resolver, HttpClient httpClient)
+    public SprayInteractionModule(ILogger<SprayInteractionModule> logger, ISprayModuleCommandResolver resolver, HttpClient httpClient)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         _resolver = resolver ?? throw new ArgumentNullException(nameof(resolver));
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
     }

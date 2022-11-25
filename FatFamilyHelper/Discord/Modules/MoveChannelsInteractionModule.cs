@@ -1,12 +1,12 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using FatFamilyHelper.Helpers;
 using FatFamilyHelper.Helpers.DiscordExtensions;
 using FatFamilyHelper.Models.Configuration;
 using FatFamilyHelper.Services;
 using FatFamilyHelper.Wrappers.Rcon;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
 using System.Threading;
@@ -17,23 +17,31 @@ namespace FatFamilyHelper.Discord.Modules;
 public class MoveChannelsInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly ILogger<MoveChannelsInteractionModule> _logger;
-    private readonly Settings _settings;
     private readonly IRCONWrapperFactory _rconFactory;
     private readonly IDiscordChatMover _chatMover;
+    private readonly DiscordSettings? _discordSettings;
 
     public MoveChannelsInteractionModule(ILogger<MoveChannelsInteractionModule> logger,
-        Settings settings, IRCONWrapperFactory rconFactory, IDiscordChatMover chatMover) : base()
+        IRCONWrapperFactory rconFactory,
+        IDiscordChatMover chatMover,
+        IOptions<DiscordSettings>? discordSettings) : base()
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         _rconFactory = rconFactory ?? throw new ArgumentNullException(nameof(rconFactory));
         _chatMover = chatMover ?? throw new ArgumentNullException(nameof(chatMover));
+        _discordSettings = discordSettings?.Value;
     }
 
     [SlashCommand("divorce", "Moves users into respective voice channels based on game team.")]
     [RequireUserPermission(GuildPermission.MoveMembers)]
     public async Task DivorceCommandAsync()
     {
+        if (_discordSettings is null)
+        {
+            await RespondAsync("I'm broken and couldn't read the Discord settings.");
+            return;
+        }
+
         if (Context.Guild is null)
         {
             await RespondAsync("This only works in a guild.", ephemeral: true);
@@ -55,7 +63,7 @@ public class MoveChannelsInteractionModule : InteractionModuleBase<SocketInterac
 
             await rcon.ConnectAsync();
 
-            var guildSettings = _settings.DiscordSettings.GuildSettings.FirstOrDefault(g => g.Id == Context.Guild.Id);
+            var guildSettings = _discordSettings.GuildSettings.FirstOrDefault(g => g.Id == Context.Guild.Id);
 
             var moveResult = await _chatMover.MovePlayersToCorrectChannelsAsync(
                 rcon,
@@ -86,7 +94,7 @@ public class MoveChannelsInteractionModule : InteractionModuleBase<SocketInterac
             if (moveResult.UnmappedSteamUsers.Any())
             {
                 string whoShouldFix;
-                if (guildSettings != null && guildSettings.ConfigMaintainers.Any())
+                if (guildSettings is not null && guildSettings.ConfigMaintainers.Any())
                 {
                     whoShouldFix = string.Join(", ", guildSettings.ConfigMaintainers.Select(u =>
                         DiscordMessageExtensions.ToDiscordUserIdMessageRef(u.DiscordId)));
@@ -114,6 +122,12 @@ public class MoveChannelsInteractionModule : InteractionModuleBase<SocketInterac
     [RequireUserPermission(GuildPermission.MoveMembers)]
     public async Task RemarrySlashCommandAsync()
     {
+        if (_discordSettings is null)
+        {
+            await RespondAsync("I'm broken and couldn't read the Discord settings.");
+            return;
+        }
+
         if (Context.Guild is null)
         {
             await RespondAsync("This only works in a guild.", ephemeral: true);
@@ -131,7 +145,7 @@ public class MoveChannelsInteractionModule : InteractionModuleBase<SocketInterac
         {
             await DeferAsync();
 
-            var guildSettings = _settings.DiscordSettings.GuildSettings.FirstOrDefault(g => g.Id == Context.Guild.Id);
+            var guildSettings = _discordSettings.GuildSettings.FirstOrDefault(g => g.Id == Context.Guild.Id);
 
             var reuniteResult = await _chatMover.RenuitePlayersAsync(
                 Context.Client,

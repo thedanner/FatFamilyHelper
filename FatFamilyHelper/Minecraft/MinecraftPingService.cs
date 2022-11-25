@@ -157,7 +157,7 @@ public class MinecraftPingService : IMinecraftPingService
         // Data    Byte Array  Depends on the connection state and packet ID, see the sections below
 
         var requestDataLength = 0;
-        if (requestData != null)
+        if (requestData is not null)
         {
             requestDataLength = (int)requestData.Length;
         }
@@ -186,7 +186,7 @@ public class MinecraftPingService : IMinecraftPingService
         packetIdBuffer.CopyTo(stream, 4);
 
         // Write payload (or nothing if there is no payload).
-        if (requestData != null)
+        if (requestData is not null)
         {
             requestData.Position = 0;
             requestData.CopyTo(stream);

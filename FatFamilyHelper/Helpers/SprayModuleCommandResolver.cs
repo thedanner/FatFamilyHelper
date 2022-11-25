@@ -18,7 +18,7 @@ public class SprayModuleCommandResolver : ISprayModuleCommandResolver
 
     public bool TryResolve(string? arg1, string? arg2, IUserMessage message, [NotNullWhen(true)] out SprayModuleParseResult? result)
     {
-        if (message == null) throw new ArgumentNullException(nameof(message));
+        if (message is null) throw new ArgumentNullException(nameof(message));
 
         var referencedMessage = message.ReferencedMessage;
 
@@ -36,7 +36,7 @@ public class SprayModuleCommandResolver : ISprayModuleCommandResolver
         {
             // Case 1. Message content starts with a URL.
             if (Uri.TryCreate(arg1, UriKind.Absolute, out var uri)
-                && uri != null)
+                && uri is not null)
             {
                 if (arg1.StartsWithHttpProtocol())
                 {
@@ -53,7 +53,7 @@ public class SprayModuleCommandResolver : ISprayModuleCommandResolver
                 // Case 2. Message content starts with a filename and URL.
                 if (!string.IsNullOrEmpty(arg2)
                     && Uri.TryCreate(arg2, UriKind.Absolute, out uri)
-                    && uri != null)
+                    && uri is not null)
                 {
                     if (arg2.StartsWithHttpProtocol())
                     {
@@ -67,7 +67,7 @@ public class SprayModuleCommandResolver : ISprayModuleCommandResolver
                 // Case 3. Message content starts with a filename and attachment.
                 if (message.Attachments.Any()
                     && Uri.TryCreate(message.Attachments.First().ProxyUrl, UriKind.Absolute, out uri)
-                    && uri != null)
+                    && uri is not null)
                 {
                     result = new SprayModuleParseResult(uri, fileName);
                     return true;
@@ -75,7 +75,7 @@ public class SprayModuleCommandResolver : ISprayModuleCommandResolver
 
                 // 4. Message content starts with a filename and is a reply to a message with only a URL as its content.
                 // 5. Message content starts with a filename and is a reply to a message with an attachement.
-                if (referencedMessage != null)
+                if (referencedMessage is not null)
                 {
                     return TryHandleReferencedMessage(referencedMessage, fileName, out result);
                 }
@@ -86,7 +86,7 @@ public class SprayModuleCommandResolver : ISprayModuleCommandResolver
             // 6. Message content is empty and has an attachment.
             if (message.Attachments.Any()
                 && Uri.TryCreate(message.Attachments.First().ProxyUrl, UriKind.Absolute, out var uri)
-                && uri != null)
+                && uri is not null)
             {
                 result = new SprayModuleParseResult(uri, null);
                 return true;
@@ -94,7 +94,7 @@ public class SprayModuleCommandResolver : ISprayModuleCommandResolver
 
             // 7. Message content is empty and is a reply to a message with only a URL as its content.
             // 8. Message content is empty and is a reply to a message with an attachment.
-            if (referencedMessage != null)
+            if (referencedMessage is not null)
             {
                 return TryHandleReferencedMessage(referencedMessage, null, out result);
             }
@@ -110,7 +110,7 @@ public class SprayModuleCommandResolver : ISprayModuleCommandResolver
         
         if (!string.IsNullOrEmpty(referencedMessage.Content)
             && Uri.TryCreate(referencedMessage.Content, UriKind.Absolute, out var uri)
-            && uri != null)
+            && uri is not null)
         {
             if (referencedMessage.Content.StartsWithHttpProtocol())
             {
@@ -123,7 +123,7 @@ public class SprayModuleCommandResolver : ISprayModuleCommandResolver
 
         if (referencedMessage.Attachments.Any()
             && Uri.TryCreate(referencedMessage.Attachments.First().ProxyUrl, UriKind.Absolute, out uri)
-            && uri != null)
+            && uri is not null)
         {
             result = new SprayModuleParseResult(uri, fileName);
             return true;

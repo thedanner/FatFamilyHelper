@@ -4,7 +4,7 @@ $Runtime = 'win-x64'
 $Framework = 'net7.0'
 $Configuration = 'Release'
 $ServiceName = "FatFamilyHelper"
-$ServiceDescription = "Left 4 Dead Helper bot service"
+$ServiceDescription = "FλT Family Helper bot service"
 
 $DeployDir = "dist"
 $ExeName = "FatFamilyHelper.exe"

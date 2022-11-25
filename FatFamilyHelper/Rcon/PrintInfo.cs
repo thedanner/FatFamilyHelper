@@ -146,7 +146,7 @@ public class PrintInfoParser : IParser<PrintInfo>
 
             var player = PrintInfoPlayer.Parse(line.Substring(Prefix.Length));
 
-            if (player != null) output.Players.Add(player);
+            if (player is not null) output.Players.Add(player);
         }
 
         return output;

@@ -35,7 +35,7 @@ public static class ExpiredCodesHelpers
             foreach (var message in messages)
             {
                 if (message.Author.IsBot
-                    && message.Reference != null
+                    && message.Reference is not null
                     && message.Reference.MessageId.IsSpecified
                     && messageIdsToDelete.Contains(message.Reference.MessageId.Value))
                 {
@@ -60,7 +60,7 @@ public static class ExpiredCodesHelpers
         {
             foreach (var embed in message.Embeds)
             {
-                if (embed == null || string.IsNullOrEmpty(embed.Description)) continue;
+                if (embed is null || string.IsNullOrEmpty(embed.Description)) continue;
 
                 // Look for:
                 // Expires: 24 JUN 2021 15:00 UTC

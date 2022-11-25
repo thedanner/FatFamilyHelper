@@ -13,7 +13,7 @@ namespace FatFamilyHelper.Tests.Integration.Minecraft;
 [Explicit("Run manually")]
 public class MinecraftPingServiceTests
 {
-    private Settings _settings;
+    private MinecraftSettings _minecraftSettings;
 
     [SetUp]
     public void SetUp()
@@ -23,7 +23,7 @@ public class MinecraftPingServiceTests
             .AddJsonFile("appSettings.json", optional: false, reloadOnChange: true)
             .Build();
 
-        _settings = config.Get<Settings>();
+        _minecraftSettings = config.GetSection("minecraft").Get<MinecraftSettings>();
     }
 
     [Test]
@@ -33,7 +33,7 @@ public class MinecraftPingServiceTests
         var pinger = new MinecraftPingService(
             new NullLogger<MinecraftPingService>(),
             new CanPingProvider());
-        var serverEntry = _settings.Minecraft!.Servers[0];
+        var serverEntry = _minecraftSettings.Servers[0];
 
         // Act
         var response = await pinger.PingAsync(serverEntry.Hostname, serverEntry.Port);

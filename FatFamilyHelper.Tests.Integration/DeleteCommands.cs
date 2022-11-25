@@ -14,7 +14,7 @@ namespace FatFamilyHelper.Tests.Integration;
 [Explicit("Run manually")]
 public class DeleteCommands
 {
-    private Settings _settings;
+    private DiscordSettings _discordSettings;
 
     private string _botToken;
     private ulong _guildId;
@@ -33,10 +33,10 @@ public class DeleteCommands
             .AddJsonFile("appSettings.json", optional: false, reloadOnChange: true)
             .Build();
 
-        _settings = config.Get<Settings>();
+        _discordSettings = config.GetSection("discordSettings").Get<DiscordSettings>();
 
-        _botToken = _settings.DiscordSettings.BotToken;
-        var guildSettings = _settings.DiscordSettings.GuildSettings.First();
+        _botToken = _discordSettings.BotToken;
+        var guildSettings = _discordSettings.GuildSettings.First();
         _guildId = guildSettings.Id;
     }
 
@@ -131,7 +131,7 @@ public class DeleteCommands
         client.LoggedIn += async () => Console.WriteLine("Discord client event: LoggedIn");
         client.LoggedOut += async () => Console.WriteLine("Discord client event: LoggedOut");
 
-        await client.LoginAsync(TokenType.Bot, _settings.DiscordSettings.BotToken);
+        await client.LoginAsync(TokenType.Bot, _discordSettings.BotToken);
         await client.StartAsync();
 
         await readyComplete.Task;

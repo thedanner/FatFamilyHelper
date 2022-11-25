@@ -17,17 +17,18 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.EventLog;
+using Microsoft.Extensions.Options;
 using NLog.Extensions.Logging;
 using Quartz;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace FatFamilyHelper;
 
@@ -58,7 +59,7 @@ public class Program
             // and it can't be set from the service configuration.
             var exeLocation = Assembly.GetExecutingAssembly().Location;
             var exeDirectory = Path.GetDirectoryName(exeLocation);
-            if (exeDirectory != null)
+            if (exeDirectory is not null)
             {
                 Environment.CurrentDirectory = exeDirectory;
             }
@@ -87,9 +88,9 @@ public class Program
     public static IHostBuilder CreateHostBuilder(string[] args)
     {
         var hostBuilder = Host.CreateDefaultBuilder(args)
+            .UseWindowsService()
             .ConfigureAppConfiguration((hostingContext, config) => ConfigureAppConfiguration(hostingContext, config, args))
-            .ConfigureServices(ConfigureServices)
-            .UseWindowsService();
+            .ConfigureServices(ConfigureServices);
 
         return hostBuilder;
     }
@@ -110,12 +111,17 @@ public class Program
 
     private static void ConfigureServices(HostBuilderContext hostContext, IServiceCollection serviceCollection)
     {
-        var config = hostContext.Configuration;
-        var settings = config.Get<Settings>();
+        var config = hostContext.Configuration!;
+
+        serviceCollection.Configure<DiscordSettings>(config.GetSection("discordSettings"));
+        serviceCollection.Configure<Left4DeadSettings>(config.GetSection("left4deadSettings"));
+        serviceCollection.Configure<MinecraftSettings>(config.GetSection("minecraft"));
+
+        serviceCollection.Configure<ShiftCodeSettings>(config.GetSection("shiftCodes"));
+        serviceCollection.Configure<List<TaskDefinition>>(config.GetSection("tasks"));
+        serviceCollection.Configure<List<UserMapping>>(config.GetSection("userMappings"));
 
         serviceCollection.AddSingleton(new HttpClient());
-
-        serviceCollection.AddTransient(sp => config.Get<Settings>());
 
         serviceCollection.AddLogging(loggerBuilder =>
         {
@@ -124,12 +130,18 @@ public class Program
             loggerBuilder.AddNLog(config);
         });
 
-        serviceCollection.AddHostedService<Worker>()
-            .Configure<EventLogSettings>(config =>
-            {
-                config.LogName = "FatFamilyHelper";
-                config.SourceName = "FatFamilyHelper - Discord Bot";
-            });
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            serviceCollection.AddHostedService<Worker>()
+                .Configure<EventLogSettings>(config =>
+                {
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    {
+                        config.LogName = "FatFamilyHelper";
+                        config.SourceName = "FatFamilyHelper - Discord Bot";
+                    }
+                });
+        }
 
         serviceCollection.AddSingleton<ICanPingProvider, CanPingProvider>();
         serviceCollection.AddTransient<IMinecraftPingService, MinecraftPingService>();
@@ -160,10 +172,13 @@ public class Program
 
         serviceCollection.AddSingleton<CommandAndEventHandler>();
 
-        var serverInfo = settings.Left4DeadSettings.ServerInfo;
+        var serverInfo = config.GetSection("left4deadSettings")?.Get<Left4DeadSettings>()?.ServerInfo;
 
-        serviceCollection.AddTransient(sp => new RCON(new IPEndPoint(IPAddress.Parse(serverInfo.Ip), serverInfo.Port), serverInfo.RconPassword));
-        serviceCollection.AddTransient<IRCONWrapperFactory, RCONWrapperFactory>();
+        if (serverInfo is not null)
+        {
+            serviceCollection.AddTransient(sp => new RCON(new IPEndPoint(IPAddress.Parse(serverInfo.Ip), serverInfo.Port), serverInfo.RconPassword));
+            serviceCollection.AddTransient<IRCONWrapperFactory, RCONWrapperFactory>();
+        }
 
         // More specific handlers
         var allLoadedTypes = AppDomain.CurrentDomain.GetAssemblies()
@@ -244,7 +259,7 @@ public class Program
         serviceCollection.AddTransient<Func<string, ITask>>(serviceProvider => key =>
         {
             var type = handlerTypes.FirstOrDefault(t => t.Name == key);
-            if (type == null)
+            if (type is null)
             {
                 throw new Exception($"Couldn't find an ITask with class name of '{key}'.");
             }
@@ -255,10 +270,13 @@ public class Program
 
     private static void ConfigureScheduler(IServiceCollection serviceCollection, IConfiguration config)
     {
-        var settings = config.Get<Settings>();
-        var logger = serviceCollection.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
+        var serviceProvider = serviceCollection.BuildServiceProvider();
 
-        var tasksGroupedByName = settings.Tasks.GroupBy(t => t.Name);
+        var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+
+        var tasks = serviceProvider.GetRequiredService<IOptions<List<TaskDefinition>>>().Value;
+
+        var tasksGroupedByName = tasks.GroupBy(t => t.Name);
         var replicatedNamed = tasksGroupedByName.Where(g => g.Count() > 1);
         if (replicatedNamed.Any())
         {
@@ -275,7 +293,7 @@ public class Program
                 tp.MaxConcurrency = 1;
             });
 
-            foreach (var taskSetting in settings.Tasks)
+            foreach (var taskSetting in tasks)
             {
                 if (string.IsNullOrEmpty(taskSetting.Name))
                 {

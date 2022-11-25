@@ -1,22 +1,25 @@
-﻿using Discord;
-using Discord.Interactions;
+﻿using System;
 using System.Threading.Tasks;
-using System;
+using System.Linq;
+using Discord;
+using Discord.Interactions;
 using FatFamilyHelper.Models.Configuration;
 using Microsoft.Extensions.Logging;
-using System.Linq;
+using Microsoft.Extensions.Options;
+using System.Data;
+using System.Collections.Generic;
 
 namespace FatFamilyHelper.Discord.Modules;
 
 public class PickMapAutocompleteHandler : AutocompleteHandler
 {
     private readonly ILogger<PickMapAutocompleteHandler> _logger;
-    private readonly Settings _settings;
+    private readonly Left4DeadSettings? _left4DeadSettings;
 
-    public PickMapAutocompleteHandler(ILogger<PickMapAutocompleteHandler> logger, Settings settings)
+    public PickMapAutocompleteHandler(ILogger<PickMapAutocompleteHandler> logger, IOptions<Left4DeadSettings>? left4DeadSettings)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        _left4DeadSettings = left4DeadSettings?.Value;
     }
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
@@ -32,8 +35,11 @@ public class PickMapAutocompleteHandler : AutocompleteHandler
 
         var currentVal = (string) autocompleteInteraction.Data.Current.Value;
 
-        var matchingCategories = (new[] { PickMapInteractionModule.ArgValueAny }.Concat(
-            _settings.Left4DeadSettings.Maps.Categories.Keys))
+        var keys = _left4DeadSettings?.Maps.Categories.Keys.ToList();
+        if (keys is null) keys = new List<string>(0);
+
+        var matchingCategories = (new[] { PickMapInteractionModule.ArgValueAny })
+            .Concat(keys)
             .ToList();
 
         if (!string.IsNullOrEmpty(currentVal))

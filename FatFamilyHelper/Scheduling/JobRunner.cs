@@ -4,6 +4,7 @@ using FatFamilyHelper.Models.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -48,13 +49,11 @@ public class JobRunner : IJob
 
         var client = _serviceProvider.GetRequiredService<DiscordSocketClient>();
 
-        var settings = _serviceProvider.GetRequiredService<Settings>();
-
-        var allTasksSettings = settings.Tasks;
+        var allTasksSettings = _serviceProvider.GetRequiredService<List<TaskDefinition>>();
 
         var taskDefinition = allTasksSettings.FirstOrDefault(t => t.Name == taskName);
 
-        if (taskDefinition == null)
+        if (taskDefinition is null)
         {
             throw new Exception($"Couldn't find a task definition in app settings for task \"{context.Trigger.JobKey.Name}\".");
         }

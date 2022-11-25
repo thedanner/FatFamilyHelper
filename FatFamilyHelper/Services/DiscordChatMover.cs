@@ -4,6 +4,7 @@ using FatFamilyHelper.Models.Configuration;
 using FatFamilyHelper.Rcon;
 using FatFamilyHelper.Wrappers.Rcon;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,12 +16,16 @@ namespace FatFamilyHelper.Services;
 public class DiscordChatMover : IDiscordChatMover
 {
     private readonly ILogger<DiscordChatMover> _logger;
-    private readonly Settings _settings;
+    private readonly DiscordSettings _discordSettings;
+    private readonly List<UserMapping> _userMappings;
 
-    public DiscordChatMover(ILogger<DiscordChatMover> logger, Settings settings)
+    public DiscordChatMover(ILogger<DiscordChatMover> logger,
+        IOptions<DiscordSettings>? discordSettings,
+        IOptions<List<UserMapping>>? userMappings)
     {
         _logger = logger;
-        _settings = settings;
+        _discordSettings = discordSettings?.Value ?? throw new ArgumentNullException(nameof(discordSettings));
+        _userMappings = userMappings?.Value ?? throw new ArgumentNullException(nameof(userMappings));
     }
 
     public async Task<MoveResult> MovePlayersToCorrectChannelsAsync(
@@ -35,16 +40,16 @@ public class DiscordChatMover : IDiscordChatMover
         if (guild is null) throw new ArgumentNullException(nameof(guild));
         if (usedInChannel is null) throw new ArgumentNullException(nameof(usedInChannel));
 
-        var guildSettings = _settings.DiscordSettings.GuildSettings.FirstOrDefault(g => g.Id == guild.Id);
-        if (guildSettings == null)
+        var guildSettings = _discordSettings.GuildSettings.FirstOrDefault(g => g.Id == guild.Id);
+        if (guildSettings is null)
         {
             throw new Exception($"Unable to find guild setting with ID {guild.Id} in the configuration.");
         }
 
         var primaryVoiceChannel = guild.GetVoiceChannel(guildSettings.Channels.Primary.Id);
-        if (primaryVoiceChannel == null) throw new Exception("Bad primary channel ID in config.");
+        if (primaryVoiceChannel is null) throw new Exception("Bad primary channel ID in config.");
         var secondaryVoiceChannel = guild.GetVoiceChannel(guildSettings.Channels.Secondary.Id);
-        if (secondaryVoiceChannel == null) throw new Exception("Bad secondary channel ID in config.");
+        if (secondaryVoiceChannel is null) throw new Exception("Bad secondary channel ID in config.");
         
         // Used by someone in a different voice channel from the ones indicated in settings.
         // Treat that as the primary, and the first of the empty of the two channels by setting ID as the secondary.
@@ -91,7 +96,7 @@ public class DiscordChatMover : IDiscordChatMover
             .Select(p => p.SteamId)
             .ToList();
 
-        var currentPlayerMappings = _settings.UserMappings
+        var currentPlayerMappings = _userMappings
             .Where(d => currentlyPlayingSteamIds.Intersect(d.SteamIds, StringComparer.CurrentCultureIgnoreCase).Any())
             .ToList();
 
@@ -102,7 +107,7 @@ public class DiscordChatMover : IDiscordChatMover
                 i, string.Join(",", currentPlayerMappings[i].SteamIds), currentPlayerMappings[i].DiscordId, currentPlayerMappings[i].Name);
         }
 
-        var allSteamIdsFromUserMappings = _settings.UserMappings.SelectMany(um => um.SteamIds).ToList();
+        var allSteamIdsFromUserMappings = _userMappings.SelectMany(um => um.SteamIds).ToList();
         var missingSteamMappings = currentPlayersOnServer
             .Where(p => !allSteamIdsFromUserMappings.Contains(p.SteamId, StringComparer.CurrentCultureIgnoreCase))
             .ToList();
@@ -158,13 +163,13 @@ public class DiscordChatMover : IDiscordChatMover
         {
             SocketVoiceChannel currentVoiceChannel;
 
-            if (usersInPrimaryChannel != null && usersInPrimaryChannel.Any(u => u.Id == discordAccount.Id))
+            if (usersInPrimaryChannel is not null && usersInPrimaryChannel.Any(u => u.Id == discordAccount.Id))
             {
                 currentVoiceChannel = primaryVoiceChannel;
 
                 _logger.LogDebug("{username} ({id}) found in primary channel.", discordAccount.Username, discordAccount.Id);
             }
-            else if (usersInSecondaryChannel != null && usersInSecondaryChannel.Any(u => u.Id == discordAccount.Id))
+            else if (usersInSecondaryChannel is not null && usersInSecondaryChannel.Any(u => u.Id == discordAccount.Id))
             {
                 currentVoiceChannel = secondaryVoiceChannel;
 
@@ -184,7 +189,7 @@ public class DiscordChatMover : IDiscordChatMover
                 continue;
             }
 
-            var userMappingsFromDiscordId = _settings.UserMappings.Where(um => um.DiscordId == discordAccount.Id).ToList();
+            var userMappingsFromDiscordId = _userMappings.Where(um => um.DiscordId == discordAccount.Id).ToList();
             if (!userMappingsFromDiscordId.Any())
             {
                 _logger.LogDebug("Skipping {username} ({id}): Couldn't find user mapping.",
@@ -195,7 +200,7 @@ public class DiscordChatMover : IDiscordChatMover
             var allSteamIdsFromDiscordId = userMappingsFromDiscordId.SelectMany(s => s.SteamIds);
             var usersPrintInfo = printInfo.Players.FirstOrDefault(pi =>
                 allSteamIdsFromDiscordId.Any(sid => sid.Equals(pi.SteamId, StringComparison.CurrentCultureIgnoreCase)));
-            if (usersPrintInfo == null)
+            if (usersPrintInfo is null)
             {
                 _logger.LogDebug("Skipping {username} ({id}): Couldn't find user's Steam ID ({userMappingSteamIds}) in PrintInfo results.",
                     discordAccount.Username, discordAccount.Id, string.Join(", ", allSteamIdsFromDiscordId));
@@ -264,16 +269,16 @@ public class DiscordChatMover : IDiscordChatMover
         if (guild is null) throw new ArgumentNullException(nameof(guild));
         if (usedInChannel is null) throw new ArgumentNullException(nameof(usedInChannel));
 
-        var guildSettings = _settings.DiscordSettings.GuildSettings.FirstOrDefault(g => g.Id == guild.Id);
-        if (guildSettings == null)
+        var guildSettings = _discordSettings.GuildSettings.FirstOrDefault(g => g.Id == guild.Id);
+        if (guildSettings is null)
         {
             throw new Exception($"Unable to find guild setting with ID {guild.Id} in the configuration.");
         }
 
         var primaryVoiceChannel = guild.GetVoiceChannel(guildSettings.Channels.Primary.Id);
-        if (primaryVoiceChannel == null) throw new Exception("Bad primary channel ID in config.");
+        if (primaryVoiceChannel is null) throw new Exception("Bad primary channel ID in config.");
         var secondaryVoiceChannel = guild.GetVoiceChannel(guildSettings.Channels.Secondary.Id);
-        if (secondaryVoiceChannel == null) throw new Exception("Bad secondary channel ID in config.");
+        if (secondaryVoiceChannel is null) throw new Exception("Bad secondary channel ID in config.");
         
         var result = new ReuniteResult();
 

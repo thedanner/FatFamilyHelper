@@ -5,7 +5,9 @@ using FatFamilyHelper.Models.Configuration;
 using FatFamilyHelper.Services;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -17,7 +19,7 @@ public class Worker : BackgroundService, IDisposable
 {
     private readonly ILogger<Worker> _logger;
     private readonly IDiscordConnectionBootstrapper _bootstrapper;
-    private readonly Settings _settings;
+    private readonly List<UserMapping>? _userMappings;
 
     // Singleton IDisposables
     private readonly DiscordSocketClient _client;
@@ -26,14 +28,14 @@ public class Worker : BackgroundService, IDisposable
     public Worker(
         ILogger<Worker> logger,
         IDiscordConnectionBootstrapper bootstrapper,
-        Settings settings,
+        IOptions<List<UserMapping>>? userMappings,
         // Singleton IDisposables or objects that can be started and stopped.
         DiscordSocketClient client,
         CommandAndEventHandler commandHandler)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _bootstrapper = bootstrapper ?? throw new ArgumentNullException(nameof(bootstrapper));
-        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        _userMappings = userMappings?.Value;
 
         // Singleton IDisposables or objects that can be started and stopped.
         _client = client ?? throw new ArgumentNullException(nameof(client));
@@ -44,7 +46,10 @@ public class Worker : BackgroundService, IDisposable
     {
         try
         {
-            _logger.LogDebug("Last user mapping entry: {lastUserMapping}", _settings.UserMappings.Last());
+            if (_userMappings is not null)
+            {
+                _logger.LogDebug("Last user mapping entry: {lastUserMapping}", _userMappings.Last());
+            }
 
             await _commandHandler.InitializeAsync();
 

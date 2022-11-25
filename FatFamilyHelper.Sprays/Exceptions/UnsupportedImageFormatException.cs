@@ -23,7 +23,7 @@ public class UnsupportedImageFormatException : Exception
     public UnsupportedImageFormatException(string? message, IEnumerable<string> inputMimeTypes, Exception? innerException) :
         base(message, innerException)
     {
-        if (inputMimeTypes == null) throw new ArgumentNullException(nameof(inputMimeTypes));
+        if (inputMimeTypes is null) throw new ArgumentNullException(nameof(inputMimeTypes));
         InputMimeTypes = inputMimeTypes.ToList().AsReadOnly();
     }
 

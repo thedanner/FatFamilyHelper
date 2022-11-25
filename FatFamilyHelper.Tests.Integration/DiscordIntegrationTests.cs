@@ -15,7 +15,7 @@ namespace FatFamilyHelper.Tests.Integration;
 [Explicit("Run manually")]
 public class DiscordIntegrationTests
 {
-    private Settings _settings;
+    private DiscordSettings _discordSettings;
 
     private string _botToken;
     private ulong _guildId;
@@ -36,10 +36,10 @@ public class DiscordIntegrationTests
             .AddJsonFile("appSettings.json", optional: false, reloadOnChange: true)
             .Build();
 
-        _settings = config.Get<Settings>();
+        _discordSettings = config.GetSection("discordSettings").Get<DiscordSettings>();
 
-        _botToken = _settings.DiscordSettings.BotToken;
-        var guildSettings = _settings.DiscordSettings.GuildSettings.First();
+        _botToken = _discordSettings.BotToken;
+        var guildSettings = _discordSettings.GuildSettings.First();
         _guildId = guildSettings.Id;
 
         _primaryChannelId = guildSettings.Channels.Primary.Id;

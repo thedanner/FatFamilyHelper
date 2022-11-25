@@ -12,7 +12,7 @@ public static class StringHelpers
 
     public static string SanitizeFileNameForDiscordAttachment(string fileName)
     {
-        if (fileName == null) throw new ArgumentNullException(nameof(fileName));
+        if (fileName is null) throw new ArgumentNullException(nameof(fileName));
 
         fileName = SafeCharsForAttachmentFileNames.Replace(fileName, "-");
         fileName = MultipleSubstitutionCharactersPattern.Replace(fileName, "-");

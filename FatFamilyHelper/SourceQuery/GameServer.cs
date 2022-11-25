@@ -141,7 +141,7 @@ public class GameServer
         Players.Clear();
         GetChallengeData();
 
-        if (_challengeBytes == null) throw new Exception("_challengeBytes is null.");
+        if (_challengeBytes is null) throw new Exception("_challengeBytes is null.");
 
         _challengeBytes[0] = A2S_PLAYER;
         Send(_challengeBytes);
@@ -163,7 +163,7 @@ public class GameServer
         Rules.Clear();
         GetChallengeData();
 
-        if (_challengeBytes == null) throw new Exception("_challengeBytes is null.");
+        if (_challengeBytes is null) throw new Exception("_challengeBytes is null.");
 
         _challengeBytes[0] = A2S_RULES;
         Send(_challengeBytes);
@@ -189,7 +189,7 @@ public class GameServer
 
     private void GetChallengeData()
     {
-        if (_challengeBytes != null) return;
+        if (_challengeBytes is not null) return;
         
         Send(A2S_SERVERQUERY_GETCHALLENGE);
         var challengeData = Receive();
@@ -204,7 +204,7 @@ public class GameServer
 
         Buffer.BlockCopy(message, 0, fullmessage, 4, message.Length);
         
-        if (_client == null) throw new Exception("_client is null.");
+        if (_client is null) throw new Exception("_client is null.");
 
         _client.Send(fullmessage, fullmessage.Length);
     }
@@ -214,7 +214,7 @@ public class GameServer
         var packets = new List<byte[]>();
         var crc = 0;
 
-        if (_client == null) throw new Exception("_client is null.");
+        if (_client is null) throw new Exception("_client is null.");
 
         var packet = _client.Receive(ref _endpoint);
 
@@ -358,15 +358,15 @@ public static class Extensions
 
     public static int FindSequence(this byte[] source, byte[] pattern, int startIndex)
     {
-        if (source == null) throw new ArgumentNullException(nameof(source));
+        if (source is null) throw new ArgumentNullException(nameof(source));
         return FindSequence(source, pattern, startIndex, source.Length);
     }
 
     public static int FindSequence(this byte[] source, byte[] pattern, int startIndex, int endIndex)
     {
-        if (source == null) throw new ArgumentNullException(nameof(source));
+        if (source is null) throw new ArgumentNullException(nameof(source));
         if (source.Length == 0) throw new ArgumentException("Source cannot be empty.", nameof(source));
-        if (pattern == null) throw new ArgumentNullException(nameof(pattern));
+        if (pattern is null) throw new ArgumentNullException(nameof(pattern));
         if (pattern.Length == 0) throw new ArgumentException("Pattern cannot be empty.", nameof(pattern));
         if (startIndex < 0 || startIndex > source.Length)
         {

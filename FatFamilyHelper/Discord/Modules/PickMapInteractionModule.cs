@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System;
 using Discord.Interactions;
 using System.Collections.Generic;
+using Microsoft.Extensions.Options;
 
 namespace FatFamilyHelper.Discord.Modules;
 
@@ -15,12 +16,12 @@ public class PickMapInteractionModule : InteractionModuleBase<SocketInteractionC
     internal const string ArgValueAny = "any";
 
     private readonly ILogger<PickMapInteractionModule> _logger;
-    private readonly Settings _settings;
+    private readonly Left4DeadSettings? _left4DeadSettings;
 
-    public PickMapInteractionModule(ILogger<PickMapInteractionModule> logger, Settings settings)
+    public PickMapInteractionModule(ILogger<PickMapInteractionModule> logger, IOptions<Left4DeadSettings>? left4DeadSettings)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        _left4DeadSettings = left4DeadSettings?.Value;
     }
 
     [SlashCommand("pick", "Picks a map randomly")]
@@ -28,7 +29,13 @@ public class PickMapInteractionModule : InteractionModuleBase<SocketInteractionC
         [Summary(description: "map category"), Autocomplete(typeof(PickMapAutocompleteHandler))]
         string? category = null)
     {
-        var maps = _settings.Left4DeadSettings.Maps;
+        if (_left4DeadSettings is null)
+        {
+            await RespondAsync("I'm broken and couldn't read the Left 4 Dead settings.");
+            return;
+        }
+
+        var maps = _left4DeadSettings.Maps;
 
         var q = ArgValueAny.Equals(category, StringComparison.CurrentCultureIgnoreCase);
 
@@ -61,18 +68,24 @@ public class PickMapInteractionModule : InteractionModuleBase<SocketInteractionC
     public class ListIntractionModule : InteractionModuleBase<SocketInteractionContext>
     {
         private readonly ILogger<ListIntractionModule> _logger;
-        private readonly Settings _settings;
+        private readonly Left4DeadSettings? _left4DeadSettings;
 
-        public ListIntractionModule(ILogger<ListIntractionModule> logger, Settings settings)
+        public ListIntractionModule(ILogger<ListIntractionModule> logger, IOptions<Left4DeadSettings>? left4DeadSettings)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _left4DeadSettings = left4DeadSettings?.Value;
         }
 
         [SlashCommand("categories", "List categories")]
         public async Task HandleCategoriesAsync()
         {
-            var maps = _settings.Left4DeadSettings.Maps;
+            if (_left4DeadSettings is null)
+            {
+                await RespondAsync("I'm broken and couldn't read the Left 4 Dead settings.");
+                return;
+            }
+
+            var maps = _left4DeadSettings.Maps;
             var categoriesStr = string.Join(Environment.NewLine, maps.Categories.Keys.Select(k => $"- **{k}**"));
             await RespondAsync($"The categories are:{Environment.NewLine}{categoriesStr}");
         }
@@ -82,12 +95,18 @@ public class PickMapInteractionModule : InteractionModuleBase<SocketInteractionC
             [Summary(description: "map category"), Autocomplete(typeof(PickMapAutocompleteHandler))]
             string? category = null)
         {
-            var maps = _settings.Left4DeadSettings.Maps;
+            if (_left4DeadSettings is null)
+            {
+                await RespondAsync("I'm broken and couldn't read the Left 4 Dead settings.");
+                return;
+            }
 
             if (string.IsNullOrEmpty(category))
             {
-                category = maps.DefaultCategory;
+                category = _left4DeadSettings.Maps.DefaultCategory;
             }
+
+            var maps = _left4DeadSettings.Maps;
 
             if (ArgValueAny.Equals(category, StringComparison.CurrentCultureIgnoreCase))
             {
@@ -109,6 +128,7 @@ public class PickMapInteractionModule : InteractionModuleBase<SocketInteractionC
 
                 return;
             }
+
 
             if (maps.Categories.TryGetValue(category, out var listCategoryMaps))
             {

@@ -5,6 +5,7 @@ using FatFamilyHelper.Helpers.DiscordExtensions;
 using FatFamilyHelper.Models.Configuration;
 using FatFamilyHelper.Support.ExpiredCodes;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Threading.Tasks;
 
@@ -14,38 +15,36 @@ public class RepostShiftCodesEventHandler : IHandleMessageReceivedAsync
 {
     private readonly DiscordSocketClient _client;
     private readonly ILogger<RepostShiftCodesEventHandler> _logger;
-    private readonly Settings _settings;
+    private readonly ShiftCodeSettings? _shiftCodesSettings;
 
     public RepostShiftCodesEventHandler(DiscordSocketClient client, ILogger<RepostShiftCodesEventHandler> logger,
-        Settings settings)
+        IOptions<ShiftCodeSettings>? shiftCodesSettings)
     {
         _client = client ?? throw new ArgumentNullException(nameof(client));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        _shiftCodesSettings = shiftCodesSettings?.Value;
     }
 
     public async Task HandleMessageReceivedAsync(SocketMessage message)
     {
-        var shiftCodesSettings = _settings.ShiftCodes;
-
-        if (shiftCodesSettings != null
-            && shiftCodesSettings.IsRepostEnabled
-            && shiftCodesSettings.SourceChannelId.GetValueOrDefault() == message.Channel.Id
+        if (_shiftCodesSettings is not null
+            && _shiftCodesSettings.IsRepostEnabled
+            && _shiftCodesSettings.SourceChannelId.GetValueOrDefault() == message.Channel.Id
             && message.Author.IsBot
-            && shiftCodesSettings.SourceUserId == message.Author.Id)
+            && _shiftCodesSettings.SourceUserId == message.Author.Id)
         {
             var guild = (message.Channel as SocketGuildChannel)?.Guild;
-            if (guild == null)
+            if (guild is null)
             {
                 throw new Exception("Can't get the Guild from the message's channel.");
             }
 
-            var destinationChannel = guild.GetTextChannel(_settings.ShiftCodes.RepostChannelId.GetValueOrDefault());
-            if (destinationChannel == null)
+            var destinationChannel = guild.GetTextChannel(_shiftCodesSettings.RepostChannelId.GetValueOrDefault());
+            if (destinationChannel is null)
             {
                 _logger.LogError(
                     "Can't find a channel with ID {repostChannelId} to repost the SHiFT code message. Check the ID in the config.",
-                    _settings.ShiftCodes.RepostChannelId.GetValueOrDefault());
+                    _shiftCodesSettings.RepostChannelId.GetValueOrDefault());
                 return;
             }
 
@@ -62,7 +61,7 @@ public class RepostShiftCodesEventHandler : IHandleMessageReceivedAsync
             
             await destinationChannel.SendMessageAsync(content, embed: embed);
             
-            if (_settings.ShiftCodes.DeleteMessageInSourceChannelAfterRepost.GetValueOrDefault())
+            if (_shiftCodesSettings.DeleteMessageInSourceChannelAfterRepost.GetValueOrDefault())
             {
                 await Task.Delay(Constants.DelayAfterCommand);
                 await message.DeleteAsync();

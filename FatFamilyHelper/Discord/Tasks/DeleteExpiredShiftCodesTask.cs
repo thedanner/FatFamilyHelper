@@ -101,7 +101,7 @@ public class DeleteExpiredShiftCodesTask : ITask
                     await Task.Delay(Constants.DelayAfterCommandMs, cancellationToken);
                 }
 
-                if (messagesToDelete.Count > 0 && reportToChannel != null)
+                if (messagesToDelete.Count > 0 && reportToChannel is not null)
                 {
                     await reportToChannel.SendMessageAsync($"Deleted {messagesToDelete.Count} expired code{plural} in {channel.ToMessageRef()}.");
                     await Task.Delay(Constants.DelayAfterCommandMs, cancellationToken);

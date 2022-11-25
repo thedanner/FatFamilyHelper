@@ -13,7 +13,7 @@ namespace FatFamilyHelper.Tests.Integration;
 [Explicit("Run manually")]
 public class Left4DeadIntegrationTests
 {
-    private Settings _settings;
+    private Left4DeadSettings _left4DeadSettings;
 
     [SetUp]
     public void SetUp()
@@ -23,13 +23,13 @@ public class Left4DeadIntegrationTests
             .AddJsonFile("appSettings.json", optional: false, reloadOnChange: true)
             .Build();
 
-        _settings = config.Get<Settings>();
+        _left4DeadSettings = config.GetSection("left4DeadSettings").Get<Left4DeadSettings>();
     }
 
     [Test]
     public async Task TestRconPrintInfo()
     {
-        var serverInfo = _settings.Left4DeadSettings.ServerInfo;
+        var serverInfo = _left4DeadSettings.ServerInfo;
         using var rcon = new RCON(new IPEndPoint(IPAddress.Parse(serverInfo.Ip), serverInfo.Port), serverInfo.RconPassword);
         await rcon.ConnectAsync();
 
@@ -39,7 +39,7 @@ public class Left4DeadIntegrationTests
     [Test]
     public async Task TestRconGameMode()
     {
-        var serverInfo = _settings.Left4DeadSettings.ServerInfo;
+        var serverInfo = _left4DeadSettings.ServerInfo;
         using var rcon = new RCON(new IPEndPoint(IPAddress.Parse(serverInfo.Ip), serverInfo.Port), serverInfo.RconPassword);
         await rcon.ConnectAsync();
 
