@@ -27,7 +27,7 @@ public Plugin myinfo =
 	author = "The Danner",
 	description = "Prints misc. player info. Meant to be consumed and parsed by other components that can execute a command via rcon.",
 	version = VERSION,
-	url = "https://github.com/thedanner/Left4DeadHelper"
+	url = "https://github.com/thedanner/FatFamilyHelper"
 }
 
 
