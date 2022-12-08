@@ -88,7 +88,10 @@ public class Program
     public static IHostBuilder CreateHostBuilder(string[] args)
     {
         var hostBuilder = Host.CreateDefaultBuilder(args)
-            .UseWindowsService()
+            .UseWindowsService(options =>
+            {
+                options.ServiceName = "FatFamilyHelper";
+            })
             .ConfigureAppConfiguration((hostingContext, config) => ConfigureAppConfiguration(hostingContext, config, args))
             .ConfigureServices(ConfigureServices);
 

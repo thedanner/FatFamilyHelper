@@ -40,7 +40,7 @@ foreach ($TestProjectDir in $TestProjectDirs)
     Push-Location $TestProjectDir
 
     dotnet restore --nologo --runtime $Runtime
-    dotnet build --nologo --framework $Framework --runtime $Runtime --no-self-contained --configuration $Configuration --no-restore
+    dotnet build --nologo --framework $Framework --runtime $Runtime --self-contained --configuration $Configuration --no-restore
     dotnet test --nologo --no-restore --no-build --framework $Framework --runtime $Runtime --configuration $Configuration
 
     Pop-Location
@@ -70,9 +70,8 @@ if ($Service.Status -eq [System.ServiceProcess.ServiceControllerStatus]::Running
 }
 
 Remove-Item -Recurse (Join-Path $DeployDir "*") -ErrorAction SilentlyContinue
-dotnet publish --configuration $Configuration `
-    --no-restore --no-build --nologo `
-    --framework $Framework --runtime $Runtime --self-contained true `
+dotnet publish --nologo --no-restore --no-build  `
+    --configuration $Configuration --framework $Framework --runtime $Runtime --self-contained true `
     --output dist
 
 if ($Service)
