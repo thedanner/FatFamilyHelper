@@ -170,6 +170,10 @@ public class Program
                     | GatewayIntents.GuildMessageReactions
                     | GatewayIntents.DirectMessages
                     | GatewayIntents.DirectMessageReactions
+                    // Needed for the SHiFT code bridge.
+                    // This also needs the Priveleged Gateway Intent for Message Content Intent enabled in the developer portal.
+                    // https://discord.com/developers/applications
+                    | GatewayIntents.MessageContent
             });
         });
 

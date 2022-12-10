@@ -2,6 +2,7 @@
 using FatFamilyHelper.Discord.Interfaces;
 using FatFamilyHelper.Models.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Quartz;
 using System;
 using System.Collections.Generic;
@@ -49,7 +50,7 @@ public class JobRunner : IJob
 
         var client = _serviceProvider.GetRequiredService<DiscordSocketClient>();
 
-        var allTasksSettings = _serviceProvider.GetRequiredService<List<TaskDefinition>>();
+        var allTasksSettings = _serviceProvider.GetRequiredService<IOptions<List<TaskDefinition>>>().Value;
 
         var taskDefinition = allTasksSettings.FirstOrDefault(t => t.Name == taskName);
 
