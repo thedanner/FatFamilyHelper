@@ -18,6 +18,8 @@ namespace FatFamilyHelper.Discord.Modules;
 [Group("sprayme", "Converts an image into a Source engine-compatible spary.")]
 public class SprayInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
+    public const string ButtonCustomIdForDeleteRequest = "sprayme_deleteRequest";
+
     private readonly ILogger<SprayInteractionModule> _logger;
     private readonly ISprayModuleCommandResolver _resolver;
     private readonly HttpClient _httpClient;
@@ -223,6 +225,14 @@ public class SprayInteractionModule : InteractionModuleBase<SocketInteractionCon
                     sourceStreams, outputStream,
                     saveProfile, cancellationToken);
 
+                var buttonBuilder = new ButtonBuilder()
+                    .WithEmote(DeleteEmote)
+                    .WithStyle(ButtonStyle.Secondary)
+                    .WithCustomId(ButtonCustomIdForDeleteRequest);
+
+                var componentBuilder = new ComponentBuilder()
+                    .WithButton(buttonBuilder);
+
                 if (conversionResult.IsSuccessful)
                 {
                     outputStream.Position = 0;
@@ -263,24 +273,20 @@ public class SprayInteractionModule : InteractionModuleBase<SocketInteractionCon
                         fileName = "spray" + conversionResult.FileExtension;
                     }
 
-                    var sprayMessage = await Context.Interaction.FollowupWithFileAsync(
+                    var sprayMessage = await FollowupWithFileAsync(
                         outputStream, fileName,
-                        $"Here ya go!\n\n(If you requested this, react with {DeleteEmojiString} to delete this message."
+                        $"Here ya go!\n\n(If you requested this, use the {DeleteEmojiString} button to delete this message.)",
+                        components: componentBuilder.Build()
                         );
-                    await Task.Delay(Constants.DelayAfterCommandMs);
-
-                    await sprayMessage.AddReactionAsync(DeleteEmote);
                     await Task.Delay(Constants.DelayAfterCommandMs);
                 }
                 else
                 {
-                    var sprayMessage = await Context.Interaction.FollowupAsync(
-                        $"The conversion failed: {conversionResult.Message}.\n\n" +
-                        $"(If you requested this, react with {DeleteEmojiString} to delete this message."
+                    var sprayMessage = await FollowupAsync(
+                        $"The conversion failed: {conversionResult.Message}.",
+                        components: componentBuilder.Build(),
+                        ephemeral: true
                         );
-                    await Task.Delay(Constants.DelayAfterCommandMs);
-
-                    await sprayMessage.AddReactionAsync(DeleteEmote);
                     await Task.Delay(Constants.DelayAfterCommandMs);
                 }
             }
@@ -288,11 +294,9 @@ public class SprayInteractionModule : InteractionModuleBase<SocketInteractionCon
             {
                 _logger.LogError(e, "Got an image format I don't support.");
 
-                var sorryMessage = await Context.Interaction.FollowupAsync(
-                    "Sorry, I don't support that type of image :(");
-                await Task.Delay(Constants.DelayAfterCommandMs);
-
-                await sorryMessage.AddReactionAsync(DeleteEmote);
+                var sorryMessage = await FollowupAsync(
+                    "Sorry, I don't support that type of image :(",
+                    ephemeral: true);
                 await Task.Delay(Constants.DelayAfterCommandMs);
             }
         }

@@ -34,12 +34,19 @@ public class CommandAndEventHandler : IDisposable
 
     public async Task InitializeAsync()
     {
+        _client.ButtonExecuted += HandleButtonExecutedAsync;
         _client.MessageReceived += HandleMessageReceivedAsync;
         _client.ReactionAdded += HandleReactionAddedAsync;
 
         await _interactionService.AddModulesAsync(typeof(MinecraftPlayersInteractiveModule).Assembly, _serviceProvider);
 
         _client.InteractionCreated += HandleInteraction;
+    }
+
+    private async Task HandleButtonExecutedAsync(SocketMessageComponent interaction)
+    {
+        var ctx = new SocketInteractionContext<SocketMessageComponent>(_client, interaction);
+        await _interactionService.ExecuteCommandAsync(ctx, _serviceProvider);
     }
 
     private async Task HandleMessageReceivedAsync(SocketMessage message)
@@ -69,7 +76,8 @@ public class CommandAndEventHandler : IDisposable
         {
             _logger.LogError(ex, "Error trying to handle interaction (e.g., from a slash command).");
 
-            // If a Slash Command execution fails it is most likely that the original interaction acknowledgement will persist. It is a good idea to delete the original
+            // If a Slash Command execution fails it is most likely that the original interaction acknowledgement will persist.
+            // It is a good idea to delete the original
             // response, or at least let the user know that something went wrong during the command execution.
             if (arg.Type == InteractionType.ApplicationCommand)
             {
@@ -84,6 +92,7 @@ public class CommandAndEventHandler : IDisposable
         {
             if (disposing)
             {
+                _client.ButtonExecuted -= HandleButtonExecutedAsync;
                 _client.MessageReceived -= HandleMessageReceivedAsync;
                 _client.ReactionAdded -= HandleReactionAddedAsync;
                 _client.InteractionCreated -= HandleInteraction;

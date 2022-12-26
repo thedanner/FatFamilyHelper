@@ -98,8 +98,8 @@ public class RepostShiftCodesEventHandler : InteractionModuleBase<SocketInteract
             if (hasExpiry)
             {
                 content += 
-                    $"\nThis code expires {expiry.ToDiscordMessageTs(TimestampFormat.LongDateTime)} " +
-                    $"({expiry.ToDiscordMessageTs(TimestampFormat.RelativeTime)}).";
+                    $"\nThis code expires {expiry.ToDiscordMessageTs(TimestampFormat.RelativeTime)}" +
+                    $", at {expiry.ToDiscordMessageTs(TimestampFormat.LongDateTime)}.";
             }
             
             await destinationChannel.SendMessageAsync(content, embed: embed);
