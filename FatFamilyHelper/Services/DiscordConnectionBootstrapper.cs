@@ -13,11 +13,11 @@ namespace FatFamilyHelper.Services;
 
 public class DiscordConnectionBootstrapper : IDiscordConnectionBootstrapper
 {
-    private readonly ILogger<DiscordChatMover> _logger;
+    private readonly ILogger<DiscordConnectionBootstrapper> _logger;
     private readonly DiscordSettings _discordSettings;
     private readonly InteractionService _interactionService;
 
-    public DiscordConnectionBootstrapper(ILogger<DiscordChatMover> logger, IOptions<DiscordSettings>? discordSettings,
+    public DiscordConnectionBootstrapper(ILogger<DiscordConnectionBootstrapper> logger, IOptions<DiscordSettings>? discordSettings,
         InteractionService interactionService)
     {
         _logger = logger;

@@ -7,17 +7,16 @@ public static class LoggingExtensions
 {
     public static LogLevel ToLogLevel(this LogSeverity severity)
     {
-        LogLevel level;
-        switch (severity)
+        var level = severity switch
         {
-            case LogSeverity.Critical: level = LogLevel.Critical; break;
-            case LogSeverity.Error: level = LogLevel.Error; break;
-            case LogSeverity.Warning: level = LogLevel.Warning; break;
-            case LogSeverity.Info: level = LogLevel.Information; break;
-            case LogSeverity.Verbose: level = LogLevel.Debug; break;
-            case LogSeverity.Debug: level = LogLevel.Trace; break;
-            default: level = LogLevel.Information; break;
-        }
+            LogSeverity.Critical => LogLevel.Critical,
+            LogSeverity.Error => LogLevel.Error,
+            LogSeverity.Warning => LogLevel.Warning,
+            LogSeverity.Info => LogLevel.Information,
+            LogSeverity.Verbose => LogLevel.Debug,
+            LogSeverity.Debug => LogLevel.Trace,
+            _ => LogLevel.Information,
+        };
         return level;
     }
 }
