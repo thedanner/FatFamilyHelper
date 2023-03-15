@@ -18,6 +18,13 @@ public sealed class VtfEncoder : IImageEncoder
         _imageType = imageType;
     }
 
+    private readonly bool _skipMetadata = true;
+    public bool SkipMetadata
+    {
+        get => _skipMetadata;
+        init => _skipMetadata = true;
+    }
+
     public Task EncodeWithMipmapsAsync(IList<Image<Rgba32>> images, Stream stream, CancellationToken cancellationToken)
     {
         var encoder = new VtfEncoderCore(_imageType);

@@ -1,6 +1,7 @@
 ﻿using FatFamilyHelper.Sprays.Exceptions;
 using FatFamilyHelper.Sprays.SaveProfiles;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
@@ -47,7 +48,7 @@ public class SprayTools
 
         var memoryStreams = await Task.WhenAll(memoryStreamTasks);
 
-        var imageTasks = memoryStreams.Select(ms => Image.LoadAsync<Rgba32>(Configuration.Default, ms, cancellationToken));
+        var imageTasks = memoryStreams.Select(ms => Image.LoadAsync<Rgba32>(new DecoderOptions(), ms, cancellationToken));
 
         var images = await Task.WhenAll(imageTasks);
 

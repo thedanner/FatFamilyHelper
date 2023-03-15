@@ -2,7 +2,7 @@
 using FatFamilyHelper.TeamSuggestions;
 using NUnit.Framework;
 
-namespace FatFamilyHelper.Tests.Unit.TeamSuggestions;
+namespace FatFamilyHelper.Tests.Unit;
 
 [TestFixture]
 public class SteamIdTests

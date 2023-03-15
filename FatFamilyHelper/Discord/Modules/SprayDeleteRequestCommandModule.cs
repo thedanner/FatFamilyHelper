@@ -37,7 +37,7 @@ public class SprayDeleteRequestCommandModule : InteractionModuleBase<SocketInter
         // - the user who posted the thing that was converted
         // - anybody if the message that had the original thing that was converted was deleted.
 
-        if (conversionMessage.User == Context.Interaction.User)
+        if (conversionMessage.Author == Context.Interaction.User)
         {
             return true;
         }
@@ -52,7 +52,8 @@ public class SprayDeleteRequestCommandModule : InteractionModuleBase<SocketInter
                     && conversionMessage.Channel is SocketDMChannel
                 )
                 || (
-                    conversionMessage.Reference.GuildId.Value == Context.Interaction.GuildId.Value
+                    Context.Interaction.GuildId.HasValue
+                    && conversionMessage.Reference.GuildId.Value == Context.Interaction.GuildId.Value
                 )
             )
             // and same channel
