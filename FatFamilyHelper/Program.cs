@@ -45,7 +45,7 @@ public class Program
 
 
     // Authorize the bot by visiting:
-    // https://discord.com/api/oauth2/authorize?client_id=778014691804577844&permissions=16777216&scope=applications.commands%20bot
+    // https://discord.com/api/oauth2/authorize?client_id=778014691804577844&permissions=16885760&scope=bot%20applications.commands
     // If that link doesn't work, the generators are:
     // https://discord.com/developers/applications/778014691804577844/oauth2/url-generator
     // or just the bit calculator:
