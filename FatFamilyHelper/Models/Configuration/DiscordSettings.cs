@@ -1,11 +1,13 @@
-﻿namespace FatFamilyHelper.Models.Configuration;
+﻿using System;
+
+namespace FatFamilyHelper.Models.Configuration;
 
 public class DiscordSettings
 {
     public DiscordSettings()
     {
         BotToken = "";
-        GuildSettings = new GuildSettings[0];
+        GuildSettings = Array.Empty<GuildSettings>();
     }
 
     public string BotToken { get; set; }

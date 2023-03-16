@@ -1,4 +1,3 @@
-using Discord.Commands;
 using Discord.WebSocket;
 using FatFamilyHelper.Models.Configuration;
 using FatFamilyHelper.Rcon;
