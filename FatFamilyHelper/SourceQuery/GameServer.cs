@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 namespace FatFamilyHelper.SourceQuery;
 
 [Serializable]
-public class GameServer<TRules>
+public class GameServer<TRules> where TRules : new()
 {
     [NonSerialized]
     private IPEndPoint? _endpoint;
@@ -58,7 +58,7 @@ public class GameServer<TRules>
 
     public List<PlayerInfo> Players { get; set; }
 
-    public Dictionary<string, string> RawRules = new();
+    public Dictionary<string, string> RawRules;
 
     public TRules Rules { get; set; }
     public string? Endpoint { get; set; }
@@ -66,7 +66,10 @@ public class GameServer<TRules>
     public GameServer(IRuleParser<TRules> ruleParser)
     {
         Players = new List<PlayerInfo>();
-        _ruleParser = ruleParser;
+        RawRules = new Dictionary<string, string>();
+        Rules = new();
+
+        _ruleParser = ruleParser ?? throw new ArgumentNullException(nameof(ruleParser));
     }
 
     public async Task QueryAsync(IPAddress address, CancellationToken cancellationToken) =>
