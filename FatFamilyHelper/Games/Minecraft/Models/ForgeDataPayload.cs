@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace FatFamilyHelper.Minecraft.Models;
+namespace FatFamilyHelper.Games.Minecraft.Models;
 
 public class ForgeDataPayload
 {

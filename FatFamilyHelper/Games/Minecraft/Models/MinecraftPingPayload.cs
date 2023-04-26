@@ -1,12 +1,12 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace FatFamilyHelper.Minecraft.Models;
+namespace FatFamilyHelper.Games.Minecraft.Models;
 
 /// <summary>
 /// C# represenation of the following JSON file
 /// https://gist.github.com/thinkofdeath/6927216
 /// </summary>
-public class PingPayload
+public class MinecraftPingPayload
 {
     /// <summary>
     /// Protocol that the server is using and the given name

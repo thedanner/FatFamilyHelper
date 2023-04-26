@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.Interactions;
 using FatFamilyHelper.Helpers;
-using FatFamilyHelper.Minecraft;
+using FatFamilyHelper.Games.Minecraft;
 using FatFamilyHelper.Models.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace FatFamilyHelper.Minecraft;
+namespace FatFamilyHelper.Helpers;
 
-public class CanPingProvider : ICanPingProvider
+public class PingThrottler : IPingThrottler
 {
     private readonly object _lock = new();
 
@@ -10,12 +10,12 @@ public class CanPingProvider : ICanPingProvider
 
     private DateTimeOffset _lastPing;
 
-    public CanPingProvider() : this(TimeSpan.FromSeconds(10))
+    public PingThrottler() : this(TimeSpan.FromSeconds(10))
     {
 
     }
 
-    public CanPingProvider(TimeSpan minimumWait)
+    public PingThrottler(TimeSpan minimumWait)
     {
         if (minimumWait < TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(minimumWait), "Value must be positive.");
 

@@ -6,8 +6,9 @@ using Discord.WebSocket;
 using FatFamilyHelper.Discord.Handlers;
 using FatFamilyHelper.Discord.Interfaces;
 using FatFamilyHelper.Discord.Interfaces.Events;
+using FatFamilyHelper.Games.ConanExiles;
+using FatFamilyHelper.Games.Minecraft;
 using FatFamilyHelper.Helpers;
-using FatFamilyHelper.Minecraft;
 using FatFamilyHelper.Models.Configuration;
 using FatFamilyHelper.Scheduling;
 using FatFamilyHelper.Services;
@@ -119,6 +120,7 @@ public class Program
         serviceCollection.Configure<DiscordSettings>(config.GetSection("discordSettings"));
         serviceCollection.Configure<Left4DeadSettings>(config.GetSection("left4deadSettings"));
         serviceCollection.Configure<MinecraftSettings>(config.GetSection("minecraft"));
+        serviceCollection.Configure<ConanExilesSettings>(config.GetSection("conanExiles"));
 
         serviceCollection.Configure<ShiftCodeSettings>(config.GetSection("shiftCodes"));
         serviceCollection.Configure<List<TaskDefinition>>(config.GetSection("tasks"));
@@ -146,11 +148,13 @@ public class Program
                 });
         }
 
-        serviceCollection.AddSingleton<ICanPingProvider, CanPingProvider>();
+        serviceCollection.AddSingleton<IPingThrottler, PingThrottler>();
         serviceCollection.AddTransient<IMinecraftPingService, MinecraftPingService>();
+        serviceCollection.AddTransient<IConanExilesPingService, ConanExilesPingService>();
 
         serviceCollection.AddTransient<IDiscordConnectionBootstrapper, DiscordConnectionBootstrapper>();
 
+        serviceCollection.AddTransient<IRCONWrapperFactory, RCONWrapperFactory>();
         serviceCollection.AddTransient<IDiscordChatMover, DiscordChatMover>();
 
         serviceCollection.AddTransient<ISprayModuleCommandResolver, SprayModuleCommandResolver>();

@@ -1,4 +1,5 @@
-﻿using FatFamilyHelper.Minecraft.Models;
+﻿using FatFamilyHelper.Games.Minecraft.Models;
+using FatFamilyHelper.Helpers;
 using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
@@ -7,7 +8,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace FatFamilyHelper.Minecraft;
+namespace FatFamilyHelper.Games.Minecraft;
 
 // Adapted from https://gist.github.com/csh/2480d14fbbb33b4bbae3
 public class MinecraftPingService : IMinecraftPingService
@@ -18,19 +19,19 @@ public class MinecraftPingService : IMinecraftPingService
     private const int StateStatus = 1;
 
     private readonly ILogger<MinecraftPingService> _logger;
-    private readonly ICanPingProvider _canPingProvider;
+    private readonly IPingThrottler _pingThrottler;
 
-    public MinecraftPingService(ILogger<MinecraftPingService> logger, ICanPingProvider canPingProvider)
+    public MinecraftPingService(ILogger<MinecraftPingService> logger, IPingThrottler pingThrottler)
     {
         _logger = logger;
-        _canPingProvider = canPingProvider;
+        _pingThrottler = pingThrottler;
     }
 
-    public async Task<PingPayload?> PingAsync(string hostname, ushort port)
+    public async Task<MinecraftPingPayload?> PingAsync(string hostname, ushort port)
     {
         lock (_lock)
         {
-            if (!_canPingProvider.TryCanPing()) return null;
+            if (!_pingThrottler.TryCanPing()) return null;
         }
 
         using var client = new TcpClient();
@@ -53,7 +54,7 @@ public class MinecraftPingService : IMinecraftPingService
         var packet = ReadVarInt(stream);
         var jsonLength = ReadVarInt(stream);
         var json = ReadString(stream, jsonLength);
-        var ping = JsonSerializer.Deserialize<PingPayload>(json);
+        var ping = JsonSerializer.Deserialize<MinecraftPingPayload>(json);
 
         return ping;
     }
@@ -98,13 +99,13 @@ public class MinecraftPingService : IMinecraftPingService
         int b;
         while (((b = stream.ReadByte()) & 0x80) == 0x80)
         {
-            value |= (b & 0x7F) << (size++ * 7);
+            value |= (b & 0x7F) << size++ * 7;
             if (size > 5)
             {
                 throw new IOException("This VarInt is an imposter!");
             }
         }
-        return value | ((b & 0x7F) << (size * 7));
+        return value | (b & 0x7F) << size * 7;
     }
 
     internal static string ReadString(Stream stream, int length)
@@ -118,7 +119,7 @@ public class MinecraftPingService : IMinecraftPingService
         while ((value & 128) != 0)
         {
             inputBuffer.WriteByte((byte)(value & 127 | 128));
-            value = (int)((uint)value) >> 7;
+            value = (int)(uint)value >> 7;
         }
         inputBuffer.WriteByte((byte)value);
     }

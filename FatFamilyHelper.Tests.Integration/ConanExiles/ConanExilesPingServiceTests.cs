@@ -7,14 +7,15 @@ using System.IO;
 using System.Threading.Tasks;
 using FatFamilyHelper.Games.Minecraft;
 using FatFamilyHelper.Helpers;
+using FatFamilyHelper.Games.ConanExiles;
 
-namespace FatFamilyHelper.Tests.Integration.Minecraft;
+namespace FatFamilyHelper.Tests.Integration.ConanExiles;
 
 [TestFixture]
 [Explicit("Run manually")]
 public class ConanExilesPingServiceTests
 {
-    private MinecraftSettings _minecraftSettings;
+    private ConanExilesSettings _conanExilesSettings;
 
     [SetUp]
     public void SetUp()
@@ -24,20 +25,20 @@ public class ConanExilesPingServiceTests
             .AddJsonFile("appSettings.json", optional: false, reloadOnChange: true)
             .Build();
 
-        _minecraftSettings = config.GetSection("minecraft").Get<MinecraftSettings>();
+        _conanExilesSettings = config.GetSection("conanExiles").Get<ConanExilesSettings>();
     }
 
     [Test]
     public async Task TestPingAsync()
     {
         // Arrange
-        var pinger = new MinecraftPingService(
-            new NullLogger<MinecraftPingService>(),
+        var pinger = new ConanExilesPingService(
+            new NullLogger<ConanExilesPingService>(),
             new PingThrottler());
-        var serverEntry = _minecraftSettings.Servers[0];
+        var serverEntry = _conanExilesSettings.Servers[0];
 
         // Act
-        var response = await pinger.PingAsync(serverEntry.Hostname, serverEntry.Port);
+        var response = await pinger.PingAsync(serverEntry.QueryHostname, serverEntry.QueryPort);
 
         // Assert
         response.Should().NotBeNull();

@@ -1,4 +1,5 @@
-﻿using ICSharpCode.SharpZipLib.BZip2;
+﻿using FatFamilyHelper.SourceQuery.Rules;
+using ICSharpCode.SharpZipLib.BZip2;
 using ICSharpCode.SharpZipLib.Checksum;
 using System;
 using System.Collections.Generic;
@@ -7,16 +8,20 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace FatFamilyHelper.SourceQuery;
 
 [Serializable]
-public class GameServer
+public class GameServer<TRules>
 {
     [NonSerialized]
     private IPEndPoint? _endpoint;
     [NonSerialized]
     private UdpClient? _client;
+    [NonSerialized]
+    private readonly IRuleParser<TRules> _ruleParser;
 
     // TSource Engine Query
     [NonSerialized]
@@ -52,22 +57,22 @@ public class GameServer
     public string? GameID;
 
     public List<PlayerInfo> Players { get; set; }
-    public Dictionary<string, string> Rules { get; set; }
+
+    public Dictionary<string, string> RawRules = new();
+
+    public TRules Rules { get; set; }
     public string? Endpoint { get; set; }
 
-    public GameServer()
+    public GameServer(IRuleParser<TRules> ruleParser)
     {
         Players = new List<PlayerInfo>();
-        Rules = new Dictionary<string, string>();
+        _ruleParser = ruleParser;
     }
 
-    public GameServer(IPAddress address)
-        : this(new IPEndPoint(address, 27015))
-    {            
-    }
+    public async Task QueryAsync(IPAddress address, CancellationToken cancellationToken) =>
+        await QueryAsync(new IPEndPoint(address, 27015), cancellationToken);
 
-    public GameServer(IPEndPoint endpoint)
-        : this()
+    public async Task QueryAsync(IPEndPoint endpoint, CancellationToken cancellationToken)
     {
         _endpoint = endpoint;
         Endpoint = endpoint.ToString();
@@ -78,11 +83,11 @@ public class GameServer
         {
             _client.Client.SendTimeout = (int)500;
             _client.Client.ReceiveTimeout = (int)500;
-            _client.Connect(endpoint);
+            //_client.Connect(endpoint);
 
-            RefreshMainInfo();
-            RefreshPlayerInfo();
-            RefreshRules();
+            await RefreshMainInfoAsync(cancellationToken);
+            await RefreshPlayerInfoAsync(cancellationToken);
+            await RefreshRulesAsync(cancellationToken);
         }
         _client = null;
     }
@@ -100,10 +105,10 @@ public class GameServer
         return sb.ToString();
     }
 
-    public void RefreshMainInfo()
+    public async Task RefreshMainInfoAsync(CancellationToken cancellationToken)
     {
-        Send(A2S_INFO);
-        var infoData = Receive();
+        await SendAsync(A2S_INFO, cancellationToken);
+        var infoData = await ReceiveAsync(cancellationToken);
         using (var br = new BinaryReader(new MemoryStream(infoData)))
         {
             br.ReadByte(); // type byte, not needed
@@ -136,16 +141,16 @@ public class GameServer
         }
     }
 
-    public void RefreshPlayerInfo()
+    public async Task RefreshPlayerInfoAsync(CancellationToken cancellationToken)
     {
         Players.Clear();
-        GetChallengeData();
+        await GetChallengeDataAsync(cancellationToken);
 
         if (_challengeBytes is null) throw new Exception("_challengeBytes is null.");
 
         _challengeBytes[0] = A2S_PLAYER;
-        Send(_challengeBytes);
-        var playerData = Receive();
+        await SendAsync(_challengeBytes, cancellationToken);
+        var playerData = await ReceiveAsync(cancellationToken);
         
         using (var br = new BinaryReader(new MemoryStream(playerData)))
         {
@@ -158,46 +163,62 @@ public class GameServer
         }
     }
 
-    public void RefreshRules()
+    public async Task RefreshRulesAsync(CancellationToken cancellationToken)
     {
-        Rules.Clear();
-        GetChallengeData();
+        RawRules.Clear();
+
+        await GetChallengeDataAsync(cancellationToken);
 
         if (_challengeBytes is null) throw new Exception("_challengeBytes is null.");
 
         _challengeBytes[0] = A2S_RULES;
-        Send(_challengeBytes);
-        var ruleData = Receive();
+        await SendAsync(_challengeBytes, cancellationToken);
+        var ruleData = await ReceiveAsync(cancellationToken);
 
-        using (var br = new BinaryReader(new MemoryStream(ruleData)))
+        using (var ms = new MemoryStream(ruleData))
+        using (var br = new BinaryReader(ms))
         {
             // skip padding
-            br.ReadByte();
-            br.ReadByte();
-            br.ReadByte();
-            br.ReadByte();
+            var padding = new[]
+            {
+                br.ReadByte(),
+                br.ReadByte(),
+                br.ReadByte(),
+                br.ReadByte(),
+            };
+
+            // Some games, like apparently Conan Exiles, don't return padding.
+            if (padding[0] != 0xFF
+                && padding[1] != 0xFF
+                && padding[2] != 0xFF
+                && padding[3] != 0xFF)
+            {
+                ms.Position -= padding.Length;
+            }
 
             // Char value of 'E'
             if (br.ReadByte() != 0x45) throw new Exception("Invalid data received in response to A2S_RULES request");
             var numRules = br.ReadUInt16();
+
             for (int index = 0; index < numRules; index++)
             {
-                Rules.Add(br.ReadNullTerminatedString(), br.ReadNullTerminatedString());
+                RawRules.Add(br.ReadNullTerminatedString(), br.ReadNullTerminatedString());
             }
+            Rules = _ruleParser.FromDictionary(RawRules);
         }
     }
 
-    private void GetChallengeData()
+    private async Task GetChallengeDataAsync(CancellationToken cancellationToken)
     {
         if (_challengeBytes is not null) return;
         
-        Send(A2S_SERVERQUERY_GETCHALLENGE);
-        var challengeData = Receive();
+        await SendAsync(A2S_SERVERQUERY_GETCHALLENGE, cancellationToken);
+        var challengeData = await ReceiveAsync(cancellationToken);
         if (challengeData[0] != 0x41) throw new Exception("Unable to retrieve challenge data");
         _challengeBytes = challengeData;            
     }
 
-    private void Send(byte[] message)
+    private async Task SendAsync(byte[] message, CancellationToken cancellationToken)
     {
         var fullmessage = new byte[4 + message.Length];
         fullmessage[0] = fullmessage[1] = fullmessage[2] = fullmessage[3] = 0xFF;
@@ -206,17 +227,19 @@ public class GameServer
         
         if (_client is null) throw new Exception("_client is null.");
 
-        _client.Send(fullmessage, fullmessage.Length);
+        var datagram = new ReadOnlyMemory<byte>(fullmessage);
+        await _client.SendAsync(datagram, _endpoint, cancellationToken);
     }
 
-    private byte[] Receive()
+    private async Task<byte[]> ReceiveAsync(CancellationToken cancellationToken)
     {
         var packets = new List<byte[]>();
         var crc = 0;
 
         if (_client is null) throw new Exception("_client is null.");
 
-        var packet = _client.Receive(ref _endpoint);
+        var result = await _client.ReceiveAsync(cancellationToken);
+        var packet = result.Buffer;
 
         packets.Add(packet);
 

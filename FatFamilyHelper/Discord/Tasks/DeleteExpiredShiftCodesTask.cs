@@ -11,7 +11,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace FatFamilyHelper.Discord.Modules;
+namespace FatFamilyHelper.Discord.Tasks;
 
 public class DeleteExpiredShiftCodesTask : ITask
 {
@@ -37,7 +37,7 @@ public class DeleteExpiredShiftCodesTask : ITask
 
         try
         {
-            var guildIdStr = (string) taskSettings[SettingsKeyGuildId]
+            var guildIdStr = (string)taskSettings[SettingsKeyGuildId]
                 ?? throw new Exception(
                     $"Setting with key \"{nameof(SettingsKeyGuildId)}\" missing from {nameof(DeleteExpiredShiftCodesTask)} settings.");
             var guildId = ulong.Parse(guildIdStr);
