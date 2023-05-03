@@ -64,7 +64,7 @@ public class ConanExilesPlayersInteractiveModule : InteractionModuleBase<SocketI
                 return;
             }
 
-            var plural = response.Players.Count == 1 ? "" : "s";
+            var plural = response.MaximumPlayerCount == 1 ? "" : "s";
             var embedBuilder = new EmbedBuilder
             {
                 Title = response.GameDescription ?? response.Name ?? server.Name,
