@@ -112,6 +112,19 @@ public class GameServer<TRules> where TRules : new()
     {
         await SendAsync(A2S_INFO, cancellationToken);
         var infoData = await ReceiveAsync(cancellationToken);
+
+        // Challenge
+        if (infoData[0] == 0x41)
+        {
+            var requestWithChallenge = new byte[A2S_INFO.Length + infoData.Length - 1];
+
+            Buffer.BlockCopy(A2S_INFO, 0, requestWithChallenge, 0, A2S_INFO.Length);
+            Buffer.BlockCopy(infoData, 1, requestWithChallenge, A2S_INFO.Length, infoData.Length - 1);
+
+            await SendAsync(requestWithChallenge, cancellationToken);
+            infoData = await ReceiveAsync(cancellationToken);
+        }
+
         using (var br = new BinaryReader(new MemoryStream(infoData)))
         {
             br.ReadByte(); // type byte, not needed
@@ -295,7 +308,7 @@ public class GameServer<TRules> where TRules : new()
                 });
 
                 // reconstruct full response
-                var fullData = Combine2(packets, payloadOffset);
+                var fullData = Combine(packets, payloadOffset);
 
                 if (isCompressed)
                 {
@@ -317,32 +330,31 @@ public class GameServer<TRules> where TRules : new()
 
     private (int packetIndex, int packetCount, bool isCompressed) UnpackMultipakcetHeader(int payloadOffset, byte[] packet)
     {
-        using (var br = new BinaryReader(new MemoryStream(packet)))
+        using var br = new BinaryReader(new MemoryStream(packet));
+
+        if (payloadOffset == 9) // GoldSrc
         {
-            if (payloadOffset == 9) // GoldSrc
-            {
-                var packetByte = br.ReadByte();
-                return (packetByte >> 2, packetByte & 0xF, false); // packetIndex, packetCount, isCompressed
-            }
-            else if (new[] { 10, 12, 18 }.Contains(payloadOffset)) // Source
-            {
-                // Skip 4 bytes.
-                br.ReadByte();
-                br.ReadByte();
-                br.ReadByte();
-                br.ReadByte();
-
-                var packetId = br.ReadInt32();
-                var packetCount = br.ReadByte();
-                var packetIndex = br.ReadByte();
-
-                return (packetIndex, packetCount, (packetId & 0x80000000) != 0);
-            }
-            throw new Exception($"Unexpected payload_offset - {payloadOffset}");
+            var packetByte = br.ReadByte();
+            return (packetByte >> 2, packetByte & 0xF, false); // packetIndex, packetCount, isCompressed
         }
+        else if (new[] { 10, 12, 18 }.Contains(payloadOffset)) // Source
+        {
+            // Skip 4 bytes.
+            br.ReadByte();
+            br.ReadByte();
+            br.ReadByte();
+            br.ReadByte();
+
+            var packetId = br.ReadInt32();
+            var packetCount = br.ReadByte();
+            var packetIndex = br.ReadByte();
+
+            return (packetIndex, packetCount, (packetId & 0x80000000) != 0);
+        }
+        throw new Exception($"Unexpected payload_offset - {payloadOffset}");
     }
 
-    private byte[] Decompress(byte[] combinedData)
+    private static byte[] Decompress(byte[] combinedData)
     {
         using var compressedData = new MemoryStream(combinedData);
         using var uncompressedData = new MemoryStream();
@@ -350,18 +362,7 @@ public class GameServer<TRules> where TRules : new()
         return uncompressedData.ToArray();
     }
 
-    private byte[] Combine(List<byte[]> arrays)
-    {
-        var rv = new byte[arrays.Sum(a => a.Length)];
-        var offset = 0;
-        foreach (byte[] array in arrays)
-        {
-            Buffer.BlockCopy(array, 0, rv, offset, array.Length);
-            offset += array.Length;
-        }
-        return rv;
-    }
-    private byte[] Combine2(List<byte[]> arrays, int payloadOffset)
+    private static byte[] Combine(List<byte[]> arrays, int payloadOffset)
     {
         var rv = new byte[arrays.Sum(a => Math.Max(a.Length - payloadOffset, 0))];
         var offset = 0;
