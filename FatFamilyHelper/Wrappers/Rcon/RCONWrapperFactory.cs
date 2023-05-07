@@ -1,17 +1,34 @@
 ﻿using CoreRCON;
-using Microsoft.Extensions.DependencyInjection;
+using FatFamilyHelper.Models.Configuration;
+using Microsoft.Extensions.Options;
 using System;
+using System.Net;
 
 namespace FatFamilyHelper.Wrappers.Rcon;
 
 public class RCONWrapperFactory : IRCONWrapperFactory
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly Left4DeadSettings _left4DeadSettings;
 
-    public RCONWrapperFactory(IServiceProvider serviceProvider)
+    public RCONWrapperFactory(IOptions<Left4DeadSettings>? left4DeadSettings)
     {
-        _serviceProvider = serviceProvider;
+        if (left4DeadSettings is null) throw new ArgumentNullException(nameof(left4DeadSettings));
+
+        _left4DeadSettings = left4DeadSettings.Value;
     }
 
-    public IRCONWrapper GetRcon() => new RCONWrapper(_serviceProvider.GetRequiredService<RCON>());
+    public IRCONWrapper GetRcon()
+    {
+        var serverInfo = _left4DeadSettings.ServerInfo;
+
+        var addresses = Dns.GetHostAddresses(_left4DeadSettings.ServerInfo.Ip);
+
+        var endpoint = new IPEndPoint(addresses[0], _left4DeadSettings.ServerInfo.Port);
+
+        var rcon = new RCON(endpoint, serverInfo.RconPassword);
+
+        var wrapper = new RCONWrapper(rcon);
+
+        return wrapper;
+    }
 }

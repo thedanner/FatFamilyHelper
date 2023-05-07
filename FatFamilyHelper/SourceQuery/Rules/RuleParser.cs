@@ -2,7 +2,7 @@
 
 namespace FatFamilyHelper.SourceQuery.Rules
 {
-    public class NoopRuleParser : IRuleParser<Dictionary<string, string>>
+    public class DictionaryOnlyRuleParser : IRuleParser<Dictionary<string, string>>
     {
         public Dictionary<string, string> FromDictionary(Dictionary<string, string> rawRules) => rawRules;
     }

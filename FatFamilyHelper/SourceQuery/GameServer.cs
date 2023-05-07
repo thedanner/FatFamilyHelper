@@ -231,7 +231,7 @@ public class GameServer<TRules> where TRules : new()
         if (_client is null) throw new Exception("_client is null.");
 
         var datagram = new ReadOnlyMemory<byte>(fullmessage);
-        await _client.SendAsync(datagram, _endpoint, cancellationToken);
+        var bytesSent = await _client.SendAsync(datagram, _endpoint, cancellationToken);
     }
 
     private async Task<byte[]> ReceiveAsync(CancellationToken cancellationToken)
@@ -372,6 +372,13 @@ public class GameServer<TRules> where TRules : new()
             offset += count;
         }
         return rv;
+    }
+}
+
+public class GameServer : GameServer<Dictionary<string, string>>
+{
+    public GameServer() : base(new DictionaryOnlyRuleParser())
+    {
     }
 }
 
