@@ -1,19 +1,13 @@
 using CoreRCON;
-using FatFamilyHelper.Games.ConanExiles;
-using FatFamilyHelper.Helpers;
 using FatFamilyHelper.Models.Configuration;
 using FatFamilyHelper.Rcon;
-using FatFamilyHelper.SourceQuery.Rules;
 using FatFamilyHelper.SourceQuery;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
 using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics;
-using System;
 
 namespace FatFamilyHelper.Tests.Integration;
 

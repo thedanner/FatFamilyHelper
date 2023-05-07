@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
 using System.IO;
 using System.Threading.Tasks;
-using FatFamilyHelper.Games.Minecraft;
 using FatFamilyHelper.Helpers;
 using FatFamilyHelper.Games.ConanExiles;
 
