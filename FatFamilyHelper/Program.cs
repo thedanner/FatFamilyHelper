@@ -154,7 +154,6 @@ public class Program
 
         serviceCollection.AddTransient<IDiscordConnectionBootstrapper, DiscordConnectionBootstrapper>();
 
-        serviceCollection.AddTransient<IRCONWrapperFactory, RCONWrapperFactory>();
         serviceCollection.AddTransient<IDiscordChatMover, DiscordChatMover>();
 
         serviceCollection.AddTransient<ISprayModuleCommandResolver, SprayModuleCommandResolver>();

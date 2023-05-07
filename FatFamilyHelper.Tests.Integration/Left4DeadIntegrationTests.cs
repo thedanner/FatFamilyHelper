@@ -39,9 +39,7 @@ public class Left4DeadIntegrationTests
     {
         var gs = new GameServer();
 
-        var addresses = Dns.GetHostAddresses(_left4DeadSettings.ServerInfo.Ip);
-
-        var endpoint = new IPEndPoint(addresses[0], _left4DeadSettings.ServerInfo.Port);
+        var endpoint = new IPEndPoint(IPAddress.Parse(_left4DeadSettings.ServerInfo.Ip), _left4DeadSettings.ServerInfo.Port);
 
         await gs.QueryAsync(endpoint, CancellationToken.None);
     }
@@ -51,9 +49,7 @@ public class Left4DeadIntegrationTests
     {
         var serverInfo = _left4DeadSettings.ServerInfo;
 
-        var addresses = Dns.GetHostAddresses(_left4DeadSettings.ServerInfo.Ip);
-
-        var endpoint = new IPEndPoint(addresses[0], _left4DeadSettings.ServerInfo.Port);
+        var endpoint = new IPEndPoint(IPAddress.Parse(_left4DeadSettings.ServerInfo.Ip), _left4DeadSettings.ServerInfo.Port);
 
         using var rcon = new RCON(endpoint, serverInfo.RconPassword);
         await rcon.ConnectAsync();
