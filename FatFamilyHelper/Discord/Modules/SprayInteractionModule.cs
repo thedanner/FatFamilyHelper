@@ -198,7 +198,7 @@ public class SprayInteractionModule : InteractionModuleBase<SocketInteractionCon
             _logger.LogInformation(
                 "Spray requested from DM conversation {dmChannelId} with recipients {recipients}.",
                 dmChannel.Id,
-                string.Join(", ", (dmChannel as IPrivateChannel).Recipients.Select(r => $"{r.Username}#{r.Discriminator} ({r.Id})")));
+                string.Join(", ", (dmChannel as IPrivateChannel).Recipients.Select(r => $"'{r.Username}' / '{r.GlobalName}' ({r.Id})")));
         }
 
         _logger.LogInformation("Triggered by slash or message command.");
@@ -210,9 +210,7 @@ public class SprayInteractionModule : InteractionModuleBase<SocketInteractionCon
             await DeferAsync();
 
             var sourceStreamTasks = imageUris.Select(async s =>
-            {
-                return await _httpClient.GetStreamAsync(s, cancellationToken);
-            });
+                await _httpClient.GetStreamAsync(s, cancellationToken));
             sourceStreams = await Task.WhenAll(sourceStreamTasks);
 
             var sprayTools = new SprayTools();
