@@ -76,7 +76,7 @@ public class Program
                 builder.AddConsole();
             });
             var logger = loggerFactory.CreateLogger<Program>();
-            logger.LogError(ex, "Error starting service.");
+            logger.LogError(ex, "Error starting service or unhandled runtime error.");
         }
 
         // TODO some thread is probably still running somewhere preventing a normal shutdown. Find out where.

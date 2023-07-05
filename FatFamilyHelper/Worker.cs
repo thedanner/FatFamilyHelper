@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using CoreRCON;
+using Discord;
 using Discord.WebSocket;
 using FatFamilyHelper.Discord.Handlers;
 using FatFamilyHelper.Models.Configuration;
