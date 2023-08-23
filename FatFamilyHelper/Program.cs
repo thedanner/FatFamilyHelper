@@ -296,8 +296,6 @@ public class Program
 
         serviceCollection.AddQuartz(q =>
         {
-            q.UseMicrosoftDependencyInjectionJobFactory();
-
             q.UseDefaultThreadPool(tp =>
             {
                 tp.MaxConcurrency = 1;
