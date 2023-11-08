@@ -6,7 +6,6 @@ using Discord.WebSocket;
 using FatFamilyHelper.Discord.Handlers;
 using FatFamilyHelper.Discord.Interfaces;
 using FatFamilyHelper.Discord.Interfaces.Events;
-using FatFamilyHelper.Games.ConanExiles;
 using FatFamilyHelper.Games.Minecraft;
 using FatFamilyHelper.Helpers;
 using FatFamilyHelper.Models.Configuration;
@@ -122,7 +121,6 @@ public class Program
         serviceCollection.Configure<MinecraftSettings>(config.GetSection("minecraft"));
         serviceCollection.Configure<ConanExilesSettings>(config.GetSection("conanExiles"));
 
-        serviceCollection.Configure<ShiftCodeSettings>(config.GetSection("shiftCodes"));
         serviceCollection.Configure<List<TaskDefinition>>(config.GetSection("tasks"));
         serviceCollection.Configure<List<UserMapping>>(config.GetSection("userMappings"));
 
@@ -150,7 +148,6 @@ public class Program
 
         serviceCollection.AddSingleton<IPingThrottler, PingThrottler>();
         serviceCollection.AddTransient<IMinecraftPingService, MinecraftPingService>();
-        serviceCollection.AddTransient<IConanExilesPingService, ConanExilesPingService>();
 
         serviceCollection.AddTransient<IDiscordConnectionBootstrapper, DiscordConnectionBootstrapper>();
 
@@ -176,7 +173,7 @@ public class Program
                     // Needed for the SHiFT code bridge.
                     // This also needs the Priveleged Gateway Intent for Message Content Intent enabled in the developer portal.
                     // https://discord.com/developers/applications
-                    | GatewayIntents.MessageContent
+                    //| GatewayIntents.MessageContent
             });
         });
 
