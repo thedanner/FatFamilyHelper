@@ -119,7 +119,6 @@ public class Program
         serviceCollection.Configure<DiscordSettings>(config.GetSection("discordSettings"));
         serviceCollection.Configure<Left4DeadSettings>(config.GetSection("left4deadSettings"));
         serviceCollection.Configure<MinecraftSettings>(config.GetSection("minecraft"));
-        serviceCollection.Configure<ConanExilesSettings>(config.GetSection("conanExiles"));
 
         serviceCollection.Configure<List<TaskDefinition>>(config.GetSection("tasks"));
         serviceCollection.Configure<List<UserMapping>>(config.GetSection("userMappings"));

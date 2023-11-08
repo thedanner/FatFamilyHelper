@@ -12,7 +12,7 @@ namespace FatFamilyHelper.Tests.Integration.Minecraft;
 
 [TestFixture]
 [Explicit("Run manually")]
-public class ConanExilesPingServiceTests
+public class MinecraftPingServiceTests
 {
     private MinecraftSettings _minecraftSettings;
 
