@@ -287,7 +287,7 @@ public class GameServer<TRules> where TRules : new()
                 }
 
                 // read header
-                (int packetIndex, int packetCount, bool isCompressed) = UnpackMultipakcetHeader(payloadOffset, packet);
+                (int packetIndex, int packetCount, bool isCompressed) = GameServer<TRules>.UnpackMultipakcetHeader(payloadOffset, packet);
 
                 if (packetIndex != 0) throw new Exception("Unexpected first packet index");
 
@@ -301,8 +301,8 @@ public class GameServer<TRules> where TRules : new()
                 // ensure packets are in correct order
                 packets.Sort((a, b) =>
                 {
-                    var aData = UnpackMultipakcetHeader(payloadOffset, a);
-                    var bData = UnpackMultipakcetHeader(payloadOffset, b);
+                    var aData = GameServer<TRules>.UnpackMultipakcetHeader(payloadOffset, a);
+                    var bData = GameServer<TRules>.UnpackMultipakcetHeader(payloadOffset, b);
 
                     return aData.packetIndex.CompareTo(bData.packetIndex);
                 });
@@ -328,7 +328,7 @@ public class GameServer<TRules> where TRules : new()
         }
     }
 
-    private (int packetIndex, int packetCount, bool isCompressed) UnpackMultipakcetHeader(int payloadOffset, byte[] packet)
+    private static (int packetIndex, int packetCount, bool isCompressed) UnpackMultipakcetHeader(int payloadOffset, byte[] packet)
     {
         using var br = new BinaryReader(new MemoryStream(packet));
 

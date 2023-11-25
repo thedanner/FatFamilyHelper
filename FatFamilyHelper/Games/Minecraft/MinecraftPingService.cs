@@ -59,7 +59,7 @@ public class MinecraftPingService : IMinecraftPingService
         return ping;
     }
 
-    private void SendHandshakePacket(string hostname, ushort port, NetworkStream stream)
+    private static void SendHandshakePacket(string hostname, ushort port, NetworkStream stream)
     {
         // http://wiki.vg/Server_List_Ping#Ping_Process
 
@@ -72,7 +72,7 @@ public class MinecraftPingService : IMinecraftPingService
         Flush(requestData, stream, 0);
     }
 
-    private void SendStatusRequestPacket(NetworkStream stream)
+    private static void SendStatusRequestPacket(NetworkStream stream)
     {
         // Send a "Status Request" packet
         // http://wiki.vg/Server_List_Ping#Ping_Process

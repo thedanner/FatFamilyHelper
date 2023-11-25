@@ -28,7 +28,7 @@ public class SprayToolsTests
 
         var inputStreams = new List<Stream> { inputStream };
 
-        await sprayTools.ConvertAsync(inputStreams, outputStream, new TgaSaveProfile(), CancellationToken.None);
+        await SprayTools.ConvertAsync(inputStreams, outputStream, new TgaSaveProfile(), CancellationToken.None);
     }
 
     [Test]
@@ -43,7 +43,7 @@ public class SprayToolsTests
 
         var inputStreams = new List<Stream> { inputStream };
 
-        await sprayTools.ConvertAsync(inputStreams, outputStream, new Vtf512SaveProfile(), CancellationToken.None);
+        await SprayTools.ConvertAsync(inputStreams, outputStream, new Vtf512SaveProfile(), CancellationToken.None);
     }
 
     [Test]
@@ -58,7 +58,7 @@ public class SprayToolsTests
 
         var inputStreams = new List<Stream> { inputStream };
 
-        await sprayTools.ConvertAsync(inputStreams, outputStream, new Vtf1024SaveProfile(), CancellationToken.None);
+        await SprayTools.ConvertAsync(inputStreams, outputStream, new Vtf1024SaveProfile(), CancellationToken.None);
     }
 
     [Test]
@@ -76,11 +76,11 @@ public class SprayToolsTests
 
         var inputStreams = new List<Stream> { nearInputStream, farInputStream };
 
-        await sprayTools.ConvertAsync(inputStreams, outputStream, new VtfFadingSaveProfile(), CancellationToken.None);
+        await SprayTools.ConvertAsync(inputStreams, outputStream, new VtfFadingSaveProfile(), CancellationToken.None);
     }
 
 
-    private void ValidateArgs(string inputFileName, string outputFileName)
+    private static void ValidateArgs(string inputFileName, string outputFileName)
     {
         if (string.IsNullOrWhiteSpace(inputFileName))
         {

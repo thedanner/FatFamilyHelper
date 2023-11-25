@@ -219,7 +219,7 @@ public class SprayInteractionModule : InteractionModuleBase<SocketInteractionCon
             {
                 using var outputStream = new MemoryStream();
 
-                var conversionResult = await sprayTools.ConvertAsync(
+                var conversionResult = await SprayTools.ConvertAsync(
                     sourceStreams, outputStream,
                     saveProfile, cancellationToken);
 

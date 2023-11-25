@@ -19,7 +19,7 @@ public class DeleteCommands
     private string _botToken;
     private ulong _guildId;
 
-    private Task Log(LogMessage msg)
+    private static Task Log(LogMessage msg)
     {
         Console.WriteLine(msg.ToString());
         return Task.CompletedTask;
@@ -153,14 +153,14 @@ public class DeleteCommands
         return client;
     }
 
-    private Task ReadyHandlerWithSignalAsync(TaskCompletionSource<bool> readyComplete)
+    private static Task ReadyHandlerWithSignalAsync(TaskCompletionSource<bool> readyComplete)
     {
         Console.WriteLine("Discord client event: Ready");
         readyComplete.SetResult(true);
         return Task.FromResult(0);
     }
 
-    private Task LogAsync(LogMessage msg)
+    private static Task LogAsync(LogMessage msg)
     {
         Console.WriteLine(msg.ToString());
         return Task.CompletedTask;

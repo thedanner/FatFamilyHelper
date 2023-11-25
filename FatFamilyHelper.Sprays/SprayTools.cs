@@ -14,7 +14,7 @@ namespace FatFamilyHelper.Sprays;
 
 public class SprayTools
 {
-    public async Task<ConversionResult> ConvertAsync(IList<Stream> inputStreams, Stream outputStream,
+    public static async Task<ConversionResult> ConvertAsync(IList<Stream> inputStreams, Stream outputStream,
         ISaveProfile saveProfile, CancellationToken cancellationToken)
     {
         if (inputStreams is null) throw new ArgumentNullException(nameof(inputStreams));
