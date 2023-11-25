@@ -283,11 +283,11 @@ public class Program
         var tasks = serviceProvider.GetRequiredService<IOptions<List<TaskDefinition>>>().Value;
 
         var tasksGroupedByName = tasks.GroupBy(t => t.Name);
-        var replicatedNamed = tasksGroupedByName.Where(g => g.Count() > 1);
-        if (replicatedNamed.Any())
+        var replicatedNames = tasksGroupedByName.Where(g => g.Count() > 1);
+        if (replicatedNames.Any())
         {
             throw new Exception("Multiple tasks were found with each of the following names: " +
-                string.Join(", ", replicatedNamed.Select(n => $"\"{n.Key}\"")));
+                string.Join(", ", replicatedNames.Select(n => $"\"{n.Key}\"")));
         }
 
         serviceCollection.AddQuartz(q =>
