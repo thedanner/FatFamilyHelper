@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace FatFamilyHelper.SourceQuery.Rules
+namespace FatFamilyHelper.SourceQuery.Rules;
+
+public interface IRuleParser<T>
 {
-    public interface IRuleParser<T>
-    {
-        T FromDictionary(Dictionary<string, string> rawRules);
-    }
+    T FromDictionary(Dictionary<string, string> rawRules);
 }
