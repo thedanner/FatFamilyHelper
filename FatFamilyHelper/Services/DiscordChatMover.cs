@@ -5,6 +5,7 @@ using FatFamilyHelper.Wrappers.Rcon;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -80,8 +81,8 @@ public class DiscordChatMover : IDiscordChatMover
 
         _logger.LogDebug("Getting current voice channel users.");
 
-        var usersInPrimaryChannel = primaryVoiceChannel.ConnectedUsers;
-        var usersInSecondaryChannel = secondaryVoiceChannel.ConnectedUsers;
+        IReadOnlyCollection<SocketGuildUser> usersInPrimaryChannel = primaryVoiceChannel.ConnectedUsers;
+        IReadOnlyCollection<SocketGuildUser> usersInSecondaryChannel = secondaryVoiceChannel.ConnectedUsers;
 
         _logger.LogDebug("Current players per PrintInfo results ({playerCount}):", currentPlayersOnServer.Count);
         for (var i = 0; i < currentPlayersOnServer.Count; i++)
@@ -227,11 +228,11 @@ public class DiscordChatMover : IDiscordChatMover
         {
             SocketVoiceChannel currentVoiceChannel;
 
-            if (usersInPrimaryChannel.Any(u => u.Id == user.Id))
+            if (usersInPrimaryChannel!.Any(u => u.Id == user.Id))
             {
                 currentVoiceChannel = primaryVoiceChannel;
             }
-            else if (usersInSecondaryChannel.Any(u => u.Id == user.Id))
+            else if (usersInSecondaryChannel!.Any(u => u.Id == user.Id))
             {
                 currentVoiceChannel = secondaryVoiceChannel;
             }
